@@ -17,6 +17,7 @@ import { DistrictAdapter } from '../adapters/district.js';
 import { AppealAdapter } from '../adapters/appeal.js';
 import { CassationAdapter } from '../adapters/cassation.js';
 import { MagistrateAdapter } from '../adapters/magistrate.js';
+import { fetchMagistrateHtml } from '../captcha/session.js';
 import { exportJson } from '../exporter/json.js';
 
 const ADAPTERS: Record<string, CourtAdapter> = {
@@ -26,7 +27,6 @@ const ADAPTERS: Record<string, CourtAdapter> = {
   magistrate: new MagistrateAdapter(),
 };
 
-// BUG-012: автоопределение charset из Content-Type
 function detectCharset(contentType: string | null): string {
   if (!contentType) return 'win1251';
   const m = contentType.match(/charset=([\w-]+)/i);
@@ -43,13 +43,25 @@ async function fetchHtml(url: string, timeoutMs: number): Promise<string> {
   return iconv.decode(Buffer.from(buffer), charset);
 }
 
+async function loadCaseHtml(url: string, courtType: string, timeoutMs: number, apiKey: string): Promise<string> {
+  if (courtType === 'magistrate') {
+    if (!apiKey) throw new Error('RUCAPTCHA_API_KEY is not set');
+    return fetchMagistrateHtml({
+      url,
+      apiKey,
+      debugDir: resolve(process.cwd(), 'logs'),
+    });
+  }
+
+  return fetchHtml(url, timeoutMs);
+}
+
 async function run() {
   const config = loadConfig();
   const allUrls = loadUrls();
   const logsDir = resolve(process.cwd(), 'logs');
   if (!existsSync(logsDir)) mkdirSync(logsDir, { recursive: true });
 
-  // BUG-007: lock-файл
   const lockPath = resolve(logsDir, 'orchestrator.lock');
   if (existsSync(lockPath)) {
     console.warn('[orchestrator] Уже запущен (lock есть). Выход.');
@@ -57,7 +69,6 @@ async function run() {
   }
   writeFileSync(lockPath, String(process.pid));
 
-  // Группируем URL по courtId для побатчевой экспорта JSON
   const courtGroups = new Map<string, { type: string; urls: string[] }>();
   for (const { url, courtType, courtId } of allUrls) {
     if (!courtGroups.has(courtId)) courtGroups.set(courtId, { type: courtType, urls: [] });
@@ -77,11 +88,6 @@ async function run() {
         continue;
       }
 
-      if (type === 'magistrate') {
-        console.log(`[orchestrator] Пропущен ${courtId} (magistrate требует Puppeteer)`);
-        continue;
-      }
-
       const cases = [];
 
       for (const url of urls) {
@@ -90,11 +96,10 @@ async function run() {
         const label = `${courtId} → ${caseId}`;
         try {
           const html = await withRetry(
-            () => fetchHtml(url, config.retry.timeoutMs),
+            () => loadCaseHtml(url, type, config.retry.timeoutMs, config.captcha.apiKey),
             config.retry,
             label
           );
-          // BUG-004: timeout на parse()
           const parsePromise = adapter.parse(html, url);
           const timeoutPromise = new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error('parse timeout')), 10000)
@@ -109,7 +114,6 @@ async function run() {
           });
           console.log(`[OK] ${label} — ${caseData.uid}`);
         } catch (err) {
-          // BUG-010: капча — отдельная ветка, не FAIL
           if (err instanceof CaptchaRequiredError) {
             results.push({
               courtId, courtType: type, url,
@@ -139,11 +143,9 @@ async function run() {
       }
     }
   } finally {
-    // BUG-007: снимаем lock всегда, даже при ошибке
     try { unlinkSync(lockPath); } catch {}
   }
 
-  // BUG-005: run-log-YYYY-MM-DD.json
   const date = new Date().toISOString().slice(0, 10);
   const logPath = resolve(logsDir, `run-log-${date}.json`);
   const logTmp = logPath + '.tmp';
