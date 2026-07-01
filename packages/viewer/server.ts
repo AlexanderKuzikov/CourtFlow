@@ -1,15 +1,19 @@
 // packages/viewer/server.ts
 // BUG-003: GET /api/config возвращает SafeAppConfig (без секретных ключей)
+// BUG-014: fileURLToPath вместо .pathname — корректный путь на Windows
 
 import express from 'express';
 import { readdirSync, readFileSync, existsSync } from 'fs';
-import { resolve, join } from 'path';
+import { resolve, join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { loadConfig, toSafeConfig } from '../core/config.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 const app = express();
 app.use(express.json());
-app.use(express.static(new URL('public', import.meta.url).pathname));
+app.use(express.static(join(__dirname, 'public')));
 
 const config = loadConfig();
 const DATA_DIR = resolve(process.cwd(), config.outputDir);
@@ -53,7 +57,7 @@ app.get('/api/cases', (_req, res) => {
   }
 });
 
-// GET /api/logs — последние N записей из run-log-*.json
+// GET /api/logs — последние N дней из run-log-*.json
 // ?days=7 (default 7)
 app.get('/api/logs', (_req, res) => {
   if (!existsSync(LOGS_DIR)) return res.json([]);

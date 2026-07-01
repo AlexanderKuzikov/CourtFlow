@@ -36,43 +36,37 @@ courtflow/
     │   ├── cassation.ts         # ✅ Работает. #cont1..5 (5 вкладок), publishInfo
     │   └── magistrate.ts        # ⏳ Заглушка. Требует Puppeteer
     ├── scheduler/
-    │   ├── orchestrator.ts      # ⚠️ Всё ещё использует getEnabledCourts() — нужно переписать на loadUrls()
-    │   └── smoke.ts             # ✅ Работает. Пишет UTF-8 лог сам, управляется smokeSaveLog
+    │   ├── orchestrator.ts      # ✅ Использует loadUrls(), группировка по courtId
+    │   └── smoke.ts             # ✅ Пишет UTF-8 лог сам, управляется smokeSaveLog
     ├── exporter/
-    │   ├── json.ts              # ⚠️ BUG-006: перезапись при повторном запуске
+    │   ├── json.ts              # ✅ Мержинг по uid (BUG-006 ✅)
     │   └── xlsx.ts              # ⏳ Не реализован
     └── viewer/
-        ├── server.ts            # ⚠️ Express. /api/config OK, /api/logs TODO, /api/run TODO
-        └── public/              # ⏳ Vanilla HTML/JS — не начат
+        ├── server.ts            # ✅ /api/config, /api/cases, /api/logs, /api/run, /api/run/status
+        └── public/
+            └── index.html       # ✅ UI: дела, логи, запуск, панель деталей
 ```
 
 ## Текущее состояние (2026-07-01)
 
 ### ✅ Работает
 - `npm run test:smoke` — district, appeal, cassation парсятся корректно
-- district: UID, судья, 7 сторон, 15 событий ✅
-- appeal: UID, судья, 7 сторон, 6 событий, publishedAt ✅
-- cassation: UID, судья, 3 стороны, 1 событие, publishedAt/modifiedAt ✅
-- smoke-лог пишется автоматически в UTF-8 (`smokeSaveLog: true` в config.json)
-- dotenv загружается автоматически (BUG-001 ✅)
-- API-ключи не утекают через /api/config (BUG-003 ✅)
-- lock-файл от параллельного запуска (BUG-007 ✅)
-- charset из Content-Type (BUG-012 ✅)
-- node-fetch удалён, native fetch (BUG-011 ✅)
-- run-log-YYYY-MM-DD.json (BUG-005 ✅)
+- `npm start` — viewer на http://localhost:3000, UI работает
+- district/appeal/cassation: uid, судья, стороны, события, publishedAt ✅
+- exporter: мержинг по uid, атомарная запись ✅
+- orchestrator: loadUrls(), группировка по courtId ✅
+- smoke-лог в UTF-8 автоматически (smokeSaveLog) ✅
+- все BUG 001–009, 011–014 ✅
 
 ### ⚠️ Требует работы
 
 **Первый приоритет:**
-1. `orchestrator.ts` — переписать на `loadUrls()` вместо `getEnabledCourts()`
-2. `exporter/json.ts` — BUG-006: мержить данные по uid, не перезаписывать
-3. `exporter/xlsx.ts` — реализовать
+1. `magistrate.ts` — реализация + Puppeteer + captcha flow
+2. `exporter/xlsx.ts` — реализовать
+3. BUG-010 — детекция капчи в HTML
 
 **Второй приоритет:**
-4. `magistrate.ts` — реализация + Puppeteer captcha flow
-5. `viewer/public/` — Vanilla HTML/JS UI (4 страницы: дела, конфиг, логи, запуск)
-6. `viewer/server.ts` — `/api/logs` и `/api/run` (сейчас TODO)
-7. systemd/pm2-сервис для Linux
+4. systemd/pm2-сервис для Linux
 
 ## Smoke-тест
 
@@ -81,7 +75,7 @@ npm run test:smoke
 ```
 
 Лог пишется автоматически в `logs/smoke-last.log` (UTF-8), если `smokeSaveLog: true` в `config.json`.  
-Затем запушить лог через GitHub Desktop для передачи AI-ассистенту.
+Затем запушить лог через GitHub Desktop.
 
 ## Файлы контекста
 
@@ -103,6 +97,5 @@ npm run test:smoke
 # Сохранить HTML любого дела
 Invoke-WebRequest -Uri "<url>" -OutFile "test.html" -UseBasicParsing
 # Открыть в браузере, F12 → Elements → искать #cont
-Invoke-WebRequest -Uri "<url>" -OutFile "test.html"
 Start-Process "test.html"
 ```
