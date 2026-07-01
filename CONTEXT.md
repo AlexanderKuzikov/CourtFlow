@@ -17,56 +17,65 @@
 
 ```
 courtflow/
-├── config.json              # системные настройки (без URL дел!)
-├── urls.txt                 # Список отслеживаемых дел (читаемый, human-friendly)
-├── .env                     # Ключи (RUCAPTCHA_API_KEY, TWOCAPTCHA_API_KEY)
+├── config.json              # Системные настройки
+├── courts.json              # Справочник судов (план)
+├── urls.txt                 # Отслеживаемые дела
+├── .env                     # Ключи API
+├── HTML_STRUCTURE.md        # Карта HTML-структуры сайтов судов
+├── DECISIONS.md             # Решения, стратегия, планы
+├── BUG_REPORT.md            # Баги
+├── CONTEXT.md               # Этот файл
 ├── logs/
-│   ├── smoke-last.log        # Последний smoke-тест (пишется автоматически при smokeSaveLog: true)
-│   └── run-log-YYYY-MM-DD.json  # Результаты запусков из cron
-├── data/                    # JSON/XLSX выгрузка (в .gitignore)
+│   ├── smoke-last.log
+│   └── run-log-YYYY-MM-DD.json
+├── data/                    # JSON/XLSX (в .gitignore)
 └── packages/
     ├── core/
-    │   ├── config.ts            # loadConfig(), toSafeConfig()
-    │   ├── urls.ts              # loadUrls(), detectCourtType(), extractCourtId()
-    │   ├── types.ts             # Case, CaseEvent, CaseParty, CourtAdapter...
-    │   └── retry.ts             # withRetry()
+    │   ├── config.ts
+    │   ├── urls.ts              # loadUrls(), detectCourtType()
+    │   ├── courts.ts            # план: lookupCourt(), registerCourt()
+    │   ├── types.ts
+    │   └── retry.ts
     ├── adapters/
-    │   ├── district.ts          # ✅ Работает. #cont1/2/3 (3 вкладки)
-    │   ├── appeal.ts            # ✅ Работает. #cont1..5 (5 вкладок), publishInfo
-    │   ├── cassation.ts         # ✅ Работает. #cont1..5 (5 вкладок), publishInfo
-    │   └── magistrate.ts        # ⏳ Заглушка. Требует Puppeteer
+    │   ├── district.ts          # ✅ 3 вкладки
+    │   ├── appeal.ts            # ✅ 5 вкладок
+    │   ├── cassation.ts         # ✅ 5 вкладок
+    │   └── magistrate.ts        # ⏳ Заглушка
     ├── scheduler/
-    │   ├── orchestrator.ts      # ✅ Использует loadUrls(), группировка по courtId
-    │   └── smoke.ts             # ✅ Пишет UTF-8 лог сам, управляется smokeSaveLog
+    │   ├── orchestrator.ts      # ✅ loadUrls()
+    │   └── smoke.ts             # ✅ smokeSaveLog
     ├── exporter/
-    │   ├── json.ts              # ✅ Мержинг по uid (BUG-006 ✅)
-    │   └── xlsx.ts              # ⏳ Не реализован
+    │   ├── json.ts              # ✅ мержинг по uid
+    │   └── xlsx.ts              # ⏳
     └── viewer/
-        ├── server.ts            # ✅ /api/config, /api/cases, /api/logs, /api/run, /api/run/status
+        ├── server.ts            # ✅ /api/cases, /api/logs, /api/run
         └── public/
-            └── index.html       # ✅ UI: дела, логи, запуск, панель деталей
+            └── index.html       # ✅ UI мониторинг
 ```
 
 ## Текущее состояние (2026-07-01)
 
 ### ✅ Работает
-- `npm run test:smoke` — district, appeal, cassation парсятся корректно
+- `npm run test:smoke` — district, appeal, cassation
 - `npm start` — viewer на http://localhost:3000, UI работает
-- district/appeal/cassation: uid, судья, стороны, события, publishedAt ✅
-- exporter: мержинг по uid, атомарная запись ✅
-- orchestrator: loadUrls(), группировка по courtId ✅
-- smoke-лог в UTF-8 автоматически (smokeSaveLog) ✅
-- все BUG 001–009, 011–014 ✅
+- exporter: мержинг по uid, атомарная запись
+- orchestrator: loadUrls() + группировка по courtId
 
 ### ⚠️ Требует работы
 
-**Первый приоритет:**
-1. `magistrate.ts` — реализация + Puppeteer + captcha flow
-2. `exporter/xlsx.ts` — реализовать
-3. BUG-010 — детекция капчи в HTML
+**Фаза 2 (справочник судов):**
+1. Проверить селекторы главной страницы для district и appeal (F12)
+2. Реализовать `courts.ts` + `courts.json` + `enrich:courts`
+3. `GET /api/courts` в server.ts
+4. Отобразить `shortName` в UI
 
-**Второй приоритет:**
-4. systemd/pm2-сервис для Linux
+**Фаза 3 (magistrate):**
+5. `magistrate.ts` — Puppeteer + captcha
+6. BUG-010 — детекция капчи во всех адаптерах
+
+**Фаза 4:**
+7. `exporter/xlsx.ts`
+8. systemd/pm2 для Linux
 
 ## Smoke-тест
 
@@ -74,28 +83,15 @@ courtflow/
 npm run test:smoke
 ```
 
-Лог пишется автоматически в `logs/smoke-last.log` (UTF-8), если `smokeSaveLog: true` в `config.json`.  
-Затем запушить лог через GitHub Desktop.
+Лог автозапись в `logs/smoke-last.log` (UTF-8) если `smokeSaveLog: true`.
 
-## Файлы контекста
+## Файлы документации
 
 | Файл | Назначение |
 |---|---|
-| `BUG_REPORT.md` | Все баги с статусами |
-| `CONTEXT.md` | Этот файл. Текущий контекст |
-| `urls.txt` | Список дел (редактируется вручную) |
-| `logs/smoke-last.log` | Последний smoke-тест |
+| `CONTEXT.md` | Текущий контекст, архитектура |
+| `DECISIONS.md` | Решения, стратегия, журнал |
+| `BUG_REPORT.md` | Баги с статусами |
+| `HTML_STRUCTURE.md` | Карта HTML-структуры сайтов судов |
+| `urls.txt` | Список дел |
 | `config.json` | Системные настройки |
-
-## Концепция: один адаптер — один тип суда
-
-Каждый адаптер изолирован. Изменения в HTML сайта sudrf.ru всегда по типам, не глобально. Поэтому district/appeal/cassation/magistrate никогда не объединяются в один класс.
-
-## Где читать HTML при дебаге
-
-```powershell
-# Сохранить HTML любого дела
-Invoke-WebRequest -Uri "<url>" -OutFile "test.html" -UseBasicParsing
-# Открыть в браузере, F12 → Elements → искать #cont
-Start-Process "test.html"
-```
