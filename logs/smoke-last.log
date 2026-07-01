@@ -1,0 +1,4 @@
+# Файл для передачи вывода smoke-теста между сессиями.
+# Обновлять командой:
+#   npm run test:smoke > logs/smoke-last.log 2>&1
+# Затем запушить через GitHub Desktop.
