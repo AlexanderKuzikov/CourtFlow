@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CourtFlow — Мониторинг дел</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; font-size: 14px; background: #f5f5f5; color: #222; }
+    header { background: #1a3a5c; color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+    header h1 { font-size: 18px; font-weight: 600; }
+    header .status { margin-left: auto; font-size: 13px; opacity: .8; }
+    nav { display: flex; gap: 0; background: #fff; border-bottom: 2px solid #1a3a5c; }
+    nav button { padding: 10px 20px; border: none; background: none; cursor: pointer; font-size: 14px; color: #555; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    nav button.active { color: #1a3a5c; font-weight: 600; border-bottom-color: #1a3a5c; }
+    main { padding: 16px 20px; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* Таблица дел */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+    .toolbar input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; width: 260px; }
+    .toolbar select { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+    .btn { padding: 7px 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .btn-primary { background: #1a3a5c; color: #fff; }
+    .btn-primary:hover { background: #25527f; }
+    .btn-primary:disabled { background: #aaa; cursor: default; }
+    .btn-danger { background: #c0392b; color: #fff; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    th { background: #1a3a5c; color: #fff; text-align: left; padding: 9px 12px; font-weight: 500; font-size: 13px; }
+    td { padding: 8px 12px; border-bottom: 1px solid #eee; vertical-align: top; font-size: 13px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f0f5fb; }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-district { background: #dbeafe; color: #1e40af; }
+    .badge-appeal { background: #dcfce7; color: #166534; }
+    .badge-cassation { background: #fef9c3; color: #854d0e; }
+    .badge-magistrate { background: #f3e8ff; color: #6b21a8; }
+    .empty { text-align: center; padding: 40px; color: #888; }
+
+    /* Панель деталей */
+    .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; }
+    .detail-overlay.open { display: flex; align-items: flex-start; justify-content: flex-end; }
+    .detail-panel { background: #fff; width: 480px; max-width: 100vw; height: 100vh; overflow-y: auto; padding: 20px; box-shadow: -4px 0 16px rgba(0,0,0,.15); }
+    .detail-panel h2 { font-size: 16px; margin-bottom: 12px; color: #1a3a5c; }
+    .detail-panel .close-btn { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: #888; }
+    .kv-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    .kv-table td { padding: 5px 8px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .kv-table td:first-child { color: #666; width: 45%; }
+    .section-title { font-size: 13px; font-weight: 600; color: #1a3a5c; margin: 14px 0 6px; }
+
+    /* Логи */
+    .log-item { background: #fff; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; gap: 12px; align-items: baseline; font-size: 13px; }
+    .log-ok { border-left: 4px solid #16a34a; }
+    .log-fail { border-left: 4px solid #dc2626; }
+    .log-ts { color: #888; font-size: 11px; white-space: nowrap; }
+    .log-uid { font-family: monospace; font-size: 12px; color: #444; }
+    .log-err { color: #dc2626; }
+
+    /* Запуск */
+    .run-box { background: #fff; border-radius: 8px; padding: 24px; max-width: 420px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .run-box h2 { font-size: 16px; margin-bottom: 16px; color: #1a3a5c; }
+    .run-status { margin-top: 14px; font-size: 13px; padding: 8px 12px; border-radius: 4px; }
+    .run-status.idle { background: #f1f5f9; color: #555; }
+    .run-status.running { background: #fef9c3; color: #854d0e; }
+    .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #854d0e; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 6px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚖️ CourtFlow</h1>
+  <span id="caseCount" class="status"></span>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('cases', this)">Дела</button>
+  <button onclick="showPage('logs', this)">Логи</button>
+  <button onclick="showPage('run', this)">Запуск</button>
+</nav>
+
+<main>
+
+  <!-- ДЕЛА -->
+  <div id="page-cases" class="page active">
+    <div class="toolbar">
+      <input id="search" type="text" placeholder="Поиск: номер, судья, участник…" oninput="renderCases()">
+      <select id="filterType" onchange="renderCases()">
+        <option value="">Все типы</option>
+        <option value="district">Районный</option>
+        <option value="appeal">Апелляция</option>
+        <option value="cassation">Кассация</option>
+        <option value="magistrate">Мировой</option>
+      </select>
+      <button class="btn btn-primary" onclick="loadCases()">&#x21bb; Обновить</button>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Номер дела</th>
+        <th>Тип</th>
+        <th>Суд</th>
+        <th>Судья</th>
+        <th>Событий</th>
+        <th>Последнее</th>
+      </tr></thead>
+      <tbody id="casesBody"></tbody>
+    </table>
+    <div id="casesEmpty" class="empty" style="display:none">Нет дел</div>
+  </div>
+
+  <!-- ЛОГИ -->
+  <div id="page-logs" class="page">
+    <div class="toolbar">
+      <select id="logDays" onchange="loadLogs()">
+        <option value="1">Сегодня</option>
+        <option value="7" selected>Неделя</option>
+        <option value="30">Месяц</option>
+      </select>
+      <button class="btn btn-primary" onclick="loadLogs()">&#x21bb; Обновить</button>
+    </div>
+    <div id="logsList"></div>
+  </div>
+
+  <!-- ЗАПУСК -->
+  <div id="page-run" class="page">
+    <div class="run-box">
+      <h2>Ручной запуск парсинга</h2>
+      <p style="color:#555;font-size:13px;margin-bottom:16px">Запускает orchestrator по всем URL из urls.txt. Несколько минут в зависимости от количества дел.</p>
+      <button id="runBtn" class="btn btn-primary" onclick="startRun()">▶ Запустить</button>
+      <div id="runStatus" class="run-status idle">Ожидание</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ПАНЕЛЬ ДЕТАЛЕЙ -->
+<div id="detailOverlay" class="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detailPanel">
+    <button class="close-btn" onclick="closeDetail(null)">&times;</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+  let allCases = [];
+  let pollTimer = null;
+
+  // --- НАВИГАЦИЯ ---
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'logs') loadLogs();
+    if (name === 'run') pollRunStatus();
+  }
+
+  // --- ДЕЛА ---
+  async function loadCases() {
+    try {
+      const res = await fetch('/api/cases');
+      allCases = await res.json();
+      document.getElementById('caseCount').textContent = allCases.length + ' дел';
+      renderCases();
+    } catch(e) { console.error(e); }
+  }
+
+  function renderCases() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const t = document.getElementById('filterType').value;
+    const filtered = allCases.filter(c => {
+      if (t && c.courtType !== t) return false;
+      if (!q) return true;
+      const haystack = [c.number, c.card?.judge, c.court,
+        ...(c.parties||[]).map(p => p.name)].join(' ').toLowerCase();
+      return haystack.includes(q);
+    });
+
+    const tbody = document.getElementById('casesBody');
+    const empty = document.getElementById('casesEmpty');
+    tbody.innerHTML = '';
+    empty.style.display = filtered.length ? 'none' : 'block';
+
+    filtered.forEach(c => {
+      const lastEvent = c.events?.at(-1);
+      const lastDate  = lastEvent?.eventDate ?? c.card?.hearingDate ?? '—';
+      const tr = document.createElement('tr');
+      tr.style.cursor = 'pointer';
+      tr.onclick = () => openDetail(c);
+      tr.innerHTML = `
+        <td><b>${esc(c.number || '—')}</b></td>
+        <td><span class="badge badge-${c.courtType}">${typeLabel(c.courtType)}</span></td>
+        <td>${esc(c.court)}</td>
+        <td>${esc(c.card?.judge || '—')}</td>
+        <td>${c.events?.length ?? 0}</td>
+        <td>${esc(lastDate)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function typeLabel(t) {
+    return { district:'Район', appeal:'Апелл.', cassation:'Касс.', magistrate:'Мир.' }[t] || t;
+  }
+
+  // --- ДЕТАЛИ ---
+  function openDetail(c) {
+    const events = (c.events || []).map(e => `
+      <tr><td>${esc(e.eventDate||'—')}</td><td>${esc(e.eventName||'—')}</td><td>${esc(e.result||'—')}</td></tr>
+    `).join('');
+    const parties = (c.parties || []).map(p => `
+      <tr><td>${esc(p.role||'—')}</td><td>${esc(p.name||'—')}</td></tr>
+    `).join('');
+
+    document.getElementById('detailContent').innerHTML = `
+      <h2>${esc(c.number || '—')}</h2>
+      <table class="kv-table">
+        <tr><td>Тип</td><td><span class="badge badge-${c.courtType}">${typeLabel(c.courtType)}</span></td></tr>
+        <tr><td>Суд</td><td>${esc(c.court)}</td></tr>
+        <tr><td>Судья</td><td>${esc(c.card?.judge||'—')}</td></tr>
+        <tr><td>Дата поступления</td><td>${esc(c.card?.filingDate||'—')}</td></tr>
+        <tr><td>Результат</td><td>${esc(c.card?.result||'—')}</td></tr>
+        <tr><td>Опубликовано</td><td>${esc(c.publishedAt||'—')}</td></tr>
+        <tr><td>Изменено</td><td>${esc(c.modifiedAt||'—')}</td></tr>
+        <tr><td>UID</td><td style="font-family:monospace;font-size:11px">${esc(c.uid)}</td></tr>
+      </table>
+
+      <div class="section-title">События (${c.events?.length||0})</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <tr style="background:#f0f5fb"><th style="text-align:left;padding:4px 6px">Дата</th><th style="text-align:left;padding:4px 6px">Событие</th><th style="text-align:left;padding:4px 6px">Результат</th></tr>
+        ${events || '<tr><td colspan="3" style="color:#aaa;padding:6px">Нет</td></tr>'}
+      </table>
+
+      <div class="section-title">Участники (${c.parties?.length||0})</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <tr style="background:#f0f5fb"><th style="text-align:left;padding:4px 6px">Роль</th><th style="text-align:left;padding:4px 6px">Наименование</th></tr>
+        ${parties || '<tr><td colspan="2" style="color:#aaa;padding:6px">Нет</td></tr>'}
+      </table>
+    `;
+    document.getElementById('detailOverlay').classList.add('open');
+  }
+
+  function closeDetail(e) {
+    if (e && e.target !== document.getElementById('detailOverlay')) return;
+    document.getElementById('detailOverlay').classList.remove('open');
+  }
+
+  // --- ЛОГИ ---
+  async function loadLogs() {
+    const days = document.getElementById('logDays').value;
+    try {
+      const res = await fetch('/api/logs?days=' + days);
+      const entries = await res.json();
+      const el = document.getElementById('logsList');
+      if (!entries.length) { el.innerHTML = '<div class="empty">Нет записей</div>'; return; }
+      el.innerHTML = [...entries].reverse().map(e => `
+        <div class="log-item ${e.success ? 'log-ok' : 'log-fail'}">
+          <span class="log-ts">${esc(e.timestamp?.slice(0,19).replace('T',' '))}</span>
+          <span><b>${esc(e.courtId)}</b> <span class="badge badge-${e.courtType}">${typeLabel(e.courtType)}</span></span>
+          ${e.success
+            ? `<span class="log-uid">${esc(e.uid||'')}</span> <span style="color:#16a34a">✓</span> <span style="color:#888">${e.duration}ms</span>`
+            : `<span class="log-err">✕ ${esc(e.error||'')}</span>`
+          }
+        </div>
+      `).join('');
+    } catch(e) { console.error(e); }
+  }
+
+  // --- ЗАПУСК ---
+  async function startRun() {
+    document.getElementById('runBtn').disabled = true;
+    try {
+      const res = await fetch('/api/run', { method: 'POST' });
+      const data = await res.json();
+      if (res.status === 409) {
+        setRunStatus('running', 'Уже запущен (PID ' + data.pid + ')');
+      } else {
+        setRunStatus('running', 'Запущен (PID ' + data.pid + ')');
+        pollRunStatus();
+      }
+    } catch(e) {
+      document.getElementById('runBtn').disabled = false;
+    }
+  }
+
+  async function pollRunStatus() {
+    clearTimeout(pollTimer);
+    try {
+      const res = await fetch('/api/run/status');
+      const { running, pid } = await res.json();
+      if (running) {
+        setRunStatus('running', `<span class="spinner"></span> В процессе… PID ${pid}`);
+        document.getElementById('runBtn').disabled = true;
+        pollTimer = setTimeout(pollRunStatus, 2000);
+      } else {
+        setRunStatus('idle', 'Ожидание');
+        document.getElementById('runBtn').disabled = false;
+      }
+    } catch(e) {}
+  }
+
+  function setRunStatus(cls, html) {
+    const el = document.getElementById('runStatus');
+    el.className = 'run-status ' + cls;
+    el.innerHTML = html;
+  }
+
+  // --- УТИЛИТЫ ---
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Инициализация
+  loadCases();
+</script>
+</body>
+</html>
