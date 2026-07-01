@@ -3,6 +3,7 @@
 // BUG-007: lock-файл для защиты от параллельного запуска
 // BUG-005: run-log-YYYY-MM-DD.json (история хранится)
 // BUG-012: charset из Content-Type заголовка ответа
+// BUG-010: CaptchaRequiredError логируется отдельно, не как FAIL
 
 import { writeFileSync, readFileSync, renameSync, mkdirSync, existsSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
@@ -10,6 +11,7 @@ import iconv from 'iconv-lite';
 import { loadConfig } from '../core/config.js';
 import { loadUrls } from '../core/urls.js';
 import { withRetry } from '../core/retry.js';
+import { CaptchaRequiredError } from '../core/errors.js';
 import type { RunResult, CourtAdapter } from '../core/types.js';
 import { DistrictAdapter } from '../adapters/district.js';
 import { AppealAdapter } from '../adapters/appeal.js';
@@ -107,6 +109,17 @@ async function run() {
           });
           console.log(`[OK] ${label} — ${caseData.uid}`);
         } catch (err) {
+          // BUG-010: капча — отдельная ветка, не FAIL
+          if (err instanceof CaptchaRequiredError) {
+            results.push({
+              courtId, courtType: type, url,
+              success: false, error: 'CAPTCHA',
+              duration: Date.now() - start,
+              timestamp: new Date().toISOString(),
+            });
+            console.warn(`[CAPTCHA] ${label}`);
+            continue;
+          }
           const error = err instanceof Error ? err.message : String(err);
           results.push({
             courtId, courtType: type, url,
@@ -140,9 +153,10 @@ async function run() {
   writeFileSync(logTmp, JSON.stringify([...existing, ...results], null, 2), 'utf-8');
   renameSync(logTmp, logPath);
 
-  const ok = results.filter(r => r.success).length;
-  const fail = results.filter(r => !r.success).length;
-  console.log(`[orchestrator] Готово. OK: ${ok}, FAIL: ${fail}`);
+  const ok      = results.filter(r => r.success).length;
+  const fail    = results.filter(r => !r.success && r.error !== 'CAPTCHA').length;
+  const captcha = results.filter(r => r.error === 'CAPTCHA').length;
+  console.log(`[orchestrator] Готово. OK: ${ok}, FAIL: ${fail}, CAPTCHA: ${captcha}`);
 }
 
 run().catch(err => {

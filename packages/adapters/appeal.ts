@@ -10,6 +10,7 @@
 
 import * as cheerio from 'cheerio';
 import type { Case, CaseEvent, CaseParty, CourtAdapter } from '../core/types.js';
+import { CaptchaRequiredError, isCaptchaPage } from '../core/errors.js';
 
 function extractCourtSubdomain(url: string): string {
   try { return new URL(url).hostname.replace(/\.sudrf\.ru$/, ''); } catch { return 'unknown'; }
@@ -37,6 +38,8 @@ function parsePublishInfo(text: string): { publishedAt: string | null; modifiedA
 
 export class AppealAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
+    if (isCaptchaPage(html)) throw new CaptchaRequiredError(url);
+
     const $ = cheerio.load(html, { decodeEntities: false });
     const parsedUrl = new URL(url);
 
@@ -133,9 +136,6 @@ export class AppealAdapter implements CourtAdapter {
       },
       events,
       parties,
-      // Дополнительные данные апелляции — суд первой инстанции
-      // @ts-ignore — расширение схемы в следующем итере
-      // lowerCourt: lowerCourt,
     } as Case;
   }
 }

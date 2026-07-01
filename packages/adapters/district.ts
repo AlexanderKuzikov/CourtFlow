@@ -3,6 +3,7 @@
 
 import * as cheerio from 'cheerio';
 import type { Case, CaseEvent, CaseParty, CourtAdapter } from '../core/types.js';
+import { CaptchaRequiredError, isCaptchaPage } from '../core/errors.js';
 
 function extractCourtSubdomain(url: string): string {
   try {
@@ -21,6 +22,8 @@ function parseDate(raw: string | undefined | null): string | null {
 
 export class DistrictAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
+    if (isCaptchaPage(html)) throw new CaptchaRequiredError(url);
+
     const $ = cheerio.load(html, { decodeEntities: false });
 
     // BUG-009: uid ищем в HTML, fallback — case_uid из URL
