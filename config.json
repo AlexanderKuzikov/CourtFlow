@@ -1,0 +1,101 @@
+{
+  "schedule": "0 8 * * 1,3,5",
+  "outputDir": "./data",
+  "exportXlsx": true,
+  "courts": [
+    {
+      "id": "sverdlov-perm",
+      "type": "district",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "industry-perm",
+      "type": "district",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "krasnokam-perm",
+      "type": "district",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "oblsud-perm",
+      "type": "appeal",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "7kas",
+      "type": "cassation",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "35-perm",
+      "type": "magistrate",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "108-perm",
+      "type": "magistrate",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "57-perm",
+      "type": "magistrate",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "107-perm",
+      "type": "magistrate",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "16-perm",
+      "type": "magistrate",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "86-perm",
+      "type": "magistrate",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "128-perm",
+      "type": "magistrate",
+      "enabled": true,
+      "urls": []
+    },
+    {
+      "id": "53-perm",
+      "type": "magistrate",
+      "enabled": true,
+      "urls": []
+    }
+  ],
+  "captcha": {
+    "sessionFile": "./data/session.json",
+    "provider": "rucaptcha",
+    "apiKey": "",
+    "fallbackProvider": "2captcha",
+    "fallbackApiKey": ""
+  },
+  "retry": {
+    "attempts": 3,
+    "backoffMs": 2000,
+    "timeoutMs": 15000
+  },
+  "viewer": {
+    "port": 3000,
+    "host": "localhost"
+  }
+}
