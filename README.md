@@ -2,8 +2,8 @@
 
 <div align="center">
 
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=node.js&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-In%20Development-orange?style=flat-square)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%2F%20Linux-lightgrey?style=flat-square)
@@ -16,9 +16,9 @@
 
 ## О проекте
 
-**CourtFlow** — модульный парсер-мониторинг судебных дел, ориентированный на автоматический сбор, нормализацию и передачу данных из открытых источников судебной системы РФ.
+**CourtFlow** — модульный TypeScript-парсер для автоматического сбора, нормализации и передачи данных из открытых источников судебной системы РФ.
 
-Система работает с судами общей юрисдикции (районные, мировые) через публичные порталы `sudrf.ru`, обходит защиту, нормализует данные в единую схему и экспортирует для downstream-систем (1С и др.).
+Система работает с судами общей юрисдикции (районные, мировые) через публичные порталы `sudrf.ru`, обходит защиту, нормализует данные в единую типизированную схему и экспортирует для downstream-систем (1С и др.).
 
 ## Архитектура
 
@@ -31,7 +31,7 @@
   ├── adapter: sudrf-district    (районные суды)
   └── adapter: sudrf-magistrate  (мировые суды + captcha)
         ↓
-[normalizer]  →  единая схема Case v1
+[normalizer]  →  единая схема Case v1 (TypeScript interface)
         ↓
 [storage]  →  cases-{court_id}-{YYYY-MM-DD}.json
         ↓
@@ -42,27 +42,27 @@
 
 - 🏛️ Поддержка районных судов (`*.sudrf.ru`) — HTML-парсинг через Cheerio
 - ⚖️ Поддержка мировых судов (`*.msudrf.ru`) — с обходом капчи
-- 🔐 Двухуровневая стратегия капчи: session cookies → 2captcha API fallback
+- 🔐 Двухуровневая стратегия капчи: session cookies (Puppeteer) → rucaptcha API fallback
 - 🔄 Fault tolerance: exponential backoff, per-court timeout, run-log
 - 📦 Нормализованный JSON-output с версионированием схемы
 - 📅 Запуск через system cron (2–3 раза в неделю)
-- 🚀 Готов к работе на офисном сервере без внешних зависимостей инфраструктуры
+- 🚀 Self-hosted на офисном сервере без внешней инфраструктуры
 
 ## Структура проекта
 
 ```
 CourtFlow/
 ├── packages/
-│   ├── core/           # схема Case, утилиты, retry-логика
+│   ├── core/           # интерфейс Case, утилиты, retry-логика
 │   ├── adapters/
 │   │   ├── sudrf/      # районные суды
 │   │   └── magistrate/ # мировые суды + captcha
-│   ├── captcha/        # session manager + 2captcha fallback
+│   ├── captcha/        # session manager + rucaptcha/2captcha fallback
 │   ├── scheduler/      # orchestrator + fault tolerance
 │   └── exporter/       # JSON writer, 1С адаптер
 ├── data/               # output JSON
 ├── logs/               # run-log.json
-├── CONTEXT.md          # дневник работ и архитектурных решений
+├── CONTEXT.md          # контекст проекта для LLM и разработчиков
 └── README.md
 ```
 
@@ -76,26 +76,26 @@ CourtFlow/
 
 ## Схема данных (Case v1)
 
-```json
-{
-  "$schema": "courtflow/case/v1",
-  "uid": "33da2016-4ca9-407d-8528-8cc01f0fc719",
-  "type": "Гражданское дело",
-  "number": "2-1234/2025",
-  "court": "dzerjin--perm",
-  "identifiers": { "delo_id": "1540005", "case_uid": "...", "case_type": null },
-  "publishedAt": "2025-08-19T10:00:00",
-  "modifiedAt": "2025-09-01T14:30:00",
-  "card": {
-    "filingDate": "2025-01-15",
-    "category": ["Споры, возникающие из договоров"],
-    "judge": "Иванов И.И.",
-    "hearingDate": "2025-09-10",
-    "result": null,
-    "proceedingType": null
-  },
-  "events": [],
-  "parties": []
+```typescript
+interface Case {
+  $schema: 'courtflow/case/v1';
+  uid: string;
+  type: string;
+  number: string;
+  court: string;
+  identifiers: { delo_id: string | null; case_uid: string | null; case_type: string | null };
+  publishedAt: string | null;  // ISO 8601
+  modifiedAt: string | null;
+  card: {
+    filingDate: string | null;
+    category: string[];
+    judge: string | null;
+    hearingDate: string | null;
+    result: string | null;
+    proceedingType: string | null;
+  };
+  events: CaseEvent[];
+  parties: CaseParty[];
 }
 ```
 
@@ -106,21 +106,23 @@ git clone https://github.com/AlexanderKuzikov/CourtFlow.git
 cd CourtFlow
 npm install
 
-# Одиночный запуск (список URL из urls.txt)
-node packages/adapters/sudrf/batch-parse.js
+# Dev-запуск (tsx, без компиляции)
+npx tsx packages/adapters/sudrf/batch-parse.ts
 
 # Запуск через cron (пример: пн/ср/пт в 08:00)
-# 0 8 * * 1,3,5 cd /path/to/CourtFlow && node packages/scheduler/run.js >> logs/cron.log 2>&1
+# 0 8 * * 1,3,5 cd /path/to/CourtFlow && npx tsx packages/scheduler/run.ts >> logs/cron.log 2>&1
 ```
 
 ## Зависимости
 
 | Пакет | Назначение |
 |---|---|
+| `tsx` | TypeScript runtime (dev + cron) |
 | `node-fetch` | HTTP-запросы |
 | `cheerio` | HTML-парсинг |
 | `iconv-lite` | Декодирование windows-1251 |
-| `puppeteer` | Браузерная автоматизация (капча) |
+| `puppeteer` | Браузерная автоматизация (сессия капчи) |
+| `rucaptcha-client` | Решение капчи (rucaptcha primary, 2captcha fallback) |
 
 ## Связанные репозитории
 
