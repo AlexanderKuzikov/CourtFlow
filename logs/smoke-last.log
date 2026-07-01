@@ -1,4 +1,42 @@
-# Файл для передачи вывода smoke-теста между сессиями.
-# Обновлять командой:
-#   npm run test:smoke > logs/smoke-last.log 2>&1
-# Затем запушить через GitHub Desktop.
+
+> courtflow@0.1.0 test:smoke
+> npx tsx packages/scheduler/smoke.ts
+
+[smoke] ╨Т╤Б╨╡╨│╨╛ URL ╨▓ urls.txt: 27
+[config] тЪая╕П  ╨Х╤Б╤В╤М magistrate-╨┤╨╡╨╗╨░, ╨╜╨╛ RUCAPTCHA_API_KEY ╨╕ TWOCAPTCHA_API_KEY ╨╜╨╡ ╨╖╨░╨┤╨░╨╜╤Л. ╨Ъ╨░╨┐╤З╨░ ╨╜╨╡ ╨▒╤Г╨┤╨╡╤В ╤А╨░╨▒╨╛╤В╨░╤В╤М.
+
+тФАтФАтФА [smoke] DISTRICT тАФ sverdlov--perm
+    URL: https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=458075868&case_uid=177348e2-e763-4d56-be99-6e799d98de5d&delo_id=1540005
+    charset: win1251, html ╨┤╨╗╨╕╨╜╨░: 124231
+    [тЬУ] UID:     59RS0007-01-2025-005668-17
+         ╨б╤Г╨┤:     sverdlov--perm
+         ╨Э╨╛╨╝╨╡╤А:  2-4771/2025 ~ ╨Ь-2828/2025
+         ╨б╤Г╨┤╤М╤П:  ╨У╤Г╤А╤М╨╡╨▓╨░ ╨Х╨╗╨╡╨╜╨░ ╨Я╨░╨▓╨╗╨╛╨▓╨╜╨░
+         ╨б╤В╨╛╤А╨╛╨╜: 7
+         ╨б╨╛╨▒╤Л╤В╨╕╨╣: 15
+
+тФАтФАтФА [smoke] APPEAL тАФ oblsud--perm
+    URL: https://oblsud--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11448818&case_uid=45dcad31-4ad4-448c-ab97-33ec62895e23&delo_id=5&new=5
+    charset: win1251, html ╨┤╨╗╨╕╨╜╨░: 101461
+    [тЬУ] UID:     59RS0007-01-2025-005668-17
+         ╨б╤Г╨┤:     oblsud--perm
+         ╨Э╨╛╨╝╨╡╤А:  33-2030/2026
+         ╨б╤Г╨┤╤М╤П:  ╨б╨╛╨║╨╛╨╗╨╛╨▓╨░ ╨Р╨╜╨╜╨░ ╨а╨░╤И╨╕╨┤╨╛╨▓╨╜╨░
+         ╨б╤В╨╛╤А╨╛╨╜: 7
+         ╨б╨╛╨▒╤Л╤В╨╕╨╣: 6
+
+тФАтФАтФА [smoke] CASSATION тАФ 7kas
+    URL: https://7kas.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11662670&case_uid=07ae7a19-4220-47e9-9f09-094b2e72e9fb&new=2800001&delo_id=2800001
+    charset: win1251, html ╨┤╨╗╨╕╨╜╨░: 88448
+    [тЬУ] UID:     59RS0007-01-2025-005668-17
+         ╨б╤Г╨┤:     7kas
+         ╨Э╨╛╨╝╨╡╤А:  8╨У-7317/2026 [88-8693/2026]
+         ╨б╤Г╨┤╤М╤П:  ╨Ъ╨╛╨╜╨║╨╕╨╜ ╨Ь╨╕╤Е╨░╨╕╨╗ ╨Т╨░╨╗╨╡╤А╤М╨╡╨▓╨╕╤З
+         ╨б╤В╨╛╤А╨╛╨╜: 3
+         ╨б╨╛╨▒╤Л╤В╨╕╨╣: 1
+
+тФАтФАтФА [smoke] MAGISTRATE тАФ 35.perm
+    URL: https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414120&delo_id=1540005
+    [╨┐╤А╨╛╨┐╤Г╤Й╨╡╨╜╨╛: magistrate ╤В╤А╨╡╨▒╤Г╨╡╤В Puppeteer]
+
+[smoke] ╨У╨╛╤В╨╛╨▓╨╛.
