@@ -1,6 +1,11 @@
 // packages/adapters/cassation.ts
 // Адаптер для кассационных судов (7kas.sudrf.ru, delo_id=2800001)
-// HTML-движок идентичен district, courtType отличается.
+// Структура: 5 вкладок (идентично appeal, кроме #cont4=ЖАЛОБЫ вместо УЧАСТНИКОВ)
+//   #cont1 — ПРОИЗВОДСТВО
+//   #cont2 — РАССМОТРЕНИЕ В НИЖЕСТОЯЩЕМ СУДЕ
+//   #cont3 — СЛУШАНИЯ (события)
+//   #cont4 — ЖАЛОБЫ (не парсим)
+//   #cont5 — УЧАСТНИКИ
 // Адаптер изолирован: если HTML изменится — правим только здесь.
 
 import * as cheerio from 'cheerio';
@@ -16,6 +21,20 @@ function parseDate(raw: string | undefined | null): string | null {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
 }
 
+function parsePublishInfo(text: string): { publishedAt: string | null; modifiedAt: string | null } {
+  const pubM = text.match(/опубликован\w*\s+([\d.]+\s+[\d:]+)/);
+  const modM = text.match(/изменено\s+([\d.]+\s+[\d:]+)/);
+  const toIso = (s: string) => {
+    const [date, time] = s.trim().split(/\s+/);
+    const d = parseDate(date);
+    return d ? `${d}T${time ?? '00:00'}:00` : null;
+  };
+  return {
+    publishedAt: pubM ? toIso(pubM[1]) : null,
+    modifiedAt:  modM ? toIso(modM[1]) : null,
+  };
+}
+
 export class CassationAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
     const $ = cheerio.load(html, { decodeEntities: false });
@@ -29,11 +48,15 @@ export class CassationAdapter implements CourtAdapter {
       || '';
     if (!uid) throw new Error('CassationAdapter: не удалось определить UID');
 
-    const type = $('div.title, h1.case-title, .delo_name').first().text().trim();
-    const number = $('div.casenumber, .case-num').first().text().replace(/ДЕЛО\s*№/i, '').trim();
+    const type   = $('div.title').first().text().trim();
+    const number = $('div.casenumber').first().text().replace(/ДЕЛО\s*№/i, '').trim();
 
+    // publishedAt / modifiedAt — из .publishInfo (как в appeal)
+    const publishInfo = parsePublishInfo($('.publishInfo').text());
+
+    // Карточка дела (#cont1 table#tablcont)
     const rawCard: Record<string, string> = {};
-    $('#cont1 table tr, #tablcont tr').each((_i, el) => {
+    $('#cont1 table#tablcont tr').each((_i, el) => {
       const tds = $(el).find('td');
       if (tds.length >= 2) {
         const key = tds.eq(0).text().replace(':', '').trim();
@@ -45,12 +68,13 @@ export class CassationAdapter implements CourtAdapter {
 
     const category = (rawCard['Категория дела'] ?? '')
       .split(/<br\s*\/?>/i)
-      .map(s => cheerio.load(s).text().replace(/&rarr;/g, '').trim())
+      .map(s => cheerio.load(s).text().replace(/&rarr;/g, '→').trim())
       .filter(Boolean);
 
+    // СЛУШАНИЯ — #cont3 (НЕ #cont2!)
     const events: CaseEvent[] = [];
-    $('#cont2 table tr').each((i, el) => {
-      if (i < 2) return;
+    $('#cont3 table#tablcont tr').each((i, el) => {
+      if (i < 2) return; // colspan-шапка + строка заголовков
       const tds = $(el).find('td');
       if (tds.length < 6) return;
       const col = (j: number) => tds.eq(j).text().trim() || null;
@@ -66,8 +90,9 @@ export class CassationAdapter implements CourtAdapter {
       });
     });
 
+    // УЧАСТНИКИ — #cont5 (НЕ #cont3!)
     const parties: CaseParty[] = [];
-    $('#cont3 table tr').each((i, el) => {
+    $('#cont5 table#tablcont tr').each((i, el) => {
       if (i < 2) return;
       const tds = $(el).find('td');
       if (tds.length < 2) return;
@@ -85,7 +110,8 @@ export class CassationAdapter implements CourtAdapter {
         case_uid:  parsedUrl.searchParams.get('case_uid'),
         case_type: parsedUrl.searchParams.get('case_type'),
       },
-      publishedAt: null, modifiedAt: null,
+      publishedAt: publishInfo.publishedAt,
+      modifiedAt:  publishInfo.modifiedAt,
       card: {
         filingDate:     parseDate(strip(rawCard['Дата поступления'])),
         category,
