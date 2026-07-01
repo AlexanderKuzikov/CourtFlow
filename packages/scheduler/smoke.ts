@@ -1,8 +1,9 @@
 // packages/scheduler/smoke.ts
-// BUG-011: node-fetch удалён, используем встроенный fetch (Node 22)
+// Проверка по одному URL каждого типа суда из urls.txt
 
 import iconv from 'iconv-lite';
-import { loadConfig, getEnabledCourts } from '../core/config.js';
+import { loadConfig } from '../core/config.js';
+import { loadUrls } from '../core/urls.js';
 import { DistrictAdapter } from '../adapters/district.js';
 import { AppealAdapter } from '../adapters/appeal.js';
 import { CassationAdapter } from '../adapters/cassation.js';
@@ -24,18 +25,30 @@ function detectCharset(contentType: string | null): string {
 
 async function main() {
   const config = loadConfig();
-  const courts = getEnabledCourts(config);
+  const allUrls = loadUrls();
 
+  // BUG-002: предупреждение если есть magistrate без ключей
+  const hasMagistrate = allUrls.some(u => u.courtType === 'magistrate');
+  if (hasMagistrate && !config.captcha.primaryKeySet && !config.captcha.fallbackKeySet) {
+    console.warn('[config] ⚠️  Есть magistrate-дела, но RUCAPTCHA_API_KEY и TWOCAPTCHA_API_KEY не заданы. Капча не будет работать.');
+  }
+
+  console.log(`[smoke] Всего URL в urls.txt: ${allUrls.length}`);
+
+  // Берём по одному URL каждого типа
   const seen = new Set<string>();
-  const targets = courts.filter(c => { if (seen.has(c.type)) return false; seen.add(c.type); return true; });
+  const targets = allUrls.filter(u => {
+    if (seen.has(u.courtType)) return false;
+    seen.add(u.courtType);
+    return true;
+  });
 
-  for (const court of targets) {
-    const url = court.urls[0];
-    const adapter = ADAPTERS[court.type];
-    console.log(`\n─── [smoke] ${court.type.toUpperCase()} — ${court.id}`);
+  for (const { url, courtType, courtId } of targets) {
+    const adapter = ADAPTERS[courtType];
+    console.log(`\n─── [smoke] ${courtType.toUpperCase()} — ${courtId}`);
     console.log(`    URL: ${url}`);
 
-    if (court.type === 'magistrate') {
+    if (courtType === 'magistrate') {
       console.log('    [пропущено: magistrate требует Puppeteer]');
       continue;
     }
@@ -48,16 +61,19 @@ async function main() {
       const html = iconv.decode(Buffer.from(buf), charset);
       console.log(`    charset: ${charset}, html длина: ${html.length}`);
       const data = await adapter.parse(html, url);
-      console.log('    [✓] UID:    ', data.uid);
-      console.log('         Суд:    ', data.court);
-      console.log('         Номер: ', data.number);
-      console.log('         Судья:', data.card.judge);
-      console.log('         Сторон:', data.parties.length);
-      console.log('         Событий:', data.events.length);
+      console.log(`    [✓] UID:     ${data.uid}`);
+      console.log(`         Суд:     ${data.court}`);
+      console.log(`         Номер:  ${data.number}`);
+      console.log(`         Судья:  ${data.card.judge ?? '—'}`);
+      console.log(`         Сторон: ${data.parties.length}`);
+      console.log(`         Событий: ${data.events.length}`);
+      if (data.publishedAt) console.log(`         Опубл.: ${data.publishedAt}`);
     } catch (err) {
-      console.error('    [×]', err instanceof Error ? err.message : err);
+      console.error(`    [×] ${err instanceof Error ? err.message : err}`);
     }
   }
+
+  console.log(`\n[smoke] Готово.`);
 }
 
 main();
