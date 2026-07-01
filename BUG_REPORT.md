@@ -23,60 +23,9 @@
 | BUG-012 | charset автоопределение | 🟢 | Средний |
 | BUG-013 | Кодировка smoke-лога на Windows | 🟢 | Низкий |
 | BUG-014 | `Cannot GET /` — неверный путь к static на Windows | 🟢 | Высокий |
+| BUG-015 | Нет справочника судов с контактами | 🟢 | Средний |
 
 ---
 
-## 🔐 Безопасность
-
-### BUG-001 🟢
-**Исправлено:** `dotenv` загружается в `loadConfig()` автоматически.
-
-### BUG-002 🟢
-**Исправлено:** `loadConfig()` пишет `warn` если magistrate enabled без ключей.
-
-### BUG-003 🟢
-**Исправлено:** `GET /api/config` возвращает `SafeAppConfig` — без `apiKey`/`fallbackApiKey`.
-
-### BUG-004 🟢
-**Исправлено:** `Promise.race([parse(), timeout(10s)])` в orchestrator.
-
-### BUG-005 🟢
-**Исправлено:** Лог в `run-log-YYYY-MM-DD.json`, добавляется к существующим записям.
-
-### BUG-006 🟢 Повторный парсинг стирает данные
-**Исправлено:** `exportJson` читает существующий файл и мержит по `uid`. Новые данные обновляют существующие записи, новые — добавляются.
-
-### BUG-007 🟢
-**Исправлено:** `logs/orchestrator.lock` + `finally`.
-
-### BUG-008 🟢
-**Исправлено:** smoke-тест 2026-07-01 подтвердил district/appeal/cassation.
-
-### BUG-009 🟢
-**Исправлено:** Fallback на `case_uid` → `case_id`. Все адаптеры.
-
-### BUG-010 🔴 Нет различения капча/503
-**Описание:** HTTP 200 + форма капчи — ошибка в логах вводит в заблуждение.
-**Решение:** Проверять `<form` с полем капчи, бросать `CaptchaRequiredError`.
-**Файл:** все адаптеры.
-
-### BUG-011 🟢
-**Исправлено:** `node-fetch` удалён, native fetch везде.
-
-### BUG-012 🟢
-**Исправлено:** charset из `Content-Type`. win1251 подтверждён smoke-тестом.
-
-### BUG-013 🟢
-**Исправлено:** `smoke.ts` сам пишет лог в UTF-8 через `fs.createWriteStream`. Управляется флагом `smokeSaveLog` в `config.json`.
-
-### BUG-014 🟢 `Cannot GET /` на Windows
-**Описание:** `new URL('public', import.meta.url).pathname` на Windows возвращал `/C:/...` — Express не находил файлы.
-**Исправлено:** `fileURLToPath(import.meta.url)` + `dirname` + `join(__dirname, 'public')`.
-
----
-
-## 📝 Что проверить дальше
-
-1. BUG-010 — детекция капчи в HTML (все адаптеры)
-2. Реализация MagistrateAdapter + captcha flow
-3. `exporter/xlsx.ts` — не реализован
+### BUG-015 🟢 Справочник судов отсутствовал
+**Исправлено:** добавлены `courts.json`, `core/courts.ts`, команда `npm run enrich:courts`, API `/api/courts`, вывод названия суда, адреса, телефонов и email в UI.

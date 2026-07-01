@@ -17,81 +17,62 @@
 
 ```
 courtflow/
-├── config.json              # Системные настройки
-├── courts.json              # Справочник судов (план)
-├── urls.txt                 # Отслеживаемые дела
-├── .env                     # Ключи API
-├── HTML_STRUCTURE.md        # Карта HTML-структуры сайтов судов
-├── DECISIONS.md             # Решения, стратегия, планы
-├── BUG_REPORT.md            # Баги
-├── CONTEXT.md               # Этот файл
+├── config.json
+├── courts.json              # ✅ Справочник судов
+├── urls.txt
+├── .env
+├── HTML_STRUCTURE.md
+├── DECISIONS.md
+├── BUG_REPORT.md
+├── CONTEXT.md
 ├── logs/
-│   ├── smoke-last.log
-│   └── run-log-YYYY-MM-DD.json
-├── data/                    # JSON/XLSX (в .gitignore)
+├── data/
 └── packages/
     ├── core/
     │   ├── config.ts
-    │   ├── urls.ts              # loadUrls(), detectCourtType()
-    │   ├── courts.ts            # план: lookupCourt(), registerCourt()
+    │   ├── urls.ts
+    │   ├── courts.ts            # ✅ Справочник + fetch с главной страницы суда
     │   ├── types.ts
     │   └── retry.ts
     ├── adapters/
-    │   ├── district.ts          # ✅ 3 вкладки
-    │   ├── appeal.ts            # ✅ 5 вкладок
-    │   ├── cassation.ts         # ✅ 5 вкладок
-    │   └── magistrate.ts        # ⏳ Заглушка
+    │   ├── district.ts
+    │   ├── appeal.ts
+    │   ├── cassation.ts
+    │   └── magistrate.ts        # ⏳
     ├── scheduler/
-    │   ├── orchestrator.ts      # ✅ loadUrls()
-    │   └── smoke.ts             # ✅ smokeSaveLog
+    │   ├── orchestrator.ts
+    │   ├── smoke.ts
+    │   └── enrich-courts.ts     # ✅ npm run enrich:courts
     ├── exporter/
-    │   ├── json.ts              # ✅ мержинг по uid
+    │   ├── json.ts
     │   └── xlsx.ts              # ⏳
     └── viewer/
-        ├── server.ts            # ✅ /api/cases, /api/logs, /api/run
+        ├── server.ts            # ✅ /api/courts
         └── public/
-            └── index.html       # ✅ UI мониторинг
+            └── index.html       # ✅ показывает name/address/phones/email
 ```
 
 ## Текущее состояние (2026-07-01)
 
 ### ✅ Работает
-- `npm run test:smoke` — district, appeal, cassation
-- `npm start` — viewer на http://localhost:3000, UI работает
-- exporter: мержинг по uid, атомарная запись
-- orchestrator: loadUrls() + группировка по courtId
+- `npm run test:smoke`
+- `npm start`
+- `npm run enrich:courts`
+- UI показывает человекочитаемые названия судов
+- В деталях дела: адрес, телефоны, email суда
 
-### ⚠️ Требует работы
+### ⚠️ Следующее
+1. Автозаполнение `vnkod` в `courts.json`
+2. Проверка / поддержка `msudrf.ru`
+3. BUG-010 — капча
+4. XLSX
+5. systemd/pm2
 
-**Фаза 2 (справочник судов):**
-1. Проверить селекторы главной страницы для district и appeal (F12)
-2. Реализовать `courts.ts` + `courts.json` + `enrich:courts`
-3. `GET /api/courts` в server.ts
-4. Отобразить `shortName` в UI
-
-**Фаза 3 (magistrate):**
-5. `magistrate.ts` — Puppeteer + captcha
-6. BUG-010 — детекция капчи во всех адаптерах
-
-**Фаза 4:**
-7. `exporter/xlsx.ts`
-8. systemd/pm2 для Linux
-
-## Smoke-тест
+## Команды
 
 ```powershell
 npm run test:smoke
+npm run parse
+npm start
+npm run enrich:courts
 ```
-
-Лог автозапись в `logs/smoke-last.log` (UTF-8) если `smokeSaveLog: true`.
-
-## Файлы документации
-
-| Файл | Назначение |
-|---|---|
-| `CONTEXT.md` | Текущий контекст, архитектура |
-| `DECISIONS.md` | Решения, стратегия, журнал |
-| `BUG_REPORT.md` | Баги с статусами |
-| `HTML_STRUCTURE.md` | Карта HTML-структуры сайтов судов |
-| `urls.txt` | Список дел |
-| `config.json` | Системные настройки |

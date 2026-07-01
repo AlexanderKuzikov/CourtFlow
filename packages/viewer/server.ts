@@ -8,6 +8,7 @@ import { resolve, join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { loadConfig, toSafeConfig } from '../core/config.js';
+import { loadCourts } from '../core/courts.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -19,13 +20,14 @@ const config = loadConfig();
 const DATA_DIR = resolve(process.cwd(), config.outputDir);
 const LOGS_DIR = resolve(process.cwd(), 'logs');
 
-// GET /api/config — без ключей
 app.get('/api/config', (_req, res) => {
   res.json(toSafeConfig(loadConfig()));
 });
 
-// GET /api/cases — список дел из последнего JSON по каждому суду
-// ?court=sverdlov--perm — фильтр по поддомену
+app.get('/api/courts', (_req, res) => {
+  res.json(loadCourts());
+});
+
 app.get('/api/cases', (_req, res) => {
   if (!existsSync(DATA_DIR)) return res.json([]);
   const court = _req.query.court as string | undefined;
@@ -37,7 +39,6 @@ app.get('/api/cases', (_req, res) => {
       .sort()
       .reverse();
 
-    // Для каждого суда — только последний файл
     const seenCourt = new Set<string>();
     const latestFiles: string[] = [];
     for (const f of files) {
@@ -57,8 +58,6 @@ app.get('/api/cases', (_req, res) => {
   }
 });
 
-// GET /api/logs — последние N дней из run-log-*.json
-// ?days=7 (default 7)
 app.get('/api/logs', (_req, res) => {
   if (!existsSync(LOGS_DIR)) return res.json([]);
   const days = Math.min(parseInt(_req.query.days as string) || 7, 30);
@@ -79,7 +78,6 @@ app.get('/api/logs', (_req, res) => {
   }
 });
 
-// POST /api/run — запуск orchestrator через child_process (fire & forget)
 let runningPid: number | null = null;
 
 app.post('/api/run', (_req, res) => {
@@ -96,7 +94,6 @@ app.post('/api/run', (_req, res) => {
   res.json({ started: true, pid: runningPid });
 });
 
-// GET /api/run/status
 app.get('/api/run/status', (_req, res) => {
   res.json({ running: runningPid !== null, pid: runningPid });
 });

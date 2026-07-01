@@ -8,7 +8,8 @@
     "parse": "npx tsx packages/scheduler/orchestrator.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:smoke": "npx tsx packages/scheduler/smoke.ts"
+    "test:smoke": "npx tsx packages/scheduler/smoke.ts",
+    "enrich:courts": "npx tsx packages/scheduler/enrich-courts.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
