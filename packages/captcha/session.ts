@@ -25,7 +25,7 @@ export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Pr
     if (options.debugDir) ensureDir(options.debugDir);
 
     const client = new RuCaptchaClient({ apiKey: options.apiKey });
-    const imageBase64 = await readCaptchaImageAsBase64(page, options.url);
+    const imageBase64 = await readCaptchaImageAsBase64(page);
     const captchaText = await client.solveImage(imageBase64);
 
     await page.locator('input[name="captcha-response"]').fill(captchaText);
@@ -51,17 +51,30 @@ export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Pr
   }
 }
 
-async function readCaptchaImageAsBase64(page: puppeteer.Page, pageUrl: string): Promise<string> {
+/**
+ * Fetches the captcha image using fetch() in the browser context.
+ * This avoids page.goto(imageUrl) + page.goBack() which is fragile:
+ * - msudrf may not add captcha.php to browser history → goBack() silently fails
+ * - a new page load would invalidate the current captcha token
+ * Browser-context fetch inherits cookies/session automatically.
+ */
+async function readCaptchaImageAsBase64(page: puppeteer.Page): Promise<string> {
   const src = await page.locator('form#kcaptchaForm img').getAttribute('src');
   if (!src) throw new Error('Captcha image src not found');
 
-  const imageUrl = new URL(src, pageUrl).toString();
-  const response = await page.goto(imageUrl, { waitUntil: 'networkidle0', timeout: 60000 });
-  if (!response?.ok()) throw new Error(`Captcha image fetch failed: HTTP ${response?.status()}`);
+  const imageBase64 = await page.evaluate(async (imgSrc: string) => {
+    const res = await fetch(imgSrc, { credentials: 'include' });
+    if (!res.ok) throw new Error(`Captcha image fetch failed: HTTP ${res.status}`);
+    const buf = await res.arrayBuffer();
+    let binary = '';
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }, src);
 
-  const buffer = Buffer.from(await response.buffer());
-  await page.goBack({ waitUntil: 'domcontentloaded', timeout: 60000 });
-  return buffer.toString('base64');
+  return imageBase64;
 }
 
 function ensureDir(dir: string): void {
