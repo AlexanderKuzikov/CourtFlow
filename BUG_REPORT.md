@@ -21,6 +21,7 @@
 | BUG-010 | Нет различения капча/503 | 🔴 | Средний |
 | BUG-011 | node-fetch ESM + Windows | 🟢 | Средний |
 | BUG-012 | charset автоопределение | 🟢 | Средний |
+| BUG-013 | Кодировка smoke-лога на Windows | 🟢 | Низкий |
 
 ---
 
@@ -50,8 +51,10 @@
 **Исправлено:** `logs/orchestrator.lock` создаётся при старте, удаляется в `finally`.
 
 ### BUG-008 🟢 CSS-селекторы не проверены
-**Исправлено:** smoke-тест 2026-07-01 подтвердил работу селекторов `district`. `uid=59RS0007-01-2025-005668-17`, судья, стороны, события парсятся корректно.
-**Проверить:** appeal и cassation после реализации адаптеров.
+**Исправлено:** smoke-тест 2026-07-01 подтвердил:
+- `district`: uid, судья, 7 сторон, 15 событий ✅
+- `appeal`: uid, судья, 7 сторон, 6 событий, publishedAt ✅
+- `cassation`: uid, судья, 3 стороны, 1 событие, publishedAt/modifiedAt ✅
 
 ### BUG-009 🟢 UID fallback отсутствовал
 **Исправлено:** Fallback на `case_uid` из URL, затем `case_id`. Все адаптеры.
@@ -67,11 +70,14 @@
 ### BUG-012 🟢 charset автоопределение
 **Исправлено:** charset читается из `Content-Type` заголовка. smoke-тест подтвердил win1251 на всех судах.
 
+### BUG-013 🟢 Кодировка smoke-лога на Windows
+**Описание:** PowerShell пишал лог через `>` в cp866, GitHub отображал кракозябры.
+**Исправлено:** `smoke.ts` сам пишет `logs/smoke-last.log` через `fs.createWriteStream` в UTF-8. Запись управляется флагом `smokeSaveLog` в `config.json`. Команда `npm run test:smoke` — без каких-либо `>`.
+
 ---
 
 ## 📝 Что проверить дальше
 
-1. smoke-test appeal и cassation после реализации адаптеров — закроет BUG-008 полностью
-2. BUG-006 — мержинг данных в существующий файл
-3. BUG-010 — детекция капчи в HTML (magistrate)
-4. Реализация MagistrateAdapter + captcha flow
+1. BUG-006 — мержинг данных в существующий файл (`exporter/json.ts`)
+2. BUG-010 — детекция капчи в HTML (все адаптеры, приоритет — magistrate)
+3. Реализация MagistrateAdapter + captcha flow

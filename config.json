@@ -2,6 +2,7 @@
   "schedule": "0 8 * * 1,3,5",
   "outputDir": "./data",
   "exportXlsx": true,
+  "smokeSaveLog": true,
   "captcha": {
     "sessionFile": "./data/session.json",
     "provider": "rucaptcha",

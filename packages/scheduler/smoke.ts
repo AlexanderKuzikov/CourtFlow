@@ -1,6 +1,10 @@
 // packages/scheduler/smoke.ts
 // Проверка по одному URL каждого типа суда из urls.txt
+// Лог пишется в logs/smoke-last.log (UTF-8) автоматически,
+// если в config.json установлен "smokeSaveLog": true
 
+import fs from 'fs';
+import path from 'path';
 import iconv from 'iconv-lite';
 import { loadConfig } from '../core/config.js';
 import { loadUrls } from '../core/urls.js';
@@ -23,17 +27,42 @@ function detectCharset(contentType: string | null): string {
   return (cs === 'utf-8' || cs === 'utf8') ? 'utf8' : 'win1251';
 }
 
+function makeLogger(saveLog: boolean) {
+  let stream: fs.WriteStream | null = null;
+  if (saveLog) {
+    const logDir = path.resolve('logs');
+    fs.mkdirSync(logDir, { recursive: true });
+    const logPath = path.join(logDir, 'smoke-last.log');
+    stream = fs.createWriteStream(logPath, { encoding: 'utf8', flags: 'w' });
+  }
+
+  const write = (line: string) => {
+    process.stdout.write(line + '\n');
+    stream?.write(line + '\n');
+  };
+
+  const close = () => {
+    stream?.end();
+  };
+
+  return { write, close };
+}
+
 async function main() {
   const config = loadConfig();
   const allUrls = loadUrls();
+  const saveLog = (config as any).smokeSaveLog === true;
+
+  const log = makeLogger(saveLog);
 
   // BUG-002: предупреждение если есть magistrate без ключей
   const hasMagistrate = allUrls.some(u => u.courtType === 'magistrate');
   if (hasMagistrate && !config.captcha.primaryKeySet && !config.captcha.fallbackKeySet) {
-    console.warn('[config] ⚠️  Есть magistrate-дела, но RUCAPTCHA_API_KEY и TWOCAPTCHA_API_KEY не заданы. Капча не будет работать.');
+    log.write('[config] ⚠️  Есть magistrate-дела, но RUCAPTCHA_API_KEY и TWOCAPTCHA_API_KEY не заданы. Капча не будет работать.');
   }
 
-  console.log(`[smoke] Всего URL в urls.txt: ${allUrls.length}`);
+  log.write(`[smoke] Всего URL в urls.txt: ${allUrls.length}`);
+  if (saveLog) log.write(`[smoke] Лог сохраняется в logs/smoke-last.log`);
 
   // Берём по одному URL каждого типа
   const seen = new Set<string>();
@@ -45,11 +74,11 @@ async function main() {
 
   for (const { url, courtType, courtId } of targets) {
     const adapter = ADAPTERS[courtType];
-    console.log(`\n─── [smoke] ${courtType.toUpperCase()} — ${courtId}`);
-    console.log(`    URL: ${url}`);
+    log.write(`\n─── [smoke] ${courtType.toUpperCase()} — ${courtId}`);
+    log.write(`    URL: ${url}`);
 
     if (courtType === 'magistrate') {
-      console.log('    [пропущено: magistrate требует Puppeteer]');
+      log.write('    [пропущено: magistrate требует Puppeteer]');
       continue;
     }
 
@@ -59,21 +88,23 @@ async function main() {
       const charset = detectCharset(res.headers.get('content-type'));
       const buf = await res.arrayBuffer();
       const html = iconv.decode(Buffer.from(buf), charset);
-      console.log(`    charset: ${charset}, html длина: ${html.length}`);
+      log.write(`    charset: ${charset}, html длина: ${html.length}`);
       const data = await adapter.parse(html, url);
-      console.log(`    [✓] UID:     ${data.uid}`);
-      console.log(`         Суд:     ${data.court}`);
-      console.log(`         Номер:  ${data.number}`);
-      console.log(`         Судья:  ${data.card.judge ?? '—'}`);
-      console.log(`         Сторон: ${data.parties.length}`);
-      console.log(`         Событий: ${data.events.length}`);
-      if (data.publishedAt) console.log(`         Опубл.: ${data.publishedAt}`);
+      log.write(`    [✓] UID:      ${data.uid}`);
+      log.write(`         Суд:      ${data.court}`);
+      log.write(`         Номер:    ${data.number}`);
+      log.write(`         Судья:    ${data.card.judge ?? '—'}`);
+      log.write(`         Сторон:   ${data.parties.length}`);
+      log.write(`         Событий:  ${data.events.length}`);
+      if (data.publishedAt) log.write(`         Опубл.:   ${data.publishedAt}`);
+      if (data.modifiedAt)  log.write(`         Изменено: ${data.modifiedAt}`);
     } catch (err) {
-      console.error(`    [×] ${err instanceof Error ? err.message : err}`);
+      log.write(`    [×] ${err instanceof Error ? err.message : err}`);
     }
   }
 
-  console.log(`\n[smoke] Готово.`);
+  log.write(`\n[smoke] Готово.`);
+  log.close();
 }
 
 main();

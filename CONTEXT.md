@@ -21,7 +21,7 @@ courtflow/
 ├── urls.txt                 # Список отслеживаемых дел (читаемый, human-friendly)
 ├── .env                     # Ключи (RUCAPTCHA_API_KEY, TWOCAPTCHA_API_KEY)
 ├── logs/
-│   ├── smoke-last.log        # Последний smoke-тест (обновлять вручную)
+│   ├── smoke-last.log        # Последний smoke-тест (пишется автоматически при smokeSaveLog: true)
 │   └── run-log-YYYY-MM-DD.json  # Результаты запусков из cron
 ├── data/                    # JSON/XLSX выгрузка (в .gitignore)
 └── packages/
@@ -33,11 +33,11 @@ courtflow/
     ├── adapters/
     │   ├── district.ts          # ✅ Работает. #cont1/2/3 (3 вкладки)
     │   ├── appeal.ts            # ✅ Работает. #cont1..5 (5 вкладок), publishInfo
-    │   ├── cassation.ts         # ⚠️ Селекторы не проверены. Событий: 0
+    │   ├── cassation.ts         # ✅ Работает. #cont1..5 (5 вкладок), publishInfo
     │   └── magistrate.ts        # ⏳ Заглушка. Требует Puppeteer
     ├── scheduler/
     │   ├── orchestrator.ts      # ⚠️ Всё ещё использует getEnabledCourts() — нужно переписать на loadUrls()
-    │   └── smoke.ts             # ✅ Работает с loadUrls()
+    │   └── smoke.ts             # ✅ Работает. Пишет UTF-8 лог сам, управляется smokeSaveLog
     ├── exporter/
     │   ├── json.ts              # ⚠️ BUG-006: перезапись при повторном запуске
     │   └── xlsx.ts              # ⏳ Не реализован
@@ -49,9 +49,11 @@ courtflow/
 ## Текущее состояние (2026-07-01)
 
 ### ✅ Работает
-- `npm run test:smoke` — district, appeal, cassation парсятся
-- district: UID, судья, стороны, события — всё ок
-- appeal: UID, судья, 7 сторон, 6 событий, publishedAt — всё ок
+- `npm run test:smoke` — district, appeal, cassation парсятся корректно
+- district: UID, судья, 7 сторон, 15 событий ✅
+- appeal: UID, судья, 7 сторон, 6 событий, publishedAt ✅
+- cassation: UID, судья, 3 стороны, 1 событие, publishedAt/modifiedAt ✅
+- smoke-лог пишется автоматически в UTF-8 (`smokeSaveLog: true` в config.json)
 - dotenv загружается автоматически (BUG-001 ✅)
 - API-ключи не утекают через /api/config (BUG-003 ✅)
 - lock-файл от параллельного запуска (BUG-007 ✅)
@@ -62,16 +64,24 @@ courtflow/
 ### ⚠️ Требует работы
 
 **Первый приоритет:**
-1. `cassation.ts` — 0 событий. Проверить структуру HTML (DevTools: сколько вкладок? какие #cont?)
-2. `orchestrator.ts` — переписать на `loadUrls()` вместо `getEnabledCourts()`
-3. `exporter/json.ts` — BUG-006: мержить данные по uid, не перезаписывать
-4. `exporter/xlsx.ts` — реализовать
+1. `orchestrator.ts` — переписать на `loadUrls()` вместо `getEnabledCourts()`
+2. `exporter/json.ts` — BUG-006: мержить данные по uid, не перезаписывать
+3. `exporter/xlsx.ts` — реализовать
 
 **Второй приоритет:**
-5. `magistrate.ts` — реализация + Puppeteer captcha flow
-6. `viewer/public/` — Vanilla HTML/JS UI (4 страницы: дела, конфиг, логи, запуск)
-7. `viewer/server.ts` — `/api/logs` и `/api/run` (сейчас TODO)
-8. systemd/pm2-сервис для Linux
+4. `magistrate.ts` — реализация + Puppeteer captcha flow
+5. `viewer/public/` — Vanilla HTML/JS UI (4 страницы: дела, конфиг, логи, запуск)
+6. `viewer/server.ts` — `/api/logs` и `/api/run` (сейчас TODO)
+7. systemd/pm2-сервис для Linux
+
+## Smoke-тест
+
+```powershell
+npm run test:smoke
+```
+
+Лог пишется автоматически в `logs/smoke-last.log` (UTF-8), если `smokeSaveLog: true` в `config.json`.  
+Затем запушить лог через GitHub Desktop для передачи AI-ассистенту.
 
 ## Файлы контекста
 
@@ -95,11 +105,4 @@ Invoke-WebRequest -Uri "<url>" -OutFile "test.html" -UseBasicParsing
 # Открыть в браузере, F12 → Elements → искать #cont
 Invoke-WebRequest -Uri "<url>" -OutFile "test.html"
 Start-Process "test.html"
-```
-
-## Smoke-тест (отправка лога)
-
-```powershell
-npm run test:smoke > logs/smoke-last.log 2>&1
-# затем commit + push через GitHub Desktop
 ```
