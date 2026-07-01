@@ -117,12 +117,33 @@
 ## 4. Magistrate — Мировой судья
 
 - Домен: `*.msudrf.ru`
+- URL-паттерн: `modules.php?name=sud_delo&op=cs&case_id=...&delo_id=1540005`
 - Требует Puppeteer
-- Структура не изучена
+- Структура не изучена (нет HTML карточки)
 
 ---
 
 ## Реестр капчи
 
-Сайты sudrf.ru могут вернуть HTTP 200 с формой капчи вместо данных.  
-Статус: **BUG-010** — не реализовано.
+Сайты sudrf.ru и msudrf.ru могут вернуть HTTP 200 с формой капчи вместо данных.
+
+### Подтверждённая структура капчи (msudrf.ru, 2026-07-01)
+
+```html
+<div class="content">
+  <h2>Для продолжения необходимо пройти дополнительную проверку</h2>
+  <form method="post" id="kcaptchaForm">
+    <img src="/captcha.php">
+    <input type="text" name="captcha-response">
+    <button type="submit">Продолжить</button>
+  </form>
+</div>
+```
+
+### Детектор
+
+- **Файл:** `packages/core/errors.ts`
+- **Функция:** `isCaptchaPage(html: string): boolean`
+- **Признак:** `html.includes('id="kcaptchaForm"')`
+- **Ошибка:** `CaptchaRequiredError` (отдельный класс, не мешается с FAIL)
+- **Статус:** реализовано (BUG-010 закрыт)

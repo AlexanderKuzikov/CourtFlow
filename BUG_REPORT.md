@@ -18,7 +18,7 @@
 | BUG-007 | Нет lock от параллельного запуска | 🟢 | Средний |
 | BUG-008 | CSS-селекторы не проверены | 🟢 | Высокий |
 | BUG-009 | UID fallback отсутствовал | 🟢 | Высокий |
-| BUG-010 | Нет различения капча/503 | 🔴 | Средний |
+| BUG-010 | Нет различения капча/503 | 🟢 | Средний |
 | BUG-011 | node-fetch ESM + Windows | 🟢 | Средний |
 | BUG-012 | charset автоопределение | 🟢 | Средний |
 | BUG-013 | Кодировка smoke-лога на Windows | 🟢 | Низкий |
@@ -26,6 +26,14 @@
 | BUG-015 | Нет справочника судов с контактами | 🟢 | Средний |
 
 ---
+
+### BUG-010 🟢 Капча не различалась от FAIL
+**Исправлено:**
+- `packages/core/errors.ts` — новый файл, `CaptchaRequiredError extends Error` + `isCaptchaPage(html)`
+- Детектор: `html.includes('id="kcaptchaForm"')` (подтверждён на живом HTML с msudrf.ru)
+- `district`, `appeal`, `cassation` — проверка в начале `parse()` до любого парсинга
+- `orchestrator` — отдельная ветка `[CAPTCHA]`, счётчик в финальном логе: `OK / FAIL / CAPTCHA`
+- `error: 'CAPTCHA'` в run-log фильтруется отдельно от обычных ошибок
 
 ### BUG-015 🟢 Справочник судов отсутствовал
 **Исправлено:** добавлены `courts.json`, `core/courts.ts`, команда `npm run enrich:courts`, API `/api/courts`, вывод названия суда, адреса, телефонов и email в UI.
