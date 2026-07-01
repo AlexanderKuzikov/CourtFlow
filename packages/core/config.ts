@@ -1,5 +1,6 @@
 // packages/core/config.ts
-// Загрузка и типизация config.json. Единственное место где читается конфиг.
+// Загрузка config.json + secrets из .env
+// API-ключи хранятся только в .env, не в config.json
 
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -20,9 +21,10 @@ export interface AppConfig {
   captcha: {
     sessionFile: string;
     provider: 'rucaptcha' | '2captcha';
-    apiKey: string;
     fallbackProvider: 'rucaptcha' | '2captcha';
-    fallbackApiKey: string;
+    // Ключи берутся из .env, не из config.json
+    apiKey: string;         // подставляется при загрузке
+    fallbackApiKey: string; // подставляется при загрузке
   };
   retry: {
     attempts: number;
@@ -39,7 +41,13 @@ const CONFIG_PATH = resolve(process.cwd(), 'config.json');
 
 export function loadConfig(): AppConfig {
   const raw = readFileSync(CONFIG_PATH, 'utf-8');
-  return JSON.parse(raw) as AppConfig;
+  const cfg = JSON.parse(raw) as AppConfig;
+
+  // Инжектируем ключи из .env
+  cfg.captcha.apiKey = process.env['RUCAPTCHA_API_KEY'] ?? '';
+  cfg.captcha.fallbackApiKey = process.env['TWOCAPTCHA_API_KEY'] ?? '';
+
+  return cfg;
 }
 
 export function getEnabledCourts(config: AppConfig): CourtConfig[] {
