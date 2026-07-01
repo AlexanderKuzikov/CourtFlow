@@ -4,10 +4,11 @@
 // BUG-005: run-log-YYYY-MM-DD.json (история хранится)
 // BUG-012: charset из Content-Type заголовка ответа
 
-import { writeFileSync, readFileSync, renameSync, mkdirSync, existsSync } from 'fs';
+import { writeFileSync, readFileSync, renameSync, mkdirSync, existsSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
 import iconv from 'iconv-lite';
-import { loadConfig, getEnabledCourts } from '../core/config.js';
+import { loadConfig } from '../core/config.js';
+import { loadUrls } from '../core/urls.js';
 import { withRetry } from '../core/retry.js';
 import type { RunResult, CourtAdapter } from '../core/types.js';
 import { DistrictAdapter } from '../adapters/district.js';
@@ -42,7 +43,7 @@ async function fetchHtml(url: string, timeoutMs: number): Promise<string> {
 
 async function run() {
   const config = loadConfig();
-  const courts = getEnabledCourts(config);
+  const allUrls = loadUrls();
   const logsDir = resolve(process.cwd(), 'logs');
   if (!existsSync(logsDir)) mkdirSync(logsDir, { recursive: true });
 
@@ -54,24 +55,37 @@ async function run() {
   }
   writeFileSync(lockPath, String(process.pid));
 
-  console.log(`[orchestrator] Судов: ${courts.length}, URL: ${courts.reduce((s, c) => s + c.urls.length, 0)}`);
+  // Группируем URL по courtId для побатчевой экспорта JSON
+  const courtGroups = new Map<string, { type: string; urls: string[] }>();
+  for (const { url, courtType, courtId } of allUrls) {
+    if (!courtGroups.has(courtId)) courtGroups.set(courtId, { type: courtType, urls: [] });
+    courtGroups.get(courtId)!.urls.push(url);
+  }
+
+  const totalUrls = allUrls.length;
+  console.log(`[orchestrator] Судов: ${courtGroups.size}, URL: ${totalUrls}`);
 
   const results: RunResult[] = [];
 
   try {
-    for (const court of courts) {
-      const adapter = ADAPTERS[court.type];
+    for (const [courtId, { type, urls }] of courtGroups) {
+      const adapter = ADAPTERS[type];
       if (!adapter) {
-        console.warn(`[orchestrator] Нет адаптера для: ${court.type}`);
+        console.warn(`[orchestrator] Нет адаптера для: ${type}`);
+        continue;
+      }
+
+      if (type === 'magistrate') {
+        console.log(`[orchestrator] Пропущен ${courtId} (magistrate требует Puppeteer)`);
         continue;
       }
 
       const cases = [];
 
-      for (const url of court.urls) {
+      for (const url of urls) {
         const start = Date.now();
         const caseId = new URL(url).searchParams.get('case_id') ?? url;
-        const label = `${court.id} → ${caseId}`;
+        const label = `${courtId} → ${caseId}`;
         try {
           const html = await withRetry(
             () => fetchHtml(url, config.retry.timeoutMs),
@@ -85,32 +99,41 @@ async function run() {
           );
           const caseData = await Promise.race([parsePromise, timeoutPromise]);
           cases.push(caseData);
-          results.push({ courtId: court.id, courtType: court.type, url, success: true, uid: caseData.uid, duration: Date.now() - start, timestamp: new Date().toISOString() });
+          results.push({
+            courtId, courtType: type, url,
+            success: true, uid: caseData.uid,
+            duration: Date.now() - start,
+            timestamp: new Date().toISOString(),
+          });
           console.log(`[OK] ${label} — ${caseData.uid}`);
         } catch (err) {
           const error = err instanceof Error ? err.message : String(err);
-          results.push({ courtId: court.id, courtType: court.type, url, success: false, error, duration: Date.now() - start, timestamp: new Date().toISOString() });
+          results.push({
+            courtId, courtType: type, url,
+            success: false, error,
+            duration: Date.now() - start,
+            timestamp: new Date().toISOString(),
+          });
           console.error(`[FAIL] ${label} — ${error}`);
         }
       }
 
       if (cases.length > 0) {
-        exportJson(cases, config.outputDir, court.id);
+        exportJson(cases, config.outputDir, courtId);
         if (config.exportXlsx) {
-          console.log(`[xlsx] TODO: ${court.id}`);
+          console.log(`[xlsx] TODO: ${courtId}`);
         }
       }
     }
   } finally {
     // BUG-007: снимаем lock всегда, даже при ошибке
-    try { (await import('fs')).unlinkSync(lockPath); } catch {}
+    try { unlinkSync(lockPath); } catch {}
   }
 
   // BUG-005: run-log-YYYY-MM-DD.json
   const date = new Date().toISOString().slice(0, 10);
   const logPath = resolve(logsDir, `run-log-${date}.json`);
   const logTmp = logPath + '.tmp';
-  // Добавляем к существующей записи дня
   const existing: RunResult[] = existsSync(logPath)
     ? JSON.parse(readFileSync(logPath, 'utf-8'))
     : [];
