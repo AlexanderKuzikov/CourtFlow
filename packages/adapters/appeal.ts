@@ -1,7 +1,12 @@
 // packages/adapters/appeal.ts
-// Адаптер для областных судов (oblsud--*.sudrf.ru, delo_id=5)
-// HTML-движок идентичен district, courtType отличается.
-// Адаптер изолирован: если HTML изменится — правим только здесь.
+// Адаптер для областных/апелляционных судов (oblsud--*.sudrf.ru, delo_id=5)
+//
+// Структура отличается от district — 5 вкладок вместо 3-4:
+//   #cont1 — ДЕЛО
+//   #cont2 — РАССМОТРЕНИЕ В НИЖЕСТОЯЩЕМ СУДЕ
+//   #cont3 — ДВИЖЕНИЕ ДЕЛА  (у district это #cont2)
+//   #cont4 — УЧАСТНИКИ     (у district это #cont3)
+//   #cont5 — СУДЕБНЫЕ АКТЫ  (publishInfo здесь)
 
 import * as cheerio from 'cheerio';
 import type { Case, CaseEvent, CaseParty, CourtAdapter } from '../core/types.js';
@@ -16,11 +21,26 @@ function parseDate(raw: string | undefined | null): string | null {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
 }
 
+function parsePublishInfo(text: string): { publishedAt: string | null; modifiedAt: string | null } {
+  const pubM = text.match(/опубликован\s+([\d.]+\s+[\d:]+)/);
+  const modM = text.match(/изменено\s+([\d.]+\s+[\d:]+)/);
+  const toIso = (s: string) => {
+    const [date, time] = s.trim().split(/\s+/);
+    const d = parseDate(date);
+    return d ? `${d}T${time ?? '00:00'}:00` : null;
+  };
+  return {
+    publishedAt: pubM ? toIso(pubM[1]) : null,
+    modifiedAt:  modM ? toIso(modM[1]) : null,
+  };
+}
+
 export class AppealAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
     const $ = cheerio.load(html, { decodeEntities: false });
     const parsedUrl = new URL(url);
 
+    // UID
     const uidFromHtml = $('#cont1 a[href*="judicial_uid"]').text().trim()
       || $('a[href*="judicial_uid"]').first().text().trim();
     const uid = uidFromHtml
@@ -29,15 +49,29 @@ export class AppealAdapter implements CourtAdapter {
       || '';
     if (!uid) throw new Error('AppealAdapter: не удалось определить UID');
 
-    const type = $('div.title, h1.case-title, .delo_name').first().text().trim();
-    const number = $('div.casenumber, .case-num').first().text().replace(/ДЕЛО\s*№/i, '').trim();
+    const type   = $('div.title').first().text().trim();
+    const number = $('div.casenumber').first().text().replace(/ДЕЛО\s*№/i, '').trim();
 
+    // publishedAt / modifiedAt — из #cont5 .publishInfo
+    const publishInfo = parsePublishInfo($('#cont5 .publishInfo').text());
+
+    // Карточка дела (#cont1)
     const rawCard: Record<string, string> = {};
-    $('#cont1 table tr, #tablcont tr').each((_i, el) => {
+    $('#cont1 table#tablcont tr').each((_i, el) => {
       const tds = $(el).find('td');
       if (tds.length >= 2) {
         const key = tds.eq(0).text().replace(':', '').trim();
         if (key) rawCard[key] = tds.eq(1).html() ?? '';
+      }
+    });
+
+    // Рассмотрение в нижестоящем суде (#cont2)
+    const lowerCourt: Record<string, string> = {};
+    $('#cont2 table#tablcont tr').each((_i, el) => {
+      const tds = $(el).find('td');
+      if (tds.length >= 2) {
+        const key = tds.eq(0).text().replace(':', '').trim();
+        if (key) lowerCourt[key] = tds.eq(1).text().trim();
       }
     });
 
@@ -48,9 +82,10 @@ export class AppealAdapter implements CourtAdapter {
       .map(s => cheerio.load(s).text().replace(/&rarr;/g, '').trim())
       .filter(Boolean);
 
+    // Движение дела (#cont3 — НЕ #cont2!)
     const events: CaseEvent[] = [];
-    $('#cont2 table tr').each((i, el) => {
-      if (i < 2) return;
+    $('#cont3 table#tablcont tr').each((i, el) => {
+      if (i < 2) return; // шапка colspan + заголовки
       const tds = $(el).find('td');
       if (tds.length < 6) return;
       const col = (j: number) => tds.eq(j).text().trim() || null;
@@ -66,8 +101,9 @@ export class AppealAdapter implements CourtAdapter {
       });
     });
 
+    // Участники (#cont4 — НЕ #cont3!)
     const parties: CaseParty[] = [];
-    $('#cont3 table tr').each((i, el) => {
+    $('#cont4 table#tablcont tr').each((i, el) => {
       if (i < 2) return;
       const tds = $(el).find('td');
       if (tds.length < 2) return;
@@ -85,7 +121,8 @@ export class AppealAdapter implements CourtAdapter {
         case_uid:  parsedUrl.searchParams.get('case_uid'),
         case_type: parsedUrl.searchParams.get('case_type'),
       },
-      publishedAt: null, modifiedAt: null,
+      publishedAt: publishInfo.publishedAt,
+      modifiedAt:  publishInfo.modifiedAt,
       card: {
         filingDate:     parseDate(strip(rawCard['Дата поступления'])),
         category,
@@ -94,7 +131,11 @@ export class AppealAdapter implements CourtAdapter {
         result:         strip(rawCard['Результат рассмотрения']),
         proceedingType: strip(rawCard['Признак рассмотрения дела']),
       },
-      events, parties,
-    };
+      events,
+      parties,
+      // Дополнительные данные апелляции — суд первой инстанции
+      // @ts-ignore — расширение схемы в следующем итере
+      // lowerCourt: lowerCourt,
+    } as Case;
   }
 }

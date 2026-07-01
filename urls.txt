@@ -1,0 +1,48 @@
+# CourtFlow — список отслеживаемых дел
+# Одна ссылка на строку. Строки с # и пустые строки игнорируются.
+# Тип суда определяется автоматически по домену и delo_id.
+# Редактировать можно вручную или через /config в viewer.
+
+# --- Районные суды (district) ---
+
+# Свердловский районный суд г. Перми
+https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=458075868&case_uid=177348e2-e763-4d56-be99-6e799d98de5d&delo_id=1540005
+https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=458135160&case_uid=feeb309f-7fa0-41f2-82e1-04e9a345d386&delo_id=1540005
+https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469407793&case_uid=8a77c116-1bf5-4f0b-a65c-f11dbc50e696&delo_id=1540005
+https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469408754&case_uid=a85bf35e-a6cf-4b5e-9abc-878ce5154c89&delo_id=1540005
+https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469409369&case_uid=3157272d-3bf1-4abb-8fb6-f0e4ffd2a55a&delo_id=1540005
+https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468979636&case_uid=67a19ca6-8587-4218-aefa-09b74d7c76e2&delo_id=1540005
+
+# Индустриальный районный суд г. Перми
+https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468737655&case_uid=9fad6649-ffe0-4eb4-b7e1-b1d898dc5bdc&delo_id=1540005
+https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468737559&case_uid=c5dda7ac-7557-4f15-91db-186a88782b4c&delo_id=1540005
+https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468737567&case_uid=7904325e-de56-45e2-9469-e6dab03c7697&delo_id=1540005
+https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469307421&case_uid=4459f586-ce39-47d7-843a-12f6592412c4&delo_id=1540005
+
+# Краснокамский районный суд
+https://krasnokam--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=407511893&case_uid=6bad41b1-f4b6-4143-86bf-fd5c2db51fcf&delo_id=1540005
+
+# --- Областной суд апелляция (appeal) ---
+
+https://oblsud--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11448818&case_uid=45dcad31-4ad4-448c-ab97-33ec62895e23&delo_id=5&new=5
+https://oblsud--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11311861&case_uid=7e17ba6a-e34f-42bc-8f45-b1e1067d95e9&delo_id=5&new=5
+
+# --- 7-й кассационный суд (cassation) ---
+
+https://7kas.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11662670&case_uid=07ae7a19-4220-47e9-9f09-094b2e72e9fb&new=2800001&delo_id=2800001
+
+# --- Мировые судьи (magistrate) ---
+
+https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414120&delo_id=1540005
+https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414114&delo_id=1540005
+https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414107&delo_id=1540005
+https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414101&delo_id=1540005
+https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1387272&delo_id=1540005
+https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1421034&delo_id=1540005
+https://57.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2538333&delo_id=1540005
+https://107.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1198936&delo_id=1540005
+https://16.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2052921&delo_id=1540005
+https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144014&delo_id=1540005
+https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144004&delo_id=1540005
+https://128.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1426372&delo_id=1540005
+https://53.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1400909&delo_id=1540005
