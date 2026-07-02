@@ -43,7 +43,7 @@ courtflow/
     │   └── magistrate.ts        # ✅ парсинг msudrf HTML (.tab-content, table.tablcont)
     ├── captcha/
     │   ├── rucaptcha.ts         # ✅ RuCaptcha API v2 (createTask/getTaskResult)
-    │   ├── session.ts           # ✅ Puppeteer session + page.evaluate fetch
+    │   ├── session.ts           # ✅ Puppeteer session + --ignore-certificate-errors
     │   └── solver.ts            # ⚠️ заглушка (BUG-019), не используется
     ├── scheduler/
     │   ├── orchestrator.ts      # ✅ основной раннер, magistrate через Puppeteer
@@ -64,47 +64,32 @@ courtflow/
 - `npm run test:smoke`
 - `npm start`
 - `npm run enrich:courts`
-- `npm run parse` — district / appeal / cassation — все OK
+- `npm run parse` — district / appeal / cassation / **magistrate** — все OK
 - UI: названия судов, адрес, телефоны, email
 - RuCaptcha API v2 реализован (`createTask`/`getTaskResult`, `api.rucaptcha.com`)
 - Captcha image через `page.evaluate(fetch)` — без навигации (BUG-018 закрыт)
+- **BUG-020 закрыт:** magistrate парсится через Puppeteer с `--ignore-certificate-errors`
+- **BUG-016 закрыт:** magistrate end-to-end подтверждён логами (108.perm, 57.perm — success)
 
-### 🔴 Застряли — magistrate end-to-end не работает
-
-**Ошибка:** `net::ERR_NETWORK_ACCESS_DENIED` при `page.goto()` в Puppeteer headless.
-
-**Что проверено и исключено:**
-- Сайт открывается в браузере вручную — сеть есть
-- Smart App Control — отключён, не виноват
-- AppLocker — пустой журнал, не виноват
-- Windows Firewall — блокирующих правил для chrome.exe нет
-- `--no-sandbox`, `--disable-setuid-sandbox` — добавлены, не помогли
-- Security журнал (Event ID 5157) — недоступен (нужен admin)
-
-**Следующий шаг диагностики:**
-Запустить `headless: false` локально (не пушить!) с одной msudrf-ссылкой:
-- Если в видимом окне сайт грузится — проблема в headless-режиме (антивирус, сетевая изоляция)
-- Если и в видимом ERR_NETWORK_ACCESS_DENIED — проблема глубже (прокси, DNS)
-
-Если headless: false загружает — добавить флаги:
-```
-'--disable-features=NetworkServiceInProcess',
-'--disable-web-security',
-```
-Или перейти на `executablePath` системного Chrome (не bundled Chromium):
-```ts
-executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-```
-
-### ✅ Сейчас работает в PRODUCTION-режиме
-13 дел с 5 судов district/appeal/cassation — все OK. Магистрат заблокирован только на Windows.
+### 🟡 В работе
+- BUG-017: MagistrateAdapter проверен на 2 участках, нужно проверить остальные
 
 ### ⏳ Требуется
-- Живой magistrate end-to-end прогон
 - Проверка MagistrateAdapter на других делах/участках (BUG-017)
-- BUG-019: решить судьбу `solver.ts`
-- XLSX
-- systemd/pm2
+- BUG-019: решить судьбу `solver.ts` (удалить или реализовать)
+- XLSX экспорт
+- systemd/pm2 деплой на Linux
+
+## Важные особенности
+
+### msudrf.ru — SSL-сертификат
+Сайты мировых судей используют wildcard `*.msudrf.ru`, который **не покрывает** домены вида `35.perm.msudrf.ru` (два уровня). Puppeteer падает с `ERR_CERT_COMMON_NAME_INVALID`. Фикс: `--ignore-certificate-errors` в args Puppeteer launch.
+
+### npm run parse — аргументы
+Оркестратор **не принимает** `--type` как аргумент — тип суда определяется автоматически из `urls.txt` через `loadUrls()`. Правильный запуск: просто `npm run parse`. Вызов `npm run parse -- --type magistrate` вызывает npm warning и игнорируется.
+
+### PUPPETEER_HEADLESS
+Для диагностики: `PUPPETEER_HEADLESS=false npm run parse` — запустит с видимым окном. Не пушить `.env` с этим флагом.
 
 ## Команды
 
@@ -119,18 +104,20 @@ npm run enrich:courts
 
 ### Исправлено
 - BUG-018: `response.buffer()` → `page.evaluate(fetch)` в `session.ts`
-- BUG-019 зафиксирован в BUG_REPORT
+- BUG-020: `--ignore-certificate-errors` в Puppeteer args — закрыт
+- BUG-022: `Locator.getAttribute` → `page.$eval` — закрыт
+- BUG-016: magistrate end-to-end подтверждён — закрыт
 - RuCaptcha переведён на API v2 (`api.rucaptcha.com`, JSON)
 - `ImageToTextTask` параметры: `numeric=4`, `minLength=4`, `maxLength=6`, `languagePool=rn`
-- `--no-sandbox` добавлен в `session.ts`
+- `PUPPETEER_HEADLESS` env-флаг добавлен в `session.ts`
+- `--disable-features=NetworkServiceInProcess` добавлен
 - TS2503 исправлен: `puppeteer.Page` → `import { type Page } from 'puppeteer'`
-- `.gitignore`: убран `logs/` blanket ignore, `logs/orchestrator.lock` игнорируется, остальное в logs/ пушается
-- README, DECISIONS, CONTEXT, BUG_REPORT — актуализированы
+- `.gitignore`: убран `logs/` blanket ignore, `logs/orchestrator.lock` игнорируется
 
-### Не решено
-- `ERR_NETWORK_ACCESS_DENIED` в Puppeteer headless на Windows 11
-- Причина не установлена — нужна диагностика `headless: false`
+### Открыто
+- BUG-019: `solver.ts` — заглушка, не блокер
+- BUG-017: MagistrateAdapter нужно проверить на всех участках
 
 ## Промпт для новой сессии
 
-См. ниже — раздел **Промпт для AI**.
+См. файл `PROMPT_FOR_NEW_SESSION.md`.
