@@ -40,10 +40,10 @@ courtflow/
     │   ├── district.ts
     │   ├── appeal.ts
     │   ├── cassation.ts
-    │   └── magistrate.ts        # ✅ парсинг msudrf HTML (.tab-content, table.tablcont)
+    │   └── magistrate.ts        # ✅ BUG-017 закрыт: uid=caseNumber, 5 колонок событий, filingDate/hearingDate/result
     ├── captcha/
     │   ├── rucaptcha.ts         # ✅ RuCaptcha API v2 (createTask/getTaskResult)
-    │   ├── session.ts           # ✅ Puppeteer session + --ignore-certificate-errors
+    │   ├── session.ts           # ✅ Puppeteer + --ignore-certificate-errors
     │   └── solver.ts            # ⚠️ заглушка (BUG-019), не используется
     ├── scheduler/
     │   ├── orchestrator.ts      # ✅ основной раннер, magistrate через Puppeteer
@@ -60,25 +60,20 @@ courtflow/
 
 ## Текущее состояние (2026-07-02)
 
-### ✅ Работает
+### ✅ Всё работает
 - `npm run test:smoke`
 - `npm start`
 - `npm run enrich:courts`
-- `npm run parse` — district / appeal / cassation / **magistrate** — все OK
+- `npm run parse` — **district / appeal / cassation / magistrate — все OK**
 - UI: названия судов, адрес, телефоны, email
-- RuCaptcha API v2 реализован (`createTask`/`getTaskResult`, `api.rucaptcha.com`)
-- Captcha image через `page.evaluate(fetch)` — без навигации (BUG-018 закрыт)
-- **BUG-020 закрыт:** magistrate парсится через Puppeteer с `--ignore-certificate-errors`
-- **BUG-016 закрыт:** magistrate end-to-end подтверждён логами (108.perm, 57.perm — success)
+- RuCaptcha API v2 (`createTask`/`getTaskResult`, `api.rucaptcha.com`)
+- MagistrateAdapter: uid = судебный номер дела, 5 колонок событий, filingDate/hearingDate/result
+- Прогон 26/26 дел, 8 magistrate-участков — 100% success (лог 2026-07-02 09:57–10:03)
 
-### 🟡 В работе
-- BUG-017: MagistrateAdapter проверен на 2 участках, нужно проверить остальные
-
-### ⏳ Требуется
-- Проверка MagistrateAdapter на других делах/участках (BUG-017)
-- BUG-019: решить судьбу `solver.ts` (удалить или реализовать)
-- XLSX экспорт
-- systemd/pm2 деплой на Linux
+### ⏳ Требуется (очередь)
+1. **Linux-деплой** — systemd или pm2, переменные окружения, Puppeteer зависимости
+2. **BUG-019** — удалить `solver.ts` или реализовать
+3. **XLSX** — экспорт данных
 
 ## Важные особенности
 
@@ -90,6 +85,12 @@ courtflow/
 
 ### PUPPETEER_HEADLESS
 Для диагностики: `PUPPETEER_HEADLESS=false npm run parse` — запустит с видимым окном. Не пушить `.env` с этим флагом.
+
+### MagistrateAdapter — структура HTML msudrf.ru
+- `<h2>ДЕЛО № X-XXXX/YYYY</h2>` — номер дела (→ uid)
+- Таб 0 (`tab-content[0]`): `table.tablcont` — основные сведения (категория, судья)
+- Таб 1 (`tab-content[1]`): **5 колонок** — событие, дата, время, результат, судья
+- Таб 2 (`tab-content[2]`): стороны — строка 0: h2, строка 1: роли, строка 2: имена
 
 ## Команды
 
@@ -103,20 +104,17 @@ npm run enrich:courts
 ## Что сделано в текущей сессии (2026-07-02)
 
 ### Исправлено
-- BUG-018: `response.buffer()` → `page.evaluate(fetch)` в `session.ts`
-- BUG-020: `--ignore-certificate-errors` в Puppeteer args — закрыт
-- BUG-022: `Locator.getAttribute` → `page.$eval` — закрыт
+- BUG-018: `response.buffer()` → `page.evaluate(fetch)`
+- BUG-020: `--ignore-certificate-errors` в Puppeteer args
+- BUG-021: `puppeteer.Page` → `import { type Page } from 'puppeteer'`
+- BUG-022: `Locator.getAttribute` → `page.$eval`
 - BUG-016: magistrate end-to-end подтверждён — закрыт
-- RuCaptcha переведён на API v2 (`api.rucaptcha.com`, JSON)
-- `ImageToTextTask` параметры: `numeric=4`, `minLength=4`, `maxLength=6`, `languagePool=rn`
-- `PUPPETEER_HEADLESS` env-флаг добавлен в `session.ts`
-- `--disable-features=NetworkServiceInProcess` добавлен
-- TS2503 исправлен: `puppeteer.Page` → `import { type Page } from 'puppeteer'`
-- `.gitignore`: убран `logs/` blanket ignore, `logs/orchestrator.lock` игнорируется
+- BUG-017: MagistrateAdapter — uid, events 5 колонок, filingDate/hearingDate/result, индексы строк сторон
+- RuCaptcha переведён на API v2
+- `.gitignore`: logs/ пушатся, только lock игнорируется
 
 ### Открыто
 - BUG-019: `solver.ts` — заглушка, не блокер
-- BUG-017: MagistrateAdapter нужно проверить на всех участках
 
 ## Промпт для новой сессии
 
