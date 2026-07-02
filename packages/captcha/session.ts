@@ -13,18 +13,17 @@ export interface MagistrateSessionOptions {
 }
 
 export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Promise<string> {
-  // PUPPETEER_HEADLESS=false  — для локальной диагностики BUG-020 (не пушить .env с этим флагом)
+  // PUPPETEER_HEADLESS=false  — для локальной диагностики (не пушить .env с этим флагом)
   const headless = process.env['PUPPETEER_HEADLESS'] !== 'false';
 
   const browser = await puppeteer.launch({
     headless,
-    // --no-sandbox: required on Windows (Puppeteer Chromium blocked by OS network isolation)
-    // --disable-setuid-sandbox: required when --no-sandbox is set
-    // --disable-features=NetworkServiceInProcess: fixes ERR_NETWORK_ACCESS_DENIED in headless on Windows
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-features=NetworkServiceInProcess',
+      // msudrf.ru использует wildcard *.msudrf.ru, который не покрывает subdomain.perm.msudrf.ru
+      '--ignore-certificate-errors',
     ],
   });
   const page = await browser.newPage();
