@@ -33,16 +33,16 @@ https://7kas.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=1
 
 # --- Мировые судьи (magistrate) ---
 
-https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414120&delo_id=1540005
-https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414114&delo_id=1540005
-https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414107&delo_id=1540005
-https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414101&delo_id=1540005
+#https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414120&delo_id=1540005
+#https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414114&delo_id=1540005
+#https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414107&delo_id=1540005
+#https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414101&delo_id=1540005
 https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1387272&delo_id=1540005
-https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1421034&delo_id=1540005
+#https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1421034&delo_id=1540005
 https://57.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2538333&delo_id=1540005
-https://107.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1198936&delo_id=1540005
-https://16.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2052921&delo_id=1540005
-https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144014&delo_id=1540005
-https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144004&delo_id=1540005
-https://128.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1426372&delo_id=1540005
-https://53.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1400909&delo_id=1540005
+#https://107.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1198936&delo_id=1540005
+#https://16.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2052921&delo_id=1540005
+#https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144014&delo_id=1540005
+#https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144004&delo_id=1540005
+#https://128.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1426372&delo_id=1540005
+#https://53.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1400909&delo_id=1540005
