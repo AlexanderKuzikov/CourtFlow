@@ -1,0 +1,245 @@
+[
+  {
+    "courtId": "sverdlov--perm",
+    "courtType": "district",
+    "url": "https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=458075868&case_uid=177348e2-e763-4d56-be99-6e799d98de5d&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0007-01-2025-005668-17",
+    "duration": 414,
+    "timestamp": "2026-07-02T06:43:06.460Z"
+  },
+  {
+    "courtId": "sverdlov--perm",
+    "courtType": "district",
+    "url": "https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=458135160&case_uid=feeb309f-7fa0-41f2-82e1-04e9a345d386&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0007-01-2025-011795-66",
+    "duration": 280,
+    "timestamp": "2026-07-02T06:43:06.741Z"
+  },
+  {
+    "courtId": "sverdlov--perm",
+    "courtType": "district",
+    "url": "https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469407793&case_uid=8a77c116-1bf5-4f0b-a65c-f11dbc50e696&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0007-01-2026-005762-42",
+    "duration": 271,
+    "timestamp": "2026-07-02T06:43:07.012Z"
+  },
+  {
+    "courtId": "sverdlov--perm",
+    "courtType": "district",
+    "url": "https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469408754&case_uid=a85bf35e-a6cf-4b5e-9abc-878ce5154c89&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0007-01-2026-005759-51",
+    "duration": 213,
+    "timestamp": "2026-07-02T06:43:07.225Z"
+  },
+  {
+    "courtId": "sverdlov--perm",
+    "courtType": "district",
+    "url": "https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469409369&case_uid=3157272d-3bf1-4abb-8fb6-f0e4ffd2a55a&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0007-01-2026-005757-57",
+    "duration": 256,
+    "timestamp": "2026-07-02T06:43:07.481Z"
+  },
+  {
+    "courtId": "sverdlov--perm",
+    "courtType": "district",
+    "url": "https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468979636&case_uid=67a19ca6-8587-4218-aefa-09b74d7c76e2&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0007-01-2026-005613-04",
+    "duration": 196,
+    "timestamp": "2026-07-02T06:43:07.677Z"
+  },
+  {
+    "courtId": "industry--perm",
+    "courtType": "district",
+    "url": "https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468737655&case_uid=9fad6649-ffe0-4eb4-b7e1-b1d898dc5bdc&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0002-01-2026-003230-46",
+    "duration": 252,
+    "timestamp": "2026-07-02T06:43:07.930Z"
+  },
+  {
+    "courtId": "industry--perm",
+    "courtType": "district",
+    "url": "https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468737559&case_uid=c5dda7ac-7557-4f15-91db-186a88782b4c&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0002-01-2026-003231-43",
+    "duration": 186,
+    "timestamp": "2026-07-02T06:43:08.116Z"
+  },
+  {
+    "courtId": "industry--perm",
+    "courtType": "district",
+    "url": "https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468737567&case_uid=7904325e-de56-45e2-9469-e6dab03c7697&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0002-01-2026-003232-40",
+    "duration": 198,
+    "timestamp": "2026-07-02T06:43:08.314Z"
+  },
+  {
+    "courtId": "industry--perm",
+    "courtType": "district",
+    "url": "https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469307421&case_uid=4459f586-ce39-47d7-843a-12f6592412c4&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0002-01-2026-003344-92",
+    "duration": 157,
+    "timestamp": "2026-07-02T06:43:08.472Z"
+  },
+  {
+    "courtId": "krasnokam--perm",
+    "courtType": "district",
+    "url": "https://krasnokam--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=407511893&case_uid=6bad41b1-f4b6-4143-86bf-fd5c2db51fcf&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0025-01-2025-001333-40",
+    "duration": 327,
+    "timestamp": "2026-07-02T06:43:08.801Z"
+  },
+  {
+    "courtId": "oblsud--perm",
+    "courtType": "appeal",
+    "url": "https://oblsud--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11448818&case_uid=45dcad31-4ad4-448c-ab97-33ec62895e23&delo_id=5&new=5",
+    "success": true,
+    "uid": "59RS0007-01-2025-005668-17",
+    "duration": 577,
+    "timestamp": "2026-07-02T06:43:09.380Z"
+  },
+  {
+    "courtId": "oblsud--perm",
+    "courtType": "appeal",
+    "url": "https://oblsud--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11311861&case_uid=7e17ba6a-e34f-42bc-8f45-b1e1067d95e9&delo_id=5&new=5",
+    "success": true,
+    "uid": "59RS0025-01-2025-001333-40",
+    "duration": 386,
+    "timestamp": "2026-07-02T06:43:09.766Z"
+  },
+  {
+    "courtId": "7kas",
+    "courtType": "cassation",
+    "url": "https://7kas.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11662670&case_uid=07ae7a19-4220-47e9-9f09-094b2e72e9fb&new=2800001&delo_id=2800001",
+    "success": true,
+    "uid": "59RS0007-01-2025-005668-17",
+    "duration": 721,
+    "timestamp": "2026-07-02T06:43:10.488Z"
+  },
+  {
+    "courtId": "35.perm",
+    "courtType": "magistrate",
+    "url": "https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414120&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 35.perm → 2414120 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414120&delo_id=1540005",
+    "duration": 14733,
+    "timestamp": "2026-07-02T06:43:25.223Z"
+  },
+  {
+    "courtId": "35.perm",
+    "courtType": "magistrate",
+    "url": "https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414114&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 35.perm → 2414114 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414114&delo_id=1540005",
+    "duration": 14860,
+    "timestamp": "2026-07-02T06:43:40.083Z"
+  },
+  {
+    "courtId": "35.perm",
+    "courtType": "magistrate",
+    "url": "https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414107&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 35.perm → 2414107 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414107&delo_id=1540005",
+    "duration": 14804,
+    "timestamp": "2026-07-02T06:43:54.887Z"
+  },
+  {
+    "courtId": "35.perm",
+    "courtType": "magistrate",
+    "url": "https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414101&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 35.perm → 2414101 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414101&delo_id=1540005",
+    "duration": 14795,
+    "timestamp": "2026-07-02T06:44:09.682Z"
+  },
+  {
+    "courtId": "108.perm",
+    "courtType": "magistrate",
+    "url": "https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1387272&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 108.perm → 1387272 — все попытки исчерпаны: net::ERR_CONNECTION_TIMED_OUT at https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1387272&delo_id=1540005",
+    "duration": 35680,
+    "timestamp": "2026-07-02T06:44:45.362Z"
+  },
+  {
+    "courtId": "108.perm",
+    "courtType": "magistrate",
+    "url": "https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1421034&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 108.perm → 1421034 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1421034&delo_id=1540005",
+    "duration": 33162,
+    "timestamp": "2026-07-02T06:45:18.524Z"
+  },
+  {
+    "courtId": "57.perm",
+    "courtType": "magistrate",
+    "url": "https://57.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2538333&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 57.perm → 2538333 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://57.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2538333&delo_id=1540005",
+    "duration": 15808,
+    "timestamp": "2026-07-02T06:45:34.333Z"
+  },
+  {
+    "courtId": "107.perm",
+    "courtType": "magistrate",
+    "url": "https://107.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1198936&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 107.perm → 1198936 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://107.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1198936&delo_id=1540005",
+    "duration": 15814,
+    "timestamp": "2026-07-02T06:45:50.147Z"
+  },
+  {
+    "courtId": "16.perm",
+    "courtType": "magistrate",
+    "url": "https://16.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2052921&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 16.perm → 2052921 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://16.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2052921&delo_id=1540005",
+    "duration": 18019,
+    "timestamp": "2026-07-02T06:46:08.167Z"
+  },
+  {
+    "courtId": "86.perm",
+    "courtType": "magistrate",
+    "url": "https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144014&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 86.perm → 1144014 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144014&delo_id=1540005",
+    "duration": 14736,
+    "timestamp": "2026-07-02T06:46:22.903Z"
+  },
+  {
+    "courtId": "86.perm",
+    "courtType": "magistrate",
+    "url": "https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144004&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 86.perm → 1144004 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144004&delo_id=1540005",
+    "duration": 36864,
+    "timestamp": "2026-07-02T06:46:59.767Z"
+  },
+  {
+    "courtId": "128.perm",
+    "courtType": "magistrate",
+    "url": "https://128.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1426372&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 128.perm → 1426372 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://128.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1426372&delo_id=1540005",
+    "duration": 29887,
+    "timestamp": "2026-07-02T06:47:29.654Z"
+  },
+  {
+    "courtId": "53.perm",
+    "courtType": "magistrate",
+    "url": "https://53.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1400909&delo_id=1540005",
+    "success": false,
+    "error": "[retry] 53.perm → 1400909 — все попытки исчерпаны: net::ERR_CERT_COMMON_NAME_INVALID at https://53.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1400909&delo_id=1540005",
+    "duration": 14931,
+    "timestamp": "2026-07-02T06:47:44.585Z"
+  }
+]
