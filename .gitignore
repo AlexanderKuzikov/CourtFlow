@@ -1,13 +1,9 @@
-# Logs — runtime-логи игнорируются, исключения — дебаг-файлы для end-to-end прогона
-logs/
-*.log
+# Logs — run-logs и debug-файлы отслеживаются, остальное игнорируется
+# ВАЖНО: нельзя использовать 'logs/' (git не позволяет разисключать файлы внутри ignored dir)
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-!logs/smoke-last.log
-!logs/magistrate-last.html
-!logs/*.json
 
 # Diagnostic reports
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -65,8 +61,6 @@ dist
 .docusaurus
 .serverless/
 .fusebox/
-.dynamodb/
-.firebase/
 .tern-port
 .vscode-test
 .pnpm-store
@@ -83,3 +77,6 @@ vite.config.ts.timestamp-*
 
 # Data — парсинг (не пушим в репо)
 data/
+
+# Lock-файл оркестратора — не пушим
+logs/orchestrator.lock
