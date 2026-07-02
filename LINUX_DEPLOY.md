@@ -1,169 +1,124 @@
 # Linux Deploy — CourtFlow
 
 > Инструкция по развёртыванию на офисном Linux-сервере.
-> Менеджер процессов: **pm2**. Запуск без root после первичной настройки.
+> ОС: **Ubuntu**. Менеджер процессов: **pm2**.
 
 ---
 
-## Требования
-
-- Node.js >= 20 (рекомендуется v24, как на Windows)
-- npm >= 10
-- git
-- Puppeteer: системные зависимости Chromium
-- pm2 (устанавливается через npm)
-
----
-
-## 1. Системные зависимости Puppeteer
-
-Puppeteer скачивает bundled Chromium, но ему нужны системные библиотеки.
+## Чеклист (быстрый старт)
 
 ```bash
-# Ubuntu / Debian
-sudo apt-get update
+# 1. Node.js 24 (eсли ещё не установлен)
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v   # должно быть v24.x.x
+
+# 2. Системные зависимости Chromium для Puppeteer
 sudo apt-get install -y \
-  ca-certificates fonts-liberation \
-  libappindicator3-1 libasound2 libatk-bridge2.0-0 \
-  libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
-  libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 \
-  libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 \
-  libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 \
-  libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 \
-  libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 \
-  libxtst6 lsb-release wget xdg-utils
-```
+  ca-certificates fonts-liberation libappindicator3-1 libasound2 \
+  libatk-bridge2.0-0 libatk1.0-0 libc6 libcairo2 libcups2 \
+  libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 \
+  libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 \
+  libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 \
+  libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 \
+  libxi6 libxrandr2 libxrender1 libxss1 libxtst6 wget xdg-utils
 
-> **Важно:** Puppeteer в headless-режиме на Linux работает без `--no-sandbox` если запускается не от root.
-> Если запускаете от root — добавьте `--no-sandbox` в `session.ts` (уже добавлен).
-
----
-
-## 2. Установка проекта
-
-```bash
-# Клонируем в /opt/courtflow
-sudo mkdir -p /opt/courtflow
+# 3. Проект
+ sudo mkdir -p /opt/courtflow
 sudo chown $USER:$USER /opt/courtflow
 git clone https://github.com/AlexanderKuzikov/CourtFlow.git /opt/courtflow
 cd /opt/courtflow
+npm install          # ~2-3 мин, скачивает Chromium (~170 MB)
 
-# Устанавливаем зависимости (включая Puppeteer — скачает Chromium ~170MB)
-npm install
-
-# Создаём .env
-cat > .env << 'EOF'
+# 4. .env
+cat > /opt/courtflow/.env << 'EOF'
 RUCAPTCHA_API_KEY=ВАШ_КЛЮЧ_ЗДЕСЬ
 EOF
-```
 
----
-
-## 3. Проверка перед запуском
-
-```bash
-# Smoke-тест (без браузера)
+# 5. Проверка
 npm run test:smoke
-
-# Тестовый прогон парсера (убедиться что magistrate работает)
 npm run parse
-```
+# Ожидаем: [orchestrator] Готово. OK: 26, FAIL: 0, CAPTCHA: 0
 
-Ожидаемый вывод последней строки:
-```
-[orchestrator] Готово. OK: 26, FAIL: 0, CAPTCHA: 0
-```
-
----
-
-## 4. Установка и запуск pm2
-
-```bash
-# Установка pm2 глобально
+# 6. pm2
 npm install -g pm2
-
-# Запуск обоих процессов по ecosystem-конфигу
 pm2 start ecosystem.config.cjs
+pm2 startup               # выдаст команду — скопировать и выполнить
+pm2 save
 
-# Проверка статуса
+# 7. Быстрая проверка
 pm2 status
-pm2 logs courtflow-viewer --lines 20
-pm2 logs courtflow-parser --lines 20
+curl http://localhost:3000    # или другой порт из config.json
 ```
 
 ---
 
-## 5. Автозапуск при ребуте
+## Подробнее
+
+### Node.js — если уже установлен, но старая версия
 
 ```bash
-# pm2 выдаст команду — её нужно выполнить с sudo
-pm2 startup
-# Скопировать и выполнить предложенную команду, например:
-# sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u user --hp /home/user
-
-# Сохранить текущий список процессов
-pm2 save
+# Удалить старый Node.js и установить v24 через nvm (рекомендуется)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+nvm install 24
+nvm use 24
+nvm alias default 24
 ```
 
----
+### Puppeteer на Linux — headless без дисплея
 
-## 6. Управление
+Na Linux Puppeteer работает в headless-режиме **штатно** — в отличие от Windows, никаких `ERR_NETWORK_ACCESS_DENIED` не будет.
+
+Флаги в `session.ts` уже настроены:
+- `--no-sandbox` — необходим если запуск от root или в контейнере
+- `--ignore-certificate-errors` — wildcard SSL msudrf.ru
+- `--disable-features=NetworkServiceInProcess`
+
+> Если запускаете **не от root** — `--no-sandbox` фактически не нужен, но вреда не приносит.
+
+### pm2 — управление
 
 ```bash
 pm2 status                        # статус всех процессов
-pm2 restart courtflow-viewer      # перезапустить viewer
-pm2 restart courtflow-parser      # запустить парсер вручную (вне расписания)
-pm2 stop courtflow-parser         # остановить
-pm2 logs courtflow-viewer         # логи viewer в реальном времени
+pm2 logs courtflow-viewer         # логи viewer
 pm2 logs courtflow-parser         # логи парсера
+pm2 restart courtflow-viewer      # перезапустить viewer
+pm2 restart courtflow-parser      # запустить парсер вручную
+pm2 stop courtflow-parser         # остановить
 pm2 monit                         # интерактивный дашборд
 ```
 
----
+### Обновление проекта
 
-## 7. Расписание парсера
-
-В `ecosystem.config.cjs` задано:
-```
-cron_restart: '0 */6 * * *'   // каждые 6 часов: 00:00, 06:00, 12:00, 18:00
-```
-
-Чтобы изменить расписание — отредактируйте `ecosystem.config.cjs` и выполните:
 ```bash
+cd /opt/courtflow
+git pull
+npm install
+pm2 restart all
+pm2 save
+```
+
+### Расписание парсера
+
+В `ecosystem.config.cjs`: `cron_restart: '0 */6 * * *'` — 00:00, 06:00, 12:00, 18:00.
+
+Чтобы изменить:
+```bash
+# Отредактируйте ecosystem.config.cjs, затем:
 pm2 restart ecosystem.config.cjs --update-env
 pm2 save
 ```
 
 ---
 
-## 8. Обновление проекта
-
-```bash
-cd /opt/courtflow
-git pull
-npm install           # если изменились зависимости
-pm2 restart all
-pm2 save
-```
-
----
-
-## Известные особенности Linux
+## Известные особенности
 
 | Особенность | Решение |
 |---|---|
-| Puppeteer headless без дисплея | Работает штатно на Linux (в отличие от Windows) |
-| `--no-sandbox` | Уже добавлен в `session.ts` (нужен при запуске от root) |
-| `--ignore-certificate-errors` | Уже добавлен (wildcard SSL msudrf.ru) |
-| Права на `/opt/courtflow` | `chown $USER:$USER` при установке |
-| Порт viewer | По умолчанию из `config.json`, убедитесь что открыт в firewall |
-
----
-
-## Быстрая проверка после деплоя
-
-```bash
-pm2 status                   # оба процесса online
-curl http://localhost:PORT    # viewer отвечает
-cat logs/run-log-$(date +%F).json | tail -5   # последние результаты парсера
-```
+| Puppeteer headless без дисплея | Работает штатно на Ubuntu |
+| `--no-sandbox` | Уже в `session.ts` |
+| `--ignore-certificate-errors` | Уже в `session.ts` |
+| Права на `/opt/courtflow` | `sudo chown $USER:$USER /opt/courtflow` |
+| Port въю viewer | Узнать из `config.json`, открыть в firewall (`ufw allow PORT`) |
+| libasound2 нет (Ubuntu 24.04+) | Заменить на `libasound2t64` |
