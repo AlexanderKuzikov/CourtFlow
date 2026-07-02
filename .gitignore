@@ -7,7 +7,7 @@ yarn-error.log*
 lerna-debug.log*
 !logs/smoke-last.log
 !logs/magistrate-last.html
-!*.json
+!logs/*.json
 
 # Diagnostic reports
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
