@@ -41,8 +41,9 @@ courtflow/
     │   ├── cassation.ts
     │   └── magistrate.ts        # ✅ базовый парсинг msudrf HTML
     ├── captcha/
-    │   ├── rucaptcha.ts         # ✅ RuCaptcha client
-    │   └── session.ts           # ✅ Puppeteer session for msudrf
+    │   ├── rucaptcha.ts         # ✅ RuCaptcha API v2 client (createTask/getTaskResult)
+    │   ├── session.ts           # ✅ Puppeteer session, captcha image через page.evaluate
+    │   └── solver.ts            # ⚠️ заглушка, не используется (BUG-019)
     ├── scheduler/
     │   ├── orchestrator.ts      # ✅ magistrate через Puppeteer + RuCaptcha
     │   ├── smoke.ts
@@ -56,25 +57,31 @@ courtflow/
             └── index.html       # ✅ показывает name/address/phones/email
 ```
 
-## Текущее состояние (2026-07-01)
+## Текущее состояние (2026-07-02)
 
 ### ✅ Работает
 - `npm run test:smoke`
 - `npm start`
 - `npm run enrich:courts`
-- UI показывает человекочитаемые названия судов
-- В деталях дела: адрес, телефоны, email суда
-- BUG-010 закрыт: sudrf/msudrf captcha различается отдельно от FAIL
-- Для `magistrate` реализован flow: Puppeteer → `/captcha.php` → RuCaptcha → submit `#kcaptchaForm`
-- Базовый `MagistrateAdapter` реализован по живому HTML карточки (`.tab-content`, `table.tablcont`)
+- UI показывает человекочитаемые названия судов, адрес, телефоны, email
+- BUG-010: captcha отдельно от FAIL
+- BUG-018: captcha image через `page.evaluate(fetch)` — без навигации
+- RuCaptcha переведён на API v2 (`api.rucaptcha.com`, JSON, `createTask`/`getTaskResult`)
+- `MagistrateAdapter` реализован по живому HTML карточки
+
+### ⏳ Требуется для magistrate
+- `RUCAPTCHA_API_KEY` заполнен в `.env` и баланс пополнен на rucaptcha.com
+- На Linux: системные зависимости Chromium (libatk, libgbm, libnss3 и др.)
 
 ### ⚠️ Текущее внимание
-1. Проверить end-to-end `magistrate` на живом запуске
-2. Убедиться, что `packages/captcha/session.ts` корректно получает картинку капчи и возвращается назад на страницу дела
-3. Уточнить структуру magistrate для других карточек/типов дел (сейчас парсинг построен по одному живому примеру)
-4. Автозаполнение `vnkod` в `courts.json`
-5. XLSX
-6. systemd/pm2
+1. **Живой end-to-end прогон** `npm run parse` на одном magistrate URL
+2. Проверить `logs/magistrate-last.html` — наличие `.tab-content` / `table.tablcont`
+3. Уточнить `numeric` параметр: если капча только цифры — поменять `numeric: 4` → `numeric: 1`
+4. BUG-017: проверить MagistrateAdapter на других участках/типах дел
+5. BUG-019: удалить или реализовать `solver.ts`
+6. Автозаполнение `vnkod` в `courts.json`
+7. XLSX
+8. systemd/pm2
 
 ## Команды
 
@@ -85,36 +92,16 @@ npm start
 npm run enrich:courts
 ```
 
-## Что сделано в последней сессии
+## Что сделано в последних сессиях
 
-### BUG-010
-- Добавлен `packages/core/errors.ts`
-- `CaptchaRequiredError`
-- `isCaptchaPage(html)` детектирует `id="kcaptchaForm"`
-- `district`, `appeal`, `cassation` бросают `CaptchaRequiredError` до парсинга
-- `orchestrator` логирует `[CAPTCHA]` отдельно, считает `OK / FAIL / CAPTCHA`
+### 2026-07-01 — Magistrate + RuCaptcha (BUG-010, BUG-016, BUG-018)
+- `packages/core/errors.ts`: `CaptchaRequiredError`, `isCaptchaPage`
+- `packages/captcha/rucaptcha.ts`: RuCaptcha client
+- `packages/captcha/session.ts`: Puppeteer session, captcha image через `page.evaluate(fetch)` (не через `page.goto`+`goBack`)
+- `orchestrator`: magistrate через Puppeteer + RuCaptcha
+- `MagistrateAdapter`: базовый парсинг (`h2`, `.tab-content`, `table.tablcont`)
 
-### Magistrate + RuCaptcha
-- Подтверждён живой HTML капчи msudrf:
-  - `form#kcaptchaForm`
-  - `img src="/captcha.php"`
-  - `input[name="captcha-response"]`
-  - submit button `Продолжить`
-- Подтверждён живой HTML карточки msudrf:
-  - номер дела: `h2` с текстом `ДЕЛО № ...`
-  - вкладки: `ul#tabs.bookmarks.lawcase`
-  - контент вкладок: `div.tab-content`
-  - таблицы: `table.tablcont`
-- Реализован `packages/captcha/rucaptcha.ts`
-- Реализован `packages/captcha/session.ts`
-- `orchestrator` больше не пропускает `magistrate`, а грузит HTML через Puppeteer + RuCaptcha
-- Реализован базовый `packages/adapters/magistrate.ts`
-
-## Что проверить в новой сессии
-
-1. Есть ли `puppeteer` в `package.json`; если нет — добавить
-2. Проверить, что `page.goto(imageUrl)` + `page.goBack()` стабильно работают на msudrf
-3. При необходимости переделать получение captcha image через `page.evaluate(fetch(...).arrayBuffer())`
-4. Прогнать `npm run parse` на одной ссылке из `urls.txt`
-5. Если всплывёт несовместимость типов Puppeteer/TS — править минимально, без рефакторинга
-6. Если HTML magistrate отличается на других судах — обновить `HTML_STRUCTURE.md`
+### 2026-07-02 — RuCaptcha API v2
+- `rucaptcha.ts` переписан: `api.rucaptcha.com`, JSON, `createTask`/`getTaskResult`
+- `ImageToTextTask`: `numeric=4`, `minLength=4`, `maxLength=6`, `case=false`, `languagePool=rn`
+- `DECISIONS.md`: зафиксировано правило: всегда API v2, legacy v1 — не использовать
