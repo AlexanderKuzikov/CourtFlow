@@ -13,7 +13,12 @@ export interface MagistrateSessionOptions {
 }
 
 export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Promise<string> {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    // --no-sandbox: required on Windows (Puppeteer chrome blocked by Defender/firewall)
+    // --disable-setuid-sandbox: required when no-sandbox is set
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
   const page = await browser.newPage();
 
   try {
@@ -53,10 +58,9 @@ export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Pr
 
 /**
  * Fetches the captcha image using fetch() in the browser context.
- * This avoids page.goto(imageUrl) + page.goBack() which is fragile:
- * - msudrf may not add captcha.php to browser history → goBack() silently fails
- * - a new page load would invalidate the current captcha token
- * Browser-context fetch inherits cookies/session automatically.
+ * Avoids page.goto(imageUrl) + page.goBack() — fragile on msudrf:
+ * captcha.php may not be added to history, goBack() can invalidate the token.
+ * Browser-context fetch inherits session cookies automatically.
  */
 async function readCaptchaImageAsBase64(page: puppeteer.Page): Promise<string> {
   const src = await page.locator('form#kcaptchaForm img').getAttribute('src');
