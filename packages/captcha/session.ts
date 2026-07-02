@@ -71,7 +71,10 @@ export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Pr
  * Browser-context fetch inherits session cookies automatically.
  */
 async function readCaptchaImageAsBase64(page: Page): Promise<string> {
-  const src = await page.locator('form#kcaptchaForm img').getAttribute('src');
+  const src = await page.$eval(
+    'form#kcaptchaForm img',
+    (img: HTMLImageElement) => img.getAttribute('src'),
+  );
   if (!src) throw new Error('Captcha image src not found');
 
   const imageBase64 = await page.evaluate(async (imgSrc: string) => {
