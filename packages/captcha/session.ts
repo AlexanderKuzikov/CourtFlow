@@ -2,7 +2,7 @@
 
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
-import puppeteer from 'puppeteer';
+import puppeteer, { type Page } from 'puppeteer';
 import { isCaptchaPage } from '../core/errors.js';
 import { RuCaptchaClient } from './rucaptcha.js';
 
@@ -15,8 +15,8 @@ export interface MagistrateSessionOptions {
 export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Promise<string> {
   const browser = await puppeteer.launch({
     headless: true,
-    // --no-sandbox: required on Windows (Puppeteer chrome blocked by Defender/firewall)
-    // --disable-setuid-sandbox: required when no-sandbox is set
+    // --no-sandbox: required on Windows (Puppeteer Chromium blocked by OS network isolation)
+    // --disable-setuid-sandbox: required when --no-sandbox is set
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
   const page = await browser.newPage();
@@ -62,7 +62,7 @@ export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Pr
  * captcha.php may not be added to history, goBack() can invalidate the token.
  * Browser-context fetch inherits session cookies automatically.
  */
-async function readCaptchaImageAsBase64(page: puppeteer.Page): Promise<string> {
+async function readCaptchaImageAsBase64(page: Page): Promise<string> {
   const src = await page.locator('form#kcaptchaForm img').getAttribute('src');
   if (!src) throw new Error('Captcha image src not found');
 

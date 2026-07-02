@@ -26,44 +26,47 @@
 | BUG-015 | Нет справочника судов с контактами | 🟢 | Средний |
 | BUG-016 | Нет автоматического прохождения капчи для msudrf.ru | 🟡 | Высокий |
 | BUG-017 | MagistrateAdapter проверен только на одном HTML-примере | 🟡 | Средний |
-| BUG-018 | `response.buffer()` удалён в Puppeteer v22+, runtime error при решении капчи | 🟢 | Высокий |
-| BUG-019 | `solver.ts` — нереализованная заглушка, вводит в заблуждение | 🔴 | Низкий |
+| BUG-018 | `response.buffer()` удалён в Puppeteer v22+ | 🟢 | Высокий |
+| BUG-019 | `solver.ts` — нереализованная заглушка | 🔴 | Низкий |
+| BUG-020 | `ERR_NETWORK_ACCESS_DENIED` в Puppeteer headless на Windows 11 | 🟡 | Высокий |
+| BUG-021 | TS2503 `Cannot find namespace 'puppeteer'` в session.ts | 🟢 | Средний |
 
 ---
 
-### BUG-019 🔴 `solver.ts` — нереализованная заглушка
-**Проблема:** `packages/captcha/solver.ts` содержит `throw new Error('solveCaptcha: не реализован')`. Никем не используется (оркестратор идёт напрямую в `session.ts`), но вводит в заблуждение.
+### BUG-021 🟢 TS2503 `Cannot find namespace 'puppeteer'`
+**Причина:** в `session.ts` тип `puppeteer.Page` использовался как namespace-тип, что не работает в Puppeteer v24.
 
-**Решение:** удалить файл либо реализовать как fallback-обёртку через `RuCaptchaClient` (primary) и 2captcha (fallback). Не блокер для end-to-end прогона.
+**Исправлено:** `import puppeteer, { type Page } from 'puppeteer'`, тип функции `readCaptchaImageAsBase64(page: Page)`.
+
+### BUG-020 🟡 `ERR_NETWORK_ACCESS_DENIED` в Puppeteer headless на Windows 11
+**Симптомы:**
+- Puppeteer запускается, но `page.goto(msudrf_url)` падает с `net::ERR_NETWORK_ACCESS_DENIED`
+- Сайт открывается в браузере вручную
+- Smart App Control отключён, AppLocker пуст, Firewall не блокирует
+- `--no-sandbox` не помогл
+
+**Гипотеза:** Windows Network Isolation / WinSock блокирует headless Chromium как дочерний процесс без UI.
+
+**Следующий шаг:** запустить с `headless: false` локально (не пушить). Если в видимом окне грузится — причина в headless, попробовать:
+```ts
+'--disable-features=NetworkServiceInProcess'
+// или executablePath: системный Chrome вместо bundled Chromium
+```
+
+### BUG-019 🔴 `solver.ts` — нереализованная заглушка
+**Проблема:** `packages/captcha/solver.ts` содержит `throw new Error('solveCaptcha: не реализован')`. Не используется оркестратором. Не блокер.
+
+**Решение:** удалить или реализовать как fallback-обёртку.
 
 ### BUG-018 🟢 `response.buffer()` удалён в Puppeteer v22+
-**Обнаружено:** при анализе кода перед end-to-end прогоном.
-
-**Причина:** `session.ts` использовал `response.buffer()` (удалён в Puppeteer v22+) + `page.goto(imageUrl)` + `page.goBack()` (хрупко: msudrf может не добавлять `/captcha.php` в history, `goBack()` сбрасывает токен).
-
-**Исправлено:** `readCaptchaImageAsBase64` переписана: `page.evaluate(fetch, { credentials: 'include' })` — навигация не трогается, куки сохраняются.
-
-**Commit:** `0509094285860c738a36e571f633314121854863`
-
-### BUG-016 🟡 Нет автоматического прохождения капчи для msudrf.ru
-**В работе:**
-- `packages/captcha/rucaptcha.ts` и `packages/captcha/session.ts` реализованы и отпатчены
-- `orchestrator` переключён на Puppeteer + RuCaptcha для `magistrate`
-- BUG-018 исправлен
-- RuCaptcha переведён на API v2
-- Требуется: живой end-to-end прогон (заполнен `RUCAPTCHA_API_KEY` + баланс)
+**Исправлено:** `page.evaluate(fetch, { credentials: 'include' })` — навигация не трогается.
+Commit: `0509094285860c738a36e571f633314121854863`
 
 ### BUG-017 🟡 MagistrateAdapter проверен только на одном HTML-примере
-**В работе:**
-- текущая реализация основана на живом примере: `h2`, `div.tab-content`, `table.tablcont`
-- нужно проверить другие дела / другие участки
+**В работе:** парсинг по `h2`, `div.tab-content`, `table.tablcont`. Нужно проверить другие участки. Блокирован до BUG-020.
+
+### BUG-016 🟡 Magistrate end-to-end
+**В работе:** все компоненты реализованы, заблокирован BUG-020.
 
 ### BUG-010 🟢 Капча не различалась от FAIL
-**Исправлено:**
-- `packages/core/errors.ts`: `CaptchaRequiredError extends Error` + `isCaptchaPage(html)`
-- Детектор: `html.includes('id="kcaptchaForm"')`
-- `district`, `appeal`, `cassation`: проверка до парсинга
-- `orchestrator`: `[CAPTCHA]` отдельно, счётчик `OK / FAIL / CAPTCHA`
-
-### BUG-015 🟢 Справочник судов отсутствовал
-**Исправлено:** `courts.json`, `core/courts.ts`, `npm run enrich:courts`, API `/api/courts`, вывод названия, адреса, телефонов и email в UI.
+**Исправлено:** `CaptchaRequiredError`, `isCaptchaPage`, `[CAPTCHA]` в оркестраторе.
