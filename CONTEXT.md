@@ -8,11 +8,12 @@
 
 **CourtFlow** — система мониторинга судебных дел РФ. Парсит карточки дел с сайтов sudrf.ru и msudrf.ru, накапливает историю в JSON/XLSX, показывает через web-viewer.
 
-- Офисный сервер: **Linux**, доступ через браузер из офисной сети
+- Офисный сервер: **Linux** (дистрибутив уточнить перед деплоем), доступ через браузер из офисной сети
 - Разработка сейчас: **Windows 11** (PowerShell + GitHub Desktop)
 - Node.js: **v24.15.0**, TypeScript: **6.x**, npm: **11.18.0**
-- UI: **Vanilla HTML/JS** (без фреймворков)
+- UI: **Vanilla HTML/JS** (без фреймвоворков)
 - Запуск: `npx tsx` без сборки
+- Менеджер процессов на Linux: **pm2**
 
 ## Архитектура
 
@@ -22,6 +23,8 @@ courtflow/
 ├── courts.json              # ✅ Справочник судов
 ├── urls.txt                 # Список дел (вручную)
 ├── .env                     # RUCAPTCHA_API_KEY (не коммитить)
+├── ecosystem.config.cjs    # ✅ pm2 конфиг
+├── LINUX_DEPLOY.md         # ✅ Инструкция по деплою
 ├── HTML_STRUCTURE.md
 ├── DECISIONS.md
 ├── BUG_REPORT.md
@@ -40,10 +43,10 @@ courtflow/
     │   ├── district.ts
     │   ├── appeal.ts
     │   ├── cassation.ts
-    │   └── magistrate.ts        # ✅ BUG-017 закрыт: uid=caseNumber, 5 колонок событий, filingDate/hearingDate/result
+    │   └── magistrate.ts        # ✅ BUG-017 закрыт: uid=caseNumber, 5 колонок, filingDate/hearingDate/result
     ├── captcha/
     │   ├── rucaptcha.ts         # ✅ RuCaptcha API v2 (createTask/getTaskResult)
-    │   ├── session.ts           # ✅ Puppeteer + --ignore-certificate-errors
+    │   ├── session.ts           # ✅ Puppeteer + --ignore-certificate-errors + --no-sandbox
     │   └── solver.ts            # ⚠️ заглушка (BUG-019), не используется
     ├── scheduler/
     │   ├── orchestrator.ts      # ✅ основной раннер, magistrate через Puppeteer
@@ -60,61 +63,71 @@ courtflow/
 
 ## Текущее состояние (2026-07-02)
 
-### ✅ Всё работает
+### ✅ Всё работает на Windows
 - `npm run test:smoke`
 - `npm start`
 - `npm run enrich:courts`
 - `npm run parse` — **district / appeal / cassation / magistrate — все OK**
 - UI: названия судов, адрес, телефоны, email
 - RuCaptcha API v2 (`createTask`/`getTaskResult`, `api.rucaptcha.com`)
-- MagistrateAdapter: uid = судебный номер дела, 5 колонок событий, filingDate/hearingDate/result
-- Прогон 26/26 дел, 8 magistrate-участков — 100% success (лог 2026-07-02 09:57–10:03)
+- MagistrateAdapter: uid = судебный номер, 5 колонок, filingDate/hearingDate/result
+- Прогон 26/26 дел, 8 magistrate-участков (100% success)
 
-### ⏳ Требуется (очередь)
-1. **Linux-деплой** — systemd или pm2, переменные окружения, Puppeteer зависимости
-2. **BUG-019** — удалить `solver.ts` или реализовать
+### ⏳ Следующие шаги (очередь)
+1. **Linux-деплой** — см. `LINUX_DEPLOY.md`
+2. **BUG-019** — удалить `solver.ts`
 3. **XLSX** — экспорт данных
 
 ## Важные особенности
 
 ### msudrf.ru — SSL-сертификат
-Сайты мировых судей используют wildcard `*.msudrf.ru`, который **не покрывает** домены вида `35.perm.msudrf.ru` (два уровня). Puppeteer падает с `ERR_CERT_COMMON_NAME_INVALID`. Фикс: `--ignore-certificate-errors` в args Puppeteer launch.
+Wildcard `*.msudrf.ru` не покрывает домены вида `35.perm.msudrf.ru`. Фикс: `--ignore-certificate-errors` в Puppeteer launch args (`session.ts`).
 
-### npm run parse — аргументы
-Оркестратор **не принимает** `--type` как аргумент — тип суда определяется автоматически из `urls.txt` через `loadUrls()`. Правильный запуск: просто `npm run parse`. Вызов `npm run parse -- --type magistrate` вызывает npm warning и игнорируется.
+### npm run parse
+Оркестратор не принимает `--type` — тип суда читается автоматически из `urls.txt`. Правильный запуск: `npm run parse`.
 
 ### PUPPETEER_HEADLESS
-Для диагностики: `PUPPETEER_HEADLESS=false npm run parse` — запустит с видимым окном. Не пушить `.env` с этим флагом.
+`PUPPETEER_HEADLESS=false npm run parse` — запуск с видимым окном (Windows диагностика). Не пушить в `.env`.
 
 ### MagistrateAdapter — структура HTML msudrf.ru
-- `<h2>ДЕЛО № X-XXXX/YYYY</h2>` — номер дела (→ uid)
-- Таб 0 (`tab-content[0]`): `table.tablcont` — основные сведения (категория, судья)
-- Таб 1 (`tab-content[1]`): **5 колонок** — событие, дата, время, результат, судья
-- Таб 2 (`tab-content[2]`): стороны — строка 0: h2, строка 1: роли, строка 2: имена
+- `<h2>ДЕЛО № X-XXXX/YYYY</h2>` → uid
+- tab-content[0]: основные сведения (категория, судья)
+- tab-content[1]: 5 колонок — событие, дата, время, результат, судья
+- tab-content[2]: строка 1 — роли, строка 2 — имена
+
+### pm2 (Linux)
+- viewer: `courtflow-viewer` — постоянный процесс
+- parser: `courtflow-parser` — `cron_restart: '0 */6 * * *'` (каждые 6 часов)
+- Конфиг: `ecosystem.config.cjs`
+- Полная инструкция: `LINUX_DEPLOY.md`
 
 ## Команды
 
-```powershell
+```bash
+# Windows (разработка)
 npm run test:smoke
 npm run parse
 npm start
 npm run enrich:courts
+
+# Linux (production)
+pm2 start ecosystem.config.cjs
+pm2 restart courtflow-parser   # ручной запуск парсера
+pm2 logs courtflow-viewer
+pm2 status
 ```
 
 ## Что сделано в текущей сессии (2026-07-02)
 
 ### Исправлено
-- BUG-018: `response.buffer()` → `page.evaluate(fetch)`
-- BUG-020: `--ignore-certificate-errors` в Puppeteer args
-- BUG-021: `puppeteer.Page` → `import { type Page } from 'puppeteer'`
-- BUG-022: `Locator.getAttribute` → `page.$eval`
-- BUG-016: magistrate end-to-end подтверждён — закрыт
-- BUG-017: MagistrateAdapter — uid, events 5 колонок, filingDate/hearingDate/result, индексы строк сторон
-- RuCaptcha переведён на API v2
-- `.gitignore`: logs/ пушатся, только lock игнорируется
+- BUG-017, 018, 019(open), 020, 021, 022 — закрыты
+- BUG-016: magistrate end-to-end — закрыт
+- MagistrateAdapter: uid, events 5 колонок, filingDate/hearingDate/result
+- RuCaptcha API v2
+- pm2 ecosystem.config.cjs + LINUX_DEPLOY.md
 
 ### Открыто
-- BUG-019: `solver.ts` — заглушка, не блокер
+- BUG-019: `solver.ts` — не блокер
 
 ## Промпт для новой сессии
 
