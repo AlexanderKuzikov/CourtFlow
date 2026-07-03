@@ -1,0 +1,67 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0007-01-2025-005668-17",
+    "type": "Гражданские дела - кассация",
+    "number": "8Г-7317/2026 [88-8693/2026]",
+    "court": "7kas",
+    "courtType": "cassation",
+    "identifiers": {
+      "delo_id": "2800001",
+      "case_uid": "07ae7a19-4220-47e9-9f09-094b2e72e9fb",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": "2026-07-01T20:00:00",
+    "card": {
+      "filingDate": "2026-05-06",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Конкин Михаил Валерьевич",
+      "hearingDate": "2026-06-09",
+      "result": "частичная несущественная отмена или изменение решения по основному требованию",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2026-06-09",
+        "eventTime": "15:30",
+        "location": "102(П1)",
+        "result": "частичная несущественная отмена или изменение решения по основному требованию",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-05-14"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Аспидова Александра Владимировна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Бучин Данил Игоревич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "Подюков Георгий Михайлович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

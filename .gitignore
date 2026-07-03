@@ -76,7 +76,7 @@ vite.config.ts.timestamp-*
 .vite/
 
 # Data — парсинг (не пушим в репо)
-data/
+# data/
 
 # Lock-файл оркестратора — не пушим
 logs/orchestrator.lock

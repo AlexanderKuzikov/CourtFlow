@@ -1,0 +1,228 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "1144014",
+    "type": "Гражданское дело",
+    "number": "2-962/2026",
+    "court": "86.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Прочие исковые дела Иные исковые дела"
+      ],
+      "judge": "Гладкий Алексей Анатольевич",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Наименование события",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Время события",
+        "reason": null,
+        "note": "Результат события",
+        "publishDate": null
+      },
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Принято решение (22.06.2026): Определение о принятии к производству",
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-06-22",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Принято решение: Определение о назначении предварительного судебного заседания",
+        "publishDate": null
+      },
+      {
+        "eventName": "Предварительное судебное заседание",
+        "eventDate": "2026-07-15",
+        "eventTime": null,
+        "location": null,
+        "result": "12:00",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": null,
+        "name": "Третье лицо, не заявляющее самостоятельные требования",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Ответчик",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Материальный истец",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Третье лицо, не заявляющее самостоятельные требования",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Третье лицо, не заявляющее самостоятельные требования",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "1144004",
+    "type": "Гражданское дело",
+    "number": "2-961/2026",
+    "court": "86.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Прочие исковые дела Иные исковые дела"
+      ],
+      "judge": "Гладкий Алексей Анатольевич",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Наименование события",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Время события",
+        "reason": null,
+        "note": "Результат события",
+        "publishDate": null
+      },
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Принято решение (22.06.2026): Определение о принятии к производству",
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-06-22",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Принято решение: Определение о назначении предварительного судебного заседания",
+        "publishDate": null
+      },
+      {
+        "eventName": "Предварительное судебное заседание",
+        "eventDate": "2026-07-15",
+        "eventTime": null,
+        "location": null,
+        "result": "11:30",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": null,
+        "name": "Третье лицо, не заявляющее самостоятельные требования",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Ответчик",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Третье лицо, не заявляющее самостоятельные требования",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Материальный истец",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Третье лицо, не заявляющее самостоятельные требования",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Третье лицо, не заявляющее самостоятельные требования",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

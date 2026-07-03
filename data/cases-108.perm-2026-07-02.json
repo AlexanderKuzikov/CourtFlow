@@ -1,0 +1,212 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "1387272",
+    "type": "Гражданское дело",
+    "number": "2-7/2026 (2-2277/2025)",
+    "court": "108.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Иски, связанные с возмещением ущерба Иски о возмещении ущерба от ДТП Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Пискунов Александр Владимирович",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Наименование события",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Время события",
+        "reason": null,
+        "note": "Результат события",
+        "publishDate": null
+      },
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Принято решение (10.11.2025): Определение о принятии к производству",
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2025-11-10",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2025-12-10",
+        "eventTime": null,
+        "location": null,
+        "result": "10:00",
+        "reason": null,
+        "note": "Перенесено по причинам: Иные причины",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2026-01-19",
+        "eventTime": null,
+        "location": null,
+        "result": "10:00",
+        "reason": null,
+        "note": "Принято решение: Решение по существу",
+        "publishDate": null
+      },
+      {
+        "eventName": "Решение по существу",
+        "eventDate": "2026-01-19",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Обращение к исполнению",
+        "eventDate": "2026-04-28",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Окончание производства",
+        "eventDate": "2026-04-28",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Сдача в архив",
+        "eventDate": "2026-04-28",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": null,
+        "name": "Ответчик",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Материальный истец",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "1421034",
+    "type": "Гражданское дело",
+    "number": "2-1130/2026",
+    "court": "108.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Прочие исковые дела Иные исковые дела"
+      ],
+      "judge": "Пискунов Александр Владимирович",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Наименование события",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Результат события",
+        "reason": null,
+        "note": "Судья",
+        "publishDate": null
+      },
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Судебный приказ",
+        "reason": null,
+        "note": "Решение принял: Пискунов Александр Владимирович",
+        "publishDate": null
+      },
+      {
+        "eventName": "Регистрация судебного приказа",
+        "eventDate": "2026-06-23",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": null,
+        "name": "Взыскатель",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Должник",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

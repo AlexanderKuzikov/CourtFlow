@@ -1,0 +1,121 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0002-01-2026-003231-43",
+    "type": "Гражданские дела - первая инстанция",
+    "number": "2-2605/2026 ~ М-1862/2026",
+    "court": "industry--perm",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "c5dda7ac-7557-4f15-91db-186a88782b4c",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-06-22",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Старикова Наталия Владиславовна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": "Рассматривается единолично судьей"
+    },
+    "events": [
+      {
+        "eventName": "Регистрация иска (заявления, жалобы) в суде",
+        "eventDate": "2026-06-22",
+        "eventTime": "14:24",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Передача материалов судье",
+        "eventDate": "2026-06-22",
+        "eventTime": "17:19",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Решение вопроса о принятии иска (заявления, жалобы) к рассмотрению",
+        "eventDate": "2026-06-23",
+        "eventTime": "17:18",
+        "location": null,
+        "result": "Иск (заявление, жалоба) принят к производству",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-24"
+      },
+      {
+        "eventName": "Переход к рассмотрению дела в порядке упрощенного производства",
+        "eventDate": "2026-06-23",
+        "eventTime": "17:18",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Срок для предоставления доказательств и возражений до 17.07.2026\nСрок для предоставления дополнительных возражений до 10.08.2026",
+        "publishDate": "2026-06-24"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "ИП Аспидова Александра Владимировна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": "5904407494",
+        "kpp": "590401001",
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "СПАО \"Ингосстрах\"",
+        "inn": "7705042179",
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Чалов Сергей Александрович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Шодиев Джонибек Зарифович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

@@ -1,0 +1,350 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2414120",
+    "type": "Гражданское дело",
+    "number": "2-936/2026",
+    "court": "35.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с жилищными отношениями О взыскании платы за жилую площадь и коммунальные платежи, тепло и электроэнергию"
+      ],
+      "judge": "Смирнова Мария Николаевна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Наименование события",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Результат события",
+        "reason": null,
+        "note": "Судья",
+        "publishDate": null
+      },
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (15.05.2026): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Смирнова Мария Николаевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-05-15",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о рассмотрении дела в упрощенном производстве",
+        "reason": null,
+        "note": "Решение принял: Смирнова Мария Николаевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Упрощенное производство",
+        "eventDate": "2026-05-15",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": null,
+        "name": "Ответчик",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Материальный истец",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2414114",
+    "type": "Гражданское дело",
+    "number": "2-935/2026",
+    "court": "35.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с жилищными отношениями О взыскании платы за жилую площадь и коммунальные платежи, тепло и электроэнергию"
+      ],
+      "judge": "Смирнова Мария Николаевна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Наименование события",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Время события",
+        "reason": null,
+        "note": "Результат события",
+        "publishDate": null
+      },
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Принято решение (20.05.2026): Определение о принятии к производству",
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-05-20",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2026-06-19",
+        "eventTime": null,
+        "location": null,
+        "result": "09:30",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": null,
+        "name": "Ответчик",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Материальный истец",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2414107",
+    "type": "Гражданское дело",
+    "number": "2-934/2026",
+    "court": "35.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с жилищными отношениями О взыскании платы за жилую площадь и коммунальные платежи, тепло и электроэнергию"
+      ],
+      "judge": "Смирнова Мария Николаевна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Наименование события",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Результат события",
+        "reason": null,
+        "note": "Судья",
+        "publishDate": null
+      },
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (22.05.2026): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Смирнова Мария Николаевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-05-22",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о рассмотрении дела в упрощенном производстве",
+        "reason": null,
+        "note": "Решение принял: Смирнова Мария Николаевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Упрощенное производство",
+        "eventDate": "2026-05-22",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": null,
+        "name": "Ответчик",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Материальный истец",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Ответчик",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2414101",
+    "type": "Гражданское дело",
+    "number": "2-933/2026",
+    "court": "35.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с жилищными отношениями О взыскании платы за жилую площадь и коммунальные платежи, тепло и электроэнергию"
+      ],
+      "judge": "Смирнова Мария Николаевна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Наименование события",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Результат события",
+        "reason": null,
+        "note": "Судья",
+        "publishDate": null
+      },
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (15.05.2026): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Смирнова Мария Николаевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-05-15",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о рассмотрении дела в упрощенном производстве",
+        "reason": null,
+        "note": "Решение принял: Смирнова Мария Николаевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Упрощенное производство",
+        "eventDate": "2026-05-15",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": null,
+        "name": "Ответчик",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": null,
+        "name": "Материальный истец",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]
