@@ -1,0 +1,177 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-2210/2025",
+    "type": "Гражданское дело",
+    "number": "2-2210/2025",
+    "court": "16.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Иски, связанные с возмещением ущерба Иски о возмещении ущерба от ДТП Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Негрей Елена Сергеевна",
+      "hearingDate": null,
+      "result": "Принято решение: Решение по существу",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (23.06.2025): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Негрей Елена Сергеевна",
+        "publishDate": "2025-06-23"
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2025-06-23",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о назначении предварительного судебного заседания",
+        "reason": null,
+        "note": "Решение принял: Негрей Елена Сергеевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Предварительное судебное заседание",
+        "eventDate": "2025-07-22",
+        "eventTime": "11:00",
+        "location": null,
+        "result": "Перенесено по причинам: Неявка обеих сторон; Истребование доказательств",
+        "reason": null,
+        "note": "Решение принял: Негрей Елена Сергеевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Предварительное судебное заседание",
+        "eventDate": "2025-08-12",
+        "eventTime": "14:00",
+        "location": null,
+        "result": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+        "reason": null,
+        "note": "Решение принял: Негрей Елена Сергеевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2025-09-02",
+        "eventTime": "15:00",
+        "location": null,
+        "result": "Перенесено по причинам: Перерыв",
+        "reason": null,
+        "note": "Решение принял: Негрей Елена Сергеевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2025-09-09",
+        "eventTime": "14:30",
+        "location": null,
+        "result": "Принято решение: Определение о приостановлении производства",
+        "reason": null,
+        "note": "Решение принял: Негрей Елена Сергеевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Приостановление производства",
+        "eventDate": "2025-09-09",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+        "reason": null,
+        "note": "Решение принял: Негрей Елена Сергеевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2025-10-23",
+        "eventTime": "10:30",
+        "location": null,
+        "result": "Принято решение: Решение по существу",
+        "reason": null,
+        "note": "Решение принял: Негрей Елена Сергеевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Решение по существу",
+        "eventDate": "2025-10-23",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Обжалование",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Обращение к исполнению",
+        "eventDate": "2026-03-20",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Окончание производства",
+        "eventDate": "2025-10-21",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Сдача в архив",
+        "eventDate": "2026-03-20",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Ответчик",
+        "name": "Давыдов Дмитрий Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"КОНСАЛТ ПЛЮС\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

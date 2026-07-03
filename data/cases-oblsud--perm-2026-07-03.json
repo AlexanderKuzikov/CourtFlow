@@ -173,5 +173,152 @@
         "ogrnip": null
       }
     ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0007-01-2025-005668-17",
+    "type": "Гражданские дела - апелляция",
+    "number": "33-2030/2026",
+    "court": "oblsud--perm",
+    "courtType": "appeal",
+    "identifiers": {
+      "delo_id": "5",
+      "case_uid": "45dcad31-4ad4-448c-ab97-33ec62895e23",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-01-23",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Соколова Анна Рашидовна",
+      "hearingDate": "2026-03-02",
+      "result": "РЕШЕНИЕ оставлено БЕЗ ИЗМЕНЕНИЯ",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Передача дела судье",
+        "eventDate": "2026-01-23",
+        "eventTime": "15:44",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-01-23"
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2026-03-02",
+        "eventTime": "12:10",
+        "location": "426",
+        "result": "Вынесено решение",
+        "reason": "РЕШЕНИЕ оставлено БЕЗ ИЗМЕНЕНИЯ",
+        "note": null,
+        "publishDate": "2026-01-27"
+      },
+      {
+        "eventName": "Составлено мотивированное апелляционное определение в окончательной форме",
+        "eventDate": "2026-03-16",
+        "eventTime": "07:49",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-03-17"
+      },
+      {
+        "eventName": "Отправка копии определения суда апелляционной инстанции лицу, участвующему в деле",
+        "eventDate": "2026-03-16",
+        "eventTime": "15:38",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-03-17"
+      },
+      {
+        "eventName": "Дело сдано в отдел судебного делопроизводства",
+        "eventDate": "2026-03-17",
+        "eventTime": "16:47",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-03-17"
+      },
+      {
+        "eventName": "Передано в экспедицию",
+        "eventDate": "2026-03-19",
+        "eventTime": "15:48",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-03-19"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Аитов Шамиль Зуфарович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Аспидова Александра Владимировна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Бучин Даниил Игоревич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Мейтарджева Софья Михайловна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "ООО Яндекс.Такси",
+        "inn": "7704340310",
+        "kpp": "770301001",
+        "ogrn": "5157746192731",
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "Подюков Георгий Михайлович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
   }
 ]
