@@ -1,0 +1,310 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-936/2026",
+    "type": "Гражданское дело",
+    "number": "2-936/2026",
+    "court": "35.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с жилищными отношениями О взыскании платы за жилую площадь и коммунальные платежи, тепло и электроэнергию"
+      ],
+      "judge": "Смирнова Мария Николаевна",
+      "hearingDate": null,
+      "result": "Решение принял: Смирнова Мария Николаевна",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": "Принято решение (15.05.2026): Определение о принятии к производству",
+        "location": null,
+        "result": "Решение принял: Смирнова Мария Николаевна",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-05-15",
+        "eventTime": "Принято решение: Определение о рассмотрении дела в упрощенном производстве",
+        "location": null,
+        "result": "Решение принял: Смирнова Мария Николаевна",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Упрощенное производство",
+        "eventDate": "2026-05-15",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Ответчик",
+        "name": "Логинова Татьяна Германовна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"Идеальная Компания\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-935/2026",
+    "type": "Гражданское дело",
+    "number": "2-935/2026",
+    "court": "35.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с жилищными отношениями О взыскании платы за жилую площадь и коммунальные платежи, тепло и электроэнергию"
+      ],
+      "judge": "Смирнова Мария Николаевна",
+      "hearingDate": null,
+      "result": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (20.05.2026): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Смирнова Мария Николаевна",
+        "publishDate": "2026-05-20"
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-05-20",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+        "reason": null,
+        "note": "Решение принял: Смирнова Мария Николаевна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2026-06-19",
+        "eventTime": "09:30",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Ответчик",
+        "name": "Нестеренко Ольга Леонидовна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"Идеальная Компания\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-934/2026",
+    "type": "Гражданское дело",
+    "number": "2-934/2026",
+    "court": "35.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с жилищными отношениями О взыскании платы за жилую площадь и коммунальные платежи, тепло и электроэнергию"
+      ],
+      "judge": "Смирнова Мария Николаевна",
+      "hearingDate": null,
+      "result": "Решение принял: Смирнова Мария Николаевна",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": "Принято решение (22.05.2026): Определение о принятии к производству",
+        "location": null,
+        "result": "Решение принял: Смирнова Мария Николаевна",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-05-22",
+        "eventTime": "Принято решение: Определение о рассмотрении дела в упрощенном производстве",
+        "location": null,
+        "result": "Решение принял: Смирнова Мария Николаевна",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Упрощенное производство",
+        "eventDate": "2026-05-22",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Ответчик",
+        "name": "Гребенщикова Валентина Петровна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"Идеальная Компания\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Ответчик",
+        "name": "Штейникова Ольга Александровна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-933/2026",
+    "type": "Гражданское дело",
+    "number": "2-933/2026",
+    "court": "35.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с жилищными отношениями О взыскании платы за жилую площадь и коммунальные платежи, тепло и электроэнергию"
+      ],
+      "judge": "Смирнова Мария Николаевна",
+      "hearingDate": null,
+      "result": "Решение принял: Смирнова Мария Николаевна",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": "Принято решение (15.05.2026): Определение о принятии к производству",
+        "location": null,
+        "result": "Решение принял: Смирнова Мария Николаевна",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-05-15",
+        "eventTime": "Принято решение: Определение о рассмотрении дела в упрощенном производстве",
+        "location": null,
+        "result": "Решение принял: Смирнова Мария Николаевна",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Упрощенное производство",
+        "eventDate": "2026-05-15",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Ответчик",
+        "name": "Дьяконова Людмила Аркадьевна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"Идеальная Компания\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

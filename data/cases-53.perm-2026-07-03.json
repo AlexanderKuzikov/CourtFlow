@@ -1,0 +1,109 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-2808/2026",
+    "type": "Гражданское дело",
+    "number": "2-2808/2026",
+    "court": "53.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Иски, связанные с возмещением ущерба Иски о возмещении ущерба от ДТП Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Павленко Наталья Олеговна",
+      "hearingDate": "2026-07-13",
+      "result": "Принято решение: Определение о назначении предварительного судебного заседания",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (24.06.2026): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Павленко Наталья Олеговна",
+        "publishDate": "2026-06-24"
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-06-24",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о назначении предварительного судебного заседания",
+        "reason": null,
+        "note": "Решение принял: Павленко Наталья Олеговна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Предварительное судебное заседание",
+        "eventDate": "2026-07-13",
+        "eventTime": "11:00",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Представитель",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Ответчик",
+        "name": "ГУбарева Ольга Васильевна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Третье лицо, не заявляющее самостоятельные требования",
+        "name": "Общество с ограниченной ответственностью \"Таксопарк 59\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"КОНСАЛТ ПЛЮС\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Третье лицо, не заявляющее самостоятельные требования",
+        "name": "Романов Игорь Андреевич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Третье лицо, не заявляющее самостоятельные требования",
+        "name": "СПАО \"РЕСО-Гарантия\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]
