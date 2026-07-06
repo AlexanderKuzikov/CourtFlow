@@ -19,10 +19,10 @@
 
 ```
 courtflow/
-├── config.json              # scheduleRetry, staleThresholdH добавлены
+├── config.json              # schedule, scheduleRetry, staleThresholdH
 ├── courts.json              # ✅ Справочник судов
-├── watch/                   # ✅ Папка для ссылок на мониторинг (любые файлы, любой формат)
-├── urls.txt                 # Fallback если watch/ пуста
+├── watch/                   # ✅ Основной источник URL (любые текстовые файлы)
+├── urls.txt                 # Fallback если watch/ отсутствует или пуста
 ├── .env                     # RUCAPTCHA_API_KEY (не коммитить)
 ├── ecosystem.config.cjs    # ✅ pm2: viewer + parser + parser-retry
 ├── LINUX_DEPLOY.md         # ✅ Инструкция по деплою
@@ -46,19 +46,18 @@ courtflow/
     │   └── magistrate.ts
     ├── captcha/
     │   ├── rucaptcha.ts
-    │   └── session.ts           # ✅ BUG-019 закрыт: solver.ts удалён
+    │   └── session.ts
     ├── scheduler/
-    │   ├── orchestrator.ts      # ✅ --retry режим (stale URL фильтр по run-log)
+    │   ├── orchestrator.ts      # ✅ full-run + --retry режим по stale URL
     │   ├── smoke.ts
     │   └── enrich-courts.ts
     ├── exporter/
     │   ├── json.ts
     │   └── xlsx.ts              # ⏳ не реализовано (низкий приоритет)
     └── viewer/
-        ├── server.ts            # ✅ reconciliation: /api/cases только активные courtId
-        │                        # ✅ /api/active-courts — список из watch/
+        ├── server.ts            # ✅ reconciliation + /api/active-courts + full/retry/enrich endpoints
         └── public/
-            └── index.html
+            └── index.html       # ✅ UI управления прогонами
 ```
 
 ## Текущее состояние (2026-07-06)
@@ -67,58 +66,60 @@ courtflow/
 - `npm run parse` — 26/26 дел, 100% success (Windows + Linux)
 - `npm run parse -- --retry` — только stale URL (lastSuccess > staleThresholdH часов)
 - Linux-деплой прошёл, демонстрация успешна
-- UI: количество судов = точное (reconciliation с watch/)
+- UI: показывает только активные суды из `watch/`
+- Ручной запуск full-run / retry-run есть в UI
+- `watch/` принимает `.txt`, `.json`, `.csv`, файлы без расширения, пробельное разделение ссылок, кавычки и смешанные разделители
 
 ### ⏳ Следующие шаги (очередь)
-1. **XLSX** — `packages/exporter/xlsx.ts` (exceljs в зависимостях, низкий приоритет)
-2. **LINUX_DEPLOY.md** — обновить: добавить `courtflow-parser-retry` процесс, watch/ папку
+1. **XLSX** — `packages/exporter/xlsx.ts` (низкий приоритет)
+2. При необходимости — очистка/архивация старых `data/*.json` вне активного мониторинга
+3. При необходимости — уведомления о недоступных судах / stale URL
 
 ## watch/ — источник URL
 
-- Любые файлы, любые расширения, любые разделители
-- Нормализатор: снимает кавычки, добавляет https://, валидирует через `new URL()`
+- Любые текстовые файлы, любые расширения, любая вложенность папок
+- Нормализатор извлекает ссылки из произвольного текста, включая JSON/CSV
+- Разделители: пробелы, табы, переносы, `;`, `|`
+- Кавычки и JSON-синтаксис игнорируются
+- Если нет `https://` — добавляется автоматически
 - Фильтр: только домены `*.sudrf.ru` и `*.msudrf.ru`
+- Дубликаты URL — дедупликация через `Set`
 - Удаление файла = прекращение мониторинга URL из него
 - Если `watch/` пуста или отсутствует — fallback на `urls.txt`
-- Дубликаты URL (из разных файлов) — дедуплицируются
 
 ## Two-tier scheduling
 
 ```json
-"schedule":       "0 8 * * 1,3,5"   // основной прогон, все URL
-"scheduleRetry":  "0 11,14 * * 1,3,5" // retry, только stale
-"staleThresholdH": 24                // порог в часах
+"schedule":       "0 8 * * 1,3,5"
+"scheduleRetry":  "0 11,14 * * 1,3,5"
+"staleThresholdH": 24
 ```
 
-- `courtflow-parser` — основной прогон (pm2 cron)
-- `courtflow-parser-retry` — retry-прогон с `--retry` флагом (pm2 cron)
-- Оркестратор в `--retry` режиме читает run-log историю, фильтрует URL где `lastSuccess > staleThresholdH`
+- `courtflow-parser` — основной прогон, все URL
+- `courtflow-parser-retry` — retry-прогон с `--retry`, только stale URL
+- Оркестратор строит `lastSuccess` по `run-log-*.json` и фильтрует stale URL
 
-## Важные особенности
+## UI / reconciliation
 
-### msudrf.ru — SSL-сертификат
-Wildcard `*.msudrf.ru` не покрывает `35.perm.msudrf.ru`. Фикс: `--ignore-certificate-errors`.
-
-### npm run parse
-Тип суда читается автоматически из URL. Правильный запуск: `npm run parse`.
-
-### PUPPETEER_HEADLESS
-`PUPPETEER_HEADLESS=false npm run parse` — только Windows диагностика. Не пушить в `.env`.
+- `/api/cases` теперь фильтрует данные по активным `courtId` из текущего источника мониторинга
+- Исторические JSON в `data/` не удаляются, но не отображаются если суд уже не мониторится
+- `/api/active-courts` даёт точный список судов в мониторинге
+- `/api/run`, `/api/run/retry`, `/api/run/enrich-courts`, `/api/run/status` используются UI для ручного управления
 
 ## Команды
 
 ```bash
-# Windows / Linux (разработка)
+# Windows / Linux
 npm run test:smoke
 npm run parse
 npm run parse -- --retry
 npm start
 npm run enrich:courts
 
-# Linux (production, pm2)
+# Linux / pm2
 pm2 start ecosystem.config.cjs
-pm2 restart courtflow-parser         # ручной основной прогон
-pm2 restart courtflow-parser-retry   # ручной retry
+pm2 restart courtflow-parser
+pm2 restart courtflow-parser-retry
 pm2 logs courtflow-viewer
 pm2 status
 ```

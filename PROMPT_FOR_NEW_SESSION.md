@@ -12,38 +12,43 @@ CourtFlow — система мониторинга судебных дел РФ
 
 - Разработка: Windows 11 (PowerShell)
 - Целевой сервер: **Ubuntu Linux**
-- Менеджер процессов на Linux: **pm2** (`ecosystem.config.cjs` есть в репо)
+- Менеджер процессов на Linux: **pm2**
 
 ## Текущее состояние (2026-07-06)
 
 ### ✅ Всё работает
-- `npm run parse` — **26/26 дел, 100% success** (district + appeal + cassation + magistrate)
-- `npm run parse -- --retry` — только stale URL (lastSuccess > staleThresholdH часов)
+- `npm run parse` — **26/26 дел, 100% success**
+- `npm run parse -- --retry` — retry только для stale URL
 - `npm start` — web-viewer работает
 - Linux-деплой и демонстрация — успешны
-- RuCaptcha API v2: `createTask`/`getTaskResult`, `api.rucaptcha.com`
-- Puppeteer + `--ignore-certificate-errors` — мировые суды проходят
-- MagistrateAdapter: uid = судебный номер, 5 колонок, filingDate/hearingDate/result
-- courts.json: справочник судов с контактами
-- watch/ папка: источник URL для мониторинга (fuzzy нормализатор)
-- Two-tier scheduling: основной прогон + retry (только stale URL)
-- Reconciliation: UI показывает только суды из watch/
+- `watch/` — основной источник URL для мониторинга
+- `watch/` принимает текст, JSON, CSV, файлы без расширения, ссылки в кавычках и ссылки разделённые пробелами
+- Если `watch/` пуста — fallback на `urls.txt`
+- UI показывает только активные суды из `watch/`
+- В UI есть ручной запуск full-run и retry-run
+- `courtflow-parser-retry` есть в pm2-конфиге
+- RuCaptcha API v2 работает
+- Puppeteer + `--ignore-certificate-errors` закрывает msudrf
 
 ### ⏳ Очередь задач
 
-1. **LINUX_DEPLOY.md** — обновить: courtflow-parser-retry, watch/ папка
-2. **XLSX** — реализовать `packages/exporter/xlsx.ts` (низкий приоритет)
+1. **XLSX** — реализовать `packages/exporter/xlsx.ts` (низкий приоритет)
+2. При необходимости — архивирование/очистка старых `data/*.json`
+3. При необходимости — уведомления по stale/failed URL
 
 ## Что было сделано в последней сессии (2026-07-06)
 
-- **Linux-деплой** + демонстрация — успешно
-- **BUG-019 закрыт**: удалён `solver.ts`
-- **watch/ папка**: новый источник URL, fuzzy нормализатор (кавычки, разделители, схема)
-- **Reconciliation**: `/api/cases` фильтрует только активные courtId из watch/
-- **`/api/active-courts`**: новый эндпоинт — точный список судов в мониторинге
-- **Two-tier scheduling**: `scheduleRetry` + `staleThresholdH` в config.json
-- **`--retry` флаг** в оркестраторе: читает run-log, парсит только stale URL
-- **`courtflow-parser-retry`** в ecosystem.config.cjs
+- **BUG-019 закрыт**: удалён `packages/captcha/solver.ts`
+- Добавлен `watch/` как основной источник URL
+- `packages/core/urls.ts` переписан: fuzzy extraction из text/JSON/CSV/space-separated input
+- Добавлен reconciliation: `/api/cases` показывает только активные courtId
+- Добавлен `/api/active-courts`
+- Добавлен `scheduleRetry` + `staleThresholdH` в `config.json`
+- `packages/scheduler/orchestrator.ts` получил `--retry` режим по `run-log-*.json`
+- `ecosystem.config.cjs`: добавлен `courtflow-parser-retry`
+- `packages/viewer/server.ts`: добавлены `/api/run/retry`, `/api/run/enrich-courts`, новый `/api/run/status`
+- `packages/viewer/public/index.html`: управление full/retry прогонами и статусами
+- `LINUX_DEPLOY.md`, `CONTEXT.md`, `DECISIONS.md`, `BUG_REPORT.md` обновлены
 
 ## Правила работы
 
@@ -57,8 +62,8 @@ CourtFlow — система мониторинга судебных дел РФ
 
 ## Файлы для обязательного чтения
 
-1. `CONTEXT.md` — текущее состояние и архитектура
-2. `BUG_REPORT.md` — все баги
-3. `DECISIONS.md` — архитектурные решения
-4. `LINUX_DEPLOY.md` — инструкция по деплою (Ubuntu + pm2)
-5. `ecosystem.config.cjs` — pm2-конфиг
+1. `CONTEXT.md`
+2. `BUG_REPORT.md`
+3. `DECISIONS.md`
+4. `LINUX_DEPLOY.md`
+5. `ecosystem.config.cjs`
