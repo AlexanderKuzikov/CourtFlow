@@ -1,18 +1,18 @@
 // packages/core/config.ts
 // Загрузка config.json + secrets из .env
-// Список дел — в urls.txt (packages/core/urls.ts)
+// Список дел — в watch/ (packages/core/urls.ts), fallback urls.txt
 // BUG-001: dotenv загружается здесь, работает в том числе при cron-запуске
 
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { config as dotenvConfig } from 'dotenv';
 
-// Загружаем .env сразу при импорте модуля
 dotenvConfig({ path: resolve(process.cwd(), '.env') });
 
-// SafeAppConfig — без ключей, используется для GET /api/config (BUG-003)
 export interface SafeAppConfig {
   schedule: string;
+  scheduleRetry: string;   // cron для retry-прогонов (только stale URL)
+  staleThresholdH: number; // часов без успешного обновления → считается устаревшим
   outputDir: string;
   exportXlsx: boolean;
   captcha: {
@@ -33,7 +33,6 @@ export interface SafeAppConfig {
   };
 }
 
-// AppConfig — полный, только внутри сервера
 export interface AppConfig extends Omit<SafeAppConfig, 'captcha'> {
   captcha: SafeAppConfig['captcha'] & {
     apiKey: string;
@@ -55,10 +54,13 @@ export function loadConfig(): AppConfig {
   cfg.captcha.primaryKeySet = apiKey.length > 0;
   cfg.captcha.fallbackKeySet = fallbackApiKey.length > 0;
 
+  // Дефолты для новых полей (обратная совместимость)
+  cfg.scheduleRetry ??= '';
+  cfg.staleThresholdH ??= 24;
+
   return cfg;
 }
 
-// BUG-003: безопасная версия для GET /api/config
 export function toSafeConfig(cfg: AppConfig): SafeAppConfig {
   return {
     ...cfg,
