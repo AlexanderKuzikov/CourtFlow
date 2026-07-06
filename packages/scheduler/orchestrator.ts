@@ -4,9 +4,13 @@
 // BUG-005: run-log-YYYY-MM-DD.json (история хранится)
 // BUG-012: charset из Content-Type заголовка ответа
 // BUG-010: CaptchaRequiredError логируется отдельно, не как FAIL
+//
+// Режимы запуска:
+//   npm run parse          — полный прогон всех URL
+//   npm run parse --retry  — только stale URL (lastSuccess > staleThresholdH часов назад)
 
-import { writeFileSync, readFileSync, renameSync, mkdirSync, existsSync, unlinkSync } from 'fs';
-import { resolve } from 'path';
+import { writeFileSync, readFileSync, renameSync, mkdirSync, existsSync, unlinkSync, readdirSync } from 'fs';
+import { resolve, join } from 'path';
 import iconv from 'iconv-lite';
 import { loadConfig } from '../core/config.js';
 import { loadUrls } from '../core/urls.js';
@@ -26,6 +30,8 @@ const ADAPTERS: Record<string, CourtAdapter> = {
   cassation:  new CassationAdapter(),
   magistrate: new MagistrateAdapter(),
 };
+
+const IS_RETRY = process.argv.includes('--retry');
 
 function detectCharset(contentType: string | null): string {
   if (!contentType) return 'win1251';
@@ -52,8 +58,33 @@ async function loadCaseHtml(url: string, courtType: string, timeoutMs: number, a
       debugDir: resolve(process.cwd(), 'logs'),
     });
   }
-
   return fetchHtml(url, timeoutMs);
+}
+
+/**
+ * Читает все run-log-*.json и возвращает Map<url, lastSuccessTimestamp>.
+ */
+function buildLastSuccessMap(logsDir: string): Map<string, number> {
+  const map = new Map<string, number>();
+  if (!existsSync(logsDir)) return map;
+
+  const files = readdirSync(logsDir)
+    .filter(f => f.startsWith('run-log-') && f.endsWith('.json'))
+    .sort();
+
+  for (const f of files) {
+    try {
+      const entries: RunResult[] = JSON.parse(readFileSync(join(logsDir, f), 'utf-8'));
+      for (const e of entries) {
+        if (e.success && e.url) {
+          const ts = new Date(e.timestamp).getTime();
+          const prev = map.get(e.url) ?? 0;
+          if (ts > prev) map.set(e.url, ts);
+        }
+      }
+    } catch { /* пропускаем повреждённый лог */ }
+  }
+  return map;
 }
 
 async function run() {
@@ -69,14 +100,32 @@ async function run() {
   }
   writeFileSync(lockPath, String(process.pid));
 
+  // В режиме --retry фильтруем только stale URL
+  let urlsToProcess = allUrls;
+  if (IS_RETRY) {
+    const staleMs = (config.staleThresholdH ?? 24) * 3600 * 1000;
+    const lastSuccess = buildLastSuccessMap(logsDir);
+    const now = Date.now();
+    urlsToProcess = allUrls.filter(({ url }) => {
+      const last = lastSuccess.get(url) ?? 0;
+      return (now - last) > staleMs;
+    });
+    console.log(`[orchestrator] RETRY режим. Stale (>${config.staleThresholdH}ч): ${urlsToProcess.length}/${allUrls.length} URL`);
+    if (urlsToProcess.length === 0) {
+      console.log('[orchestrator] Все URL свежие. Выход.');
+      try { unlinkSync(lockPath); } catch {}
+      process.exit(0);
+    }
+  }
+
   const courtGroups = new Map<string, { type: string; urls: string[] }>();
-  for (const { url, courtType, courtId } of allUrls) {
+  for (const { url, courtType, courtId } of urlsToProcess) {
     if (!courtGroups.has(courtId)) courtGroups.set(courtId, { type: courtType, urls: [] });
     courtGroups.get(courtId)!.urls.push(url);
   }
 
-  const totalUrls = allUrls.length;
-  console.log(`[orchestrator] Судов: ${courtGroups.size}, URL: ${totalUrls}`);
+  const totalUrls = urlsToProcess.length;
+  console.log(`[orchestrator] ${IS_RETRY ? '[RETRY] ' : ''}Судов: ${courtGroups.size}, URL: ${totalUrls}`);
 
   const results: RunResult[] = [];
 
