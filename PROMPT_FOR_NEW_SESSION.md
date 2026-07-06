@@ -14,32 +14,36 @@ CourtFlow — система мониторинга судебных дел РФ
 - Целевой сервер: **Ubuntu Linux**
 - Менеджер процессов на Linux: **pm2** (`ecosystem.config.cjs` есть в репо)
 
-## Текущее состояние (2026-07-02)
+## Текущее состояние (2026-07-06)
 
-### ✅ Всё работает на Windows
+### ✅ Всё работает
 - `npm run parse` — **26/26 дел, 100% success** (district + appeal + cassation + magistrate)
+- `npm run parse -- --retry` — только stale URL (lastSuccess > staleThresholdH часов)
 - `npm start` — web-viewer работает
-- RuCaptcha API v2: `createTask`/`getTaskResult`, `api.rucaptcha.com`, баланс есть
-- Puppeteer + `--ignore-certificate-errors` — мировые суды проходят (цепочка капча → RuCaptcha → HTML)
-- MagistrateAdapter: `uid` = судебный номер дела, 5 колонок событий, filingDate/hearingDate/result
+- Linux-деплой и демонстрация — успешны
+- RuCaptcha API v2: `createTask`/`getTaskResult`, `api.rucaptcha.com`
+- Puppeteer + `--ignore-certificate-errors` — мировые суды проходят
+- MagistrateAdapter: uid = судебный номер, 5 колонок, filingDate/hearingDate/result
 - courts.json: справочник судов с контактами
+- watch/ папка: источник URL для мониторинга (fuzzy нормализатор)
+- Two-tier scheduling: основной прогон + retry (только stale URL)
+- Reconciliation: UI показывает только суды из watch/
 
 ### ⏳ Очередь задач
 
-1. **Linux-деплой** — завтра утром демо. Инструкция полностью в `LINUX_DEPLOY.md`.
-2. **BUG-019** — удалить заглушку `packages/captcha/solver.ts` (не используется, не блокер)
-3. **XLSX** — реализовать `packages/exporter/xlsx.ts` (exceljs уже в зависимостях)
+1. **LINUX_DEPLOY.md** — обновить: courtflow-parser-retry, watch/ папка
+2. **XLSX** — реализовать `packages/exporter/xlsx.ts` (низкий приоритет)
 
-## Что было сделано в последней сессии (2026-07-02)
+## Что было сделано в последней сессии (2026-07-06)
 
-- **BUG-020 закрыт**: `ERR_CERT_COMMON_NAME_INVALID` — wildcard `*.msudrf.ru` не покрывает `35.perm.msudrf.ru`. Фикс: `--ignore-certificate-errors`
-- **BUG-017 закрыт**: MagistrateAdapter — uid=caseNumber, events 5 колонок, filingDate/hearingDate/result, индексы строк сторон
-- **BUG-016 закрыт**: magistrate end-to-end подтверждён логами (8 участков, 12/12 дел, success)
-- **BUG-022 закрыт**: `Locator.getAttribute` → `page.$eval`
-- **BUG-021 закрыт**: `puppeteer.Page` namespace → `import { type Page }`
-- **BUG-018 закрыт**: `response.buffer()` → `page.evaluate(fetch)`
-- Добавлен `ecosystem.config.cjs` (pm2: viewer постоянный + parser `cron 0 */6 * * *`)
-- Добавлен `LINUX_DEPLOY.md` (полная инструкция для Ubuntu)
+- **Linux-деплой** + демонстрация — успешно
+- **BUG-019 закрыт**: удалён `solver.ts`
+- **watch/ папка**: новый источник URL, fuzzy нормализатор (кавычки, разделители, схема)
+- **Reconciliation**: `/api/cases` фильтрует только активные courtId из watch/
+- **`/api/active-courts`**: новый эндпоинт — точный список судов в мониторинге
+- **Two-tier scheduling**: `scheduleRetry` + `staleThresholdH` в config.json
+- **`--retry` флаг** в оркестраторе: читает run-log, парсит только stale URL
+- **`courtflow-parser-retry`** в ecosystem.config.cjs
 
 ## Правила работы
 

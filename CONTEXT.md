@@ -6,12 +6,12 @@
 
 ## Что делает проект
 
-**CourtFlow** — система мониторинга судебных дел РФ. Парсит карточки дел с сайтов sudrf.ru и msudrf.ru, накапливает историю в JSON/XLSX, показывает через web-viewer.
+**CourtFlow** — система мониторинга судебных дел РФ. Парсит карточки дел с сайтов sudrf.ru и msudrf.ru, накапливает историю в JSON, показывает через web-viewer.
 
-- Офисный сервер: **Linux** (дистрибутив уточнить перед деплоем), доступ через браузер из офисной сети
-- Разработка сейчас: **Windows 11** (PowerShell + GitHub Desktop)
+- Целевой сервер: **Linux (Ubuntu)**. Доступ через браузер из офисной сети.
+- Разработка: **Windows 11** (PowerShell + GitHub Desktop)
 - Node.js: **v24.15.0**, TypeScript: **6.x**, npm: **11.18.0**
-- UI: **Vanilla HTML/JS** (без фреймвоворков)
+- UI: **Vanilla HTML/JS** (без фреймворков)
 - Запуск: `npx tsx` без сборки
 - Менеджер процессов на Linux: **pm2**
 
@@ -19,115 +19,109 @@
 
 ```
 courtflow/
-├── config.json
+├── config.json              # scheduleRetry, staleThresholdH добавлены
 ├── courts.json              # ✅ Справочник судов
-├── urls.txt                 # Список дел (вручную)
+├── watch/                   # ✅ Папка для ссылок на мониторинг (любые файлы, любой формат)
+├── urls.txt                 # Fallback если watch/ пуста
 ├── .env                     # RUCAPTCHA_API_KEY (не коммитить)
-├── ecosystem.config.cjs    # ✅ pm2 конфиг
+├── ecosystem.config.cjs    # ✅ pm2: viewer + parser + parser-retry
 ├── LINUX_DEPLOY.md         # ✅ Инструкция по деплою
 ├── HTML_STRUCTURE.md
 ├── DECISIONS.md
 ├── BUG_REPORT.md
 ├── CONTEXT.md
-├── logs/                    # run-log-YYYY-MM-DD.json, magistrate-last.html — пушатся
-├── data/                    # результаты парсинга — не пушатся
+├── logs/
 └── packages/
     ├── core/
-    │   ├── config.ts            # loadConfig() — config.json + .env
-    │   ├── urls.ts              # loadUrls() — читает urls.txt, автоопределяет courtType
-    │   ├── courts.ts            # ✅ Справочник + fetch с главной страницы суда
-    │   ├── errors.ts            # ✅ CaptchaRequiredError + isCaptchaPage
-    │   ├── types.ts             # Case, CaseEvent, CaseParty, CourtAdapter, RunResult
-    │   └── retry.ts             # withRetry(fn, options, label)
+    │   ├── config.ts            # scheduleRetry, staleThresholdH в интерфейсе
+    │   ├── urls.ts              # ✅ watch/ + fuzzy нормализатор + fallback urls.txt
+    │   ├── courts.ts
+    │   ├── errors.ts
+    │   ├── types.ts
+    │   └── retry.ts
     ├── adapters/
     │   ├── district.ts
     │   ├── appeal.ts
     │   ├── cassation.ts
-    │   └── magistrate.ts        # ✅ BUG-017 закрыт: uid=caseNumber, 5 колонок, filingDate/hearingDate/result
+    │   └── magistrate.ts
     ├── captcha/
-    │   ├── rucaptcha.ts         # ✅ RuCaptcha API v2 (createTask/getTaskResult)
-    │   ├── session.ts           # ✅ Puppeteer + --ignore-certificate-errors + --no-sandbox
-    │   └── solver.ts            # ⚠️ заглушка (BUG-019), не используется
+    │   ├── rucaptcha.ts
+    │   └── session.ts           # ✅ BUG-019 закрыт: solver.ts удалён
     ├── scheduler/
-    │   ├── orchestrator.ts      # ✅ основной раннер, magistrate через Puppeteer
+    │   ├── orchestrator.ts      # ✅ --retry режим (stale URL фильтр по run-log)
     │   ├── smoke.ts
-    │   └── enrich-courts.ts     # ✅ npm run enrich:courts
+    │   └── enrich-courts.ts
     ├── exporter/
     │   ├── json.ts
-    │   └── xlsx.ts              # ⏳ не реализовано
+    │   └── xlsx.ts              # ⏳ не реализовано (низкий приоритет)
     └── viewer/
-        ├── server.ts
+        ├── server.ts            # ✅ reconciliation: /api/cases только активные courtId
+        │                        # ✅ /api/active-courts — список из watch/
         └── public/
             └── index.html
 ```
 
-## Текущее состояние (2026-07-02)
+## Текущее состояние (2026-07-06)
 
-### ✅ Всё работает на Windows
-- `npm run test:smoke`
-- `npm start`
-- `npm run enrich:courts`
-- `npm run parse` — **district / appeal / cassation / magistrate — все OK**
-- UI: названия судов, адрес, телефоны, email
-- RuCaptcha API v2 (`createTask`/`getTaskResult`, `api.rucaptcha.com`)
-- MagistrateAdapter: uid = судебный номер, 5 колонок, filingDate/hearingDate/result
-- Прогон 26/26 дел, 8 magistrate-участков (100% success)
+### ✅ Всё работает
+- `npm run parse` — 26/26 дел, 100% success (Windows + Linux)
+- `npm run parse -- --retry` — только stale URL (lastSuccess > staleThresholdH часов)
+- Linux-деплой прошёл, демонстрация успешна
+- UI: количество судов = точное (reconciliation с watch/)
 
 ### ⏳ Следующие шаги (очередь)
-1. **Linux-деплой** — см. `LINUX_DEPLOY.md`
-2. **BUG-019** — удалить `solver.ts`
-3. **XLSX** — экспорт данных
+1. **XLSX** — `packages/exporter/xlsx.ts` (exceljs в зависимостях, низкий приоритет)
+2. **LINUX_DEPLOY.md** — обновить: добавить `courtflow-parser-retry` процесс, watch/ папку
+
+## watch/ — источник URL
+
+- Любые файлы, любые расширения, любые разделители
+- Нормализатор: снимает кавычки, добавляет https://, валидирует через `new URL()`
+- Фильтр: только домены `*.sudrf.ru` и `*.msudrf.ru`
+- Удаление файла = прекращение мониторинга URL из него
+- Если `watch/` пуста или отсутствует — fallback на `urls.txt`
+- Дубликаты URL (из разных файлов) — дедуплицируются
+
+## Two-tier scheduling
+
+```json
+"schedule":       "0 8 * * 1,3,5"   // основной прогон, все URL
+"scheduleRetry":  "0 11,14 * * 1,3,5" // retry, только stale
+"staleThresholdH": 24                // порог в часах
+```
+
+- `courtflow-parser` — основной прогон (pm2 cron)
+- `courtflow-parser-retry` — retry-прогон с `--retry` флагом (pm2 cron)
+- Оркестратор в `--retry` режиме читает run-log историю, фильтрует URL где `lastSuccess > staleThresholdH`
 
 ## Важные особенности
 
 ### msudrf.ru — SSL-сертификат
-Wildcard `*.msudrf.ru` не покрывает домены вида `35.perm.msudrf.ru`. Фикс: `--ignore-certificate-errors` в Puppeteer launch args (`session.ts`).
+Wildcard `*.msudrf.ru` не покрывает `35.perm.msudrf.ru`. Фикс: `--ignore-certificate-errors`.
 
 ### npm run parse
-Оркестратор не принимает `--type` — тип суда читается автоматически из `urls.txt`. Правильный запуск: `npm run parse`.
+Тип суда читается автоматически из URL. Правильный запуск: `npm run parse`.
 
 ### PUPPETEER_HEADLESS
-`PUPPETEER_HEADLESS=false npm run parse` — запуск с видимым окном (Windows диагностика). Не пушить в `.env`.
-
-### MagistrateAdapter — структура HTML msudrf.ru
-- `<h2>ДЕЛО № X-XXXX/YYYY</h2>` → uid
-- tab-content[0]: основные сведения (категория, судья)
-- tab-content[1]: 5 колонок — событие, дата, время, результат, судья
-- tab-content[2]: строка 1 — роли, строка 2 — имена
-
-### pm2 (Linux)
-- viewer: `courtflow-viewer` — постоянный процесс
-- parser: `courtflow-parser` — `cron_restart: '0 */6 * * *'` (каждые 6 часов)
-- Конфиг: `ecosystem.config.cjs`
-- Полная инструкция: `LINUX_DEPLOY.md`
+`PUPPETEER_HEADLESS=false npm run parse` — только Windows диагностика. Не пушить в `.env`.
 
 ## Команды
 
 ```bash
-# Windows (разработка)
+# Windows / Linux (разработка)
 npm run test:smoke
 npm run parse
+npm run parse -- --retry
 npm start
 npm run enrich:courts
 
-# Linux (production)
+# Linux (production, pm2)
 pm2 start ecosystem.config.cjs
-pm2 restart courtflow-parser   # ручной запуск парсера
+pm2 restart courtflow-parser         # ручной основной прогон
+pm2 restart courtflow-parser-retry   # ручной retry
 pm2 logs courtflow-viewer
 pm2 status
 ```
-
-## Что сделано в текущей сессии (2026-07-02)
-
-### Исправлено
-- BUG-017, 018, 019(open), 020, 021, 022 — закрыты
-- BUG-016: magistrate end-to-end — закрыт
-- MagistrateAdapter: uid, events 5 колонок, filingDate/hearingDate/result
-- RuCaptcha API v2
-- pm2 ecosystem.config.cjs + LINUX_DEPLOY.md
-
-### Открыто
-- BUG-019: `solver.ts` — не блокер
 
 ## Промпт для новой сессии
 
