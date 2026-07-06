@@ -1,7 +1,7 @@
 // packages/viewer/server.ts
 // BUG-003: GET /api/config возвращает SafeAppConfig (без секретных ключей)
 // BUG-014: fileURLToPath вместо .pathname — корректный путь на Windows
-// reconciliation: /api/cases и /api/active-courts работают только с активными courtId из watch/ или urls.txt
+// reconciliation: /api/cases работает только с активными courtId из watch/ / urls.txt
 
 import express from 'express';
 import { readdirSync, readFileSync, existsSync } from 'fs';
@@ -22,7 +22,6 @@ const config = loadConfig();
 const DATA_DIR = resolve(process.cwd(), config.outputDir);
 const LOGS_DIR = resolve(process.cwd(), 'logs');
 
-/** Возвращает Set активных courtId из watch/ или urls.txt */
 function getActiveCourtIds(): Set<string> {
   return new Set(loadUrls().map(u => u.courtId));
 }
@@ -35,29 +34,25 @@ app.get('/api/courts', (_req, res) => {
   res.json(loadCourts());
 });
 
-// Возвращает список активных courtId (для UI — точный счётчик судов)
 app.get('/api/active-courts', (_req, res) => {
   const active = loadUrls();
-  const courts = Object.fromEntries(
-    active.map(u => [u.courtId, { courtId: u.courtId, courtType: u.courtType, url: u.url }])
-  );
-  res.json(Object.values(courts));
+  const seen = new Map<string, object>();
+  for (const u of active) {
+    if (!seen.has(u.courtId)) seen.set(u.courtId, { courtId: u.courtId, courtType: u.courtType, url: u.url });
+  }
+  res.json([...seen.values()]);
 });
 
 app.get('/api/cases', (_req, res) => {
   if (!existsSync(DATA_DIR)) return res.json([]);
   const court = _req.query.court as string | undefined;
-
-  // reconciliation: только активные суды
   const activeCourtIds = getActiveCourtIds();
 
   try {
     const files = readdirSync(DATA_DIR)
       .filter(f => f.startsWith('cases-') && f.endsWith('.json'))
       .filter(f => {
-        // Фильтр по запрошенному суду (если задан)
         if (court && !f.includes(`-${court}-`)) return false;
-        // Reconciliation: исключаем суды которых нет в watch/ / urls.txt
         const m = f.match(/^cases-(.+)-\d{4}-\d{2}-\d{2}\.json$/);
         return m ? activeCourtIds.has(m[1]) : false;
       })
@@ -103,24 +98,46 @@ app.get('/api/logs', (_req, res) => {
   }
 });
 
-let runningPid: number | null = null;
+// Активные запуски: full-прогон и retry-прогон — раздельные PID
+let fullPid: number | null = null;
+let retryPid: number | null = null;
 
-app.post('/api/run', (_req, res) => {
-  if (runningPid !== null) {
-    return res.status(409).json({ error: 'Уже запущен', pid: runningPid });
-  }
+function spawnOrchestrator(args: string[], onDone: () => void): number | null {
   const child = spawn(
     process.execPath,
-    ['--import', 'tsx/esm', 'packages/scheduler/orchestrator.ts'],
+    ['--import', 'tsx/esm', 'packages/scheduler/orchestrator.ts', ...args],
     { cwd: process.cwd(), detached: false, stdio: 'inherit' }
   );
-  runningPid = child.pid ?? null;
-  child.on('close', () => { runningPid = null; });
-  res.json({ started: true, pid: runningPid });
+  child.on('close', onDone);
+  return child.pid ?? null;
+}
+
+app.post('/api/run', (_req, res) => {
+  if (fullPid !== null) return res.status(409).json({ error: 'Уже запущен', pid: fullPid });
+  fullPid = spawnOrchestrator([], () => { fullPid = null; });
+  res.json({ started: true, pid: fullPid, mode: 'full' });
+});
+
+app.post('/api/run/retry', (_req, res) => {
+  if (retryPid !== null) return res.status(409).json({ error: 'Уже запущен', pid: retryPid });
+  retryPid = spawnOrchestrator(['--retry'], () => { retryPid = null; });
+  res.json({ started: true, pid: retryPid, mode: 'retry' });
 });
 
 app.get('/api/run/status', (_req, res) => {
-  res.json({ running: runningPid !== null, pid: runningPid });
+  res.json({
+    full:  { running: fullPid  !== null, pid: fullPid },
+    retry: { running: retryPid !== null, pid: retryPid },
+  });
+});
+
+app.post('/api/run/enrich-courts', (_req, res) => {
+  const child = spawn(
+    process.execPath,
+    ['--import', 'tsx/esm', 'packages/scheduler/enrich-courts.ts'],
+    { cwd: process.cwd(), detached: false, stdio: 'inherit' }
+  );
+  res.json({ started: true, pid: child.pid ?? null });
 });
 
 app.listen(config.viewer.port, config.viewer.host, () => {

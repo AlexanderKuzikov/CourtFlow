@@ -9,7 +9,7 @@
     body { font-family: system-ui, sans-serif; font-size: 14px; background: #f5f5f5; color: #222; }
     header { background: #1a3a5c; color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
     header h1 { font-size: 18px; font-weight: 600; }
-    header .status { margin-left: auto; font-size: 13px; opacity: .8; }
+    header .status { margin-left: auto; font-size: 13px; opacity: .8; display: flex; gap: 16px; align-items: center; }
     nav { display: flex; gap: 0; background: #fff; border-bottom: 2px solid #1a3a5c; }
     nav button { padding: 10px 20px; border: none; background: none; cursor: pointer; font-size: 14px; color: #555; border-bottom: 3px solid transparent; margin-bottom: -2px; }
     nav button.active { color: #1a3a5c; font-weight: 600; border-bottom-color: #1a3a5c; }
@@ -23,6 +23,12 @@
     .btn-primary { background: #1a3a5c; color: #fff; }
     .btn-primary:hover { background: #25527f; }
     .btn-primary:disabled { background: #aaa; cursor: default; }
+    .btn-secondary { background: #eef2f7; color: #333; }
+    .btn-secondary:hover { background: #dce6f0; }
+    .btn-secondary:disabled { background: #eee; color: #aaa; cursor: default; }
+    .btn-warn { background: #f59e0b; color: #fff; }
+    .btn-warn:hover { background: #d97706; }
+    .btn-warn:disabled { background: #aaa; cursor: default; }
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
     th { background: #1a3a5c; color: #fff; text-align: left; padding: 9px 12px; font-weight: 500; font-size: 13px; }
     td { padding: 8px 12px; border-bottom: 1px solid #eee; vertical-align: top; font-size: 13px; }
@@ -44,25 +50,35 @@
     .kv-table td:first-child { color: #666; width: 42%; }
     .section-title { font-size: 13px; font-weight: 600; color: #1a3a5c; margin: 14px 0 6px; }
     .muted { color: #777; }
-    .log-item { background: #fff; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; gap: 12px; align-items: baseline; font-size: 13px; }
+    .log-item { background: #fff; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; gap: 12px; align-items: baseline; font-size: 13px; flex-wrap: wrap; }
     .log-ok { border-left: 4px solid #16a34a; }
     .log-fail { border-left: 4px solid #dc2626; }
     .log-ts { color: #888; font-size: 11px; white-space: nowrap; }
     .log-uid { font-family: monospace; font-size: 12px; color: #444; }
     .log-err { color: #dc2626; }
-    .run-box { background: #fff; border-radius: 8px; padding: 24px; max-width: 420px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    .run-box h2 { font-size: 16px; margin-bottom: 16px; color: #1a3a5c; }
-    .run-status { margin-top: 14px; font-size: 13px; padding: 8px 12px; border-radius: 4px; }
+    /* Страница запуска */
+    .run-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 860px; }
+    @media (max-width: 600px) { .run-grid { grid-template-columns: 1fr; } }
+    .run-box { background: #fff; border-radius: 8px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .run-box h2 { font-size: 15px; margin-bottom: 6px; color: #1a3a5c; }
+    .run-box p { color: #666; font-size: 12px; margin-bottom: 14px; line-height: 1.5; }
+    .run-status { margin-top: 12px; font-size: 12px; padding: 7px 10px; border-radius: 4px; }
     .run-status.idle { background: #f1f5f9; color: #555; }
     .run-status.running { background: #fef9c3; color: #854d0e; }
-    .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #854d0e; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 6px; vertical-align: middle; }
+    .run-status.done { background: #dcfce7; color: #166534; }
+    .run-tools { background: #fff; border-radius: 8px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); max-width: 860px; margin-top: 16px; }
+    .run-tools h2 { font-size: 15px; margin-bottom: 14px; color: #1a3a5c; }
+    .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 6px; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 <header>
   <h1>⚖️ CourtFlow</h1>
-  <span id="caseCount" class="status"></span>
+  <div class="status">
+    <span id="runIndicator"></span>
+    <span id="caseCount"></span>
+  </div>
 </header>
 <nav>
   <button class="active" onclick="showPage('cases', this)">Дела</button>
@@ -95,6 +111,7 @@
     </table>
     <div id="casesEmpty" class="empty" style="display:none">Нет дел</div>
   </div>
+
   <div id="page-logs" class="page">
     <div class="toolbar">
       <select id="logDays" onchange="loadLogs()">
@@ -106,22 +123,41 @@
     </div>
     <div id="logsList"></div>
   </div>
+
   <div id="page-run" class="page">
-    <div class="run-box">
-      <h2>Ручной запуск парсинга</h2>
-      <p style="color:#555;font-size:13px;margin-bottom:16px">Запускает orchestrator по всем URL из urls.txt. Несколько минут в зависимости от количества дел.</p>
-      <button id="runBtn" class="btn btn-primary" onclick="startRun()">▶ Запустить</button>
-      <button class="btn" style="margin-left:8px;background:#eef2f7" onclick="enrichCourts()">Справочник судов</button>
-      <div id="runStatus" class="run-status idle">Ожидание</div>
+    <div class="run-grid">
+      <!-- Полный прогон -->
+      <div class="run-box">
+        <h2>▶ Полный прогон</h2>
+        <p>Все URL из watch/ — независимо от даты последнего обновления. Основной ежедневный запуск. Параллельный запуск невозможен.</p>
+        <button id="runBtn" class="btn btn-primary" onclick="startRun('full')">▶ Запустить</button>
+        <div id="runStatusFull" class="run-status idle">Ожидание</div>
+      </div>
+      <!-- Retry-прогон -->
+      <div class="run-box">
+        <h2>🔄 Retry-прогон</h2>
+        <p>Только те URL, которые не обновлялись дольше <b id="staleH">24</b> ч. Подходит для повторных попыток при недоступных судах.</p>
+        <button id="retryBtn" class="btn btn-warn" onclick="startRun('retry')">🔄 Запустить retry</button>
+        <div id="runStatusRetry" class="run-status idle">Ожидание</div>
+      </div>
+    </div>
+    <!-- Инструменты -->
+    <div class="run-tools">
+      <h2>Инструменты</h2>
+      <button class="btn btn-secondary" onclick="enrichCourts()">🏦 Справочник судов</button>
+      <button class="btn btn-secondary" style="margin-left:8px" onclick="loadAll()">📂 Обновить данные</button>
+      <div id="toolsStatus" class="run-status idle" style="margin-top:10px;display:none"></div>
     </div>
   </div>
 </main>
+
 <div id="detailOverlay" class="detail-overlay" onclick="closeDetail(event)">
   <div class="detail-panel" id="detailPanel">
     <button class="close-btn" onclick="closeDetail(null)">&times;</button>
     <div id="detailContent"></div>
   </div>
 </div>
+
 <script>
   let allCases = [];
   let courts = {};
@@ -133,7 +169,7 @@
     document.getElementById('page-' + name).classList.add('active');
     btn.classList.add('active');
     if (name === 'logs') loadLogs();
-    if (name === 'run') pollRunStatus();
+    if (name === 'run') { loadRunConfig(); pollRunStatus(); }
   }
 
   async function loadAll() {
@@ -152,6 +188,15 @@
       document.getElementById('caseCount').textContent = allCases.length + ' дел';
       renderCases();
     } catch(e) { console.error(e); }
+  }
+
+  async function loadRunConfig() {
+    try {
+      const res = await fetch('/api/config');
+      const cfg = await res.json();
+      const el = document.getElementById('staleH');
+      if (el && cfg.staleThresholdH) el.textContent = cfg.staleThresholdH;
+    } catch(e) {}
   }
 
   function renderCases() {
@@ -260,31 +305,38 @@
     } catch(e) { console.error(e); }
   }
 
-  async function startRun() {
-    document.getElementById('runBtn').disabled = true;
+  async function startRun(mode) {
+    const btnId  = mode === 'full' ? 'runBtn' : 'retryBtn';
+    const statId = mode === 'full' ? 'runStatusFull' : 'runStatusRetry';
+    const url    = mode === 'full' ? '/api/run' : '/api/run/retry';
+    document.getElementById(btnId).disabled = true;
     try {
-      const res = await fetch('/api/run', { method: 'POST' });
+      const res  = await fetch(url, { method: 'POST' });
       const data = await res.json();
       if (res.status === 409) {
-        setRunStatus('running', 'Уже запущен (PID ' + data.pid + ')');
+        setStatus(statId, 'running', 'Уже запущен (PID ' + data.pid + ')');
       } else {
-        setRunStatus('running', 'Запущен (PID ' + data.pid + ')');
+        setStatus(statId, 'running', `<span class="spinner"></span> Запущен (PID ${data.pid})…`);
         pollRunStatus();
       }
     } catch(e) {
-      document.getElementById('runBtn').disabled = false;
+      document.getElementById(btnId).disabled = false;
     }
   }
 
   async function enrichCourts() {
-    setRunStatus('running', 'Обновление справочника судов...');
+    const el = document.getElementById('toolsStatus');
+    el.style.display = '';
+    setStatusEl(el, 'running', '<span class="spinner"></span> Обновление справочника судов…');
     try {
       const res = await fetch('/api/run/enrich-courts', { method: 'POST' });
       const data = await res.json();
-      setRunStatus('idle', data.started ? 'Справочник обновляется' : 'Не удалось запустить');
-      setTimeout(loadAll, 2000);
+      setTimeout(() => {
+        setStatusEl(el, 'done', '✓ Справочник обновлён');
+        loadAll();
+      }, 3000);
     } catch(e) {
-      setRunStatus('idle', 'Ошибка запуска enrich:courts');
+      setStatusEl(el, 'idle', 'Ошибка');
     }
   }
 
@@ -292,20 +344,48 @@
     clearTimeout(pollTimer);
     try {
       const res = await fetch('/api/run/status');
-      const { running, pid } = await res.json();
-      if (running) {
-        setRunStatus('running', `<span class="spinner"></span> В процессе… PID ${pid}`);
+      const { full, retry } = await res.json();
+
+      // Full
+      if (full.running) {
+        setStatus('runStatusFull', 'running', `<span class="spinner"></span> В процессе… PID ${full.pid}`);
         document.getElementById('runBtn').disabled = true;
-        pollTimer = setTimeout(pollRunStatus, 2000);
+        setRunIndicator(true);
       } else {
-        setRunStatus('idle', 'Ожидание');
+        const el = document.getElementById('runStatusFull');
+        if (el.classList.contains('running')) { setStatus('runStatusFull', 'done', '✓ Завершён'); loadAll(); }
         document.getElementById('runBtn').disabled = false;
+      }
+
+      // Retry
+      if (retry.running) {
+        setStatus('runStatusRetry', 'running', `<span class="spinner"></span> В процессе… PID ${retry.pid}`);
+        document.getElementById('retryBtn').disabled = true;
+        setRunIndicator(true);
+      } else {
+        const el = document.getElementById('runStatusRetry');
+        if (el.classList.contains('running')) { setStatus('runStatusRetry', 'done', '✓ Завершён'); loadAll(); }
+        document.getElementById('retryBtn').disabled = false;
+      }
+
+      if (!full.running && !retry.running) setRunIndicator(false);
+
+      if (full.running || retry.running) {
+        pollTimer = setTimeout(pollRunStatus, 2000);
       }
     } catch(e) {}
   }
 
-  function setRunStatus(cls, html) {
-    const el = document.getElementById('runStatus');
+  function setRunIndicator(running) {
+    const el = document.getElementById('runIndicator');
+    el.innerHTML = running ? '<span class="spinner" style="border-color:#fff"></span> Парсинг…' : '';
+  }
+
+  function setStatus(id, cls, html) {
+    setStatusEl(document.getElementById(id), cls, html);
+  }
+
+  function setStatusEl(el, cls, html) {
     el.className = 'run-status ' + cls;
     el.innerHTML = html;
   }
@@ -315,6 +395,7 @@
   }
 
   loadAll();
+  setInterval(pollRunStatus, 5000); // пассивный поллинг статуса каждые 5 сек
 </script>
 </body>
 </html>
