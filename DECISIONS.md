@@ -142,3 +142,21 @@ Legacy API v1 (`rucaptcha.com/in.php`, `rucaptcha.com/res.php`, `URLSearchParams
 | 2026-07-06 | UI показывает только активные courtId из watch/ через reconciliation |
 | 2026-07-06 | Принята двухуровневая схема прогонов: full-run + retry-run по staleThresholdH |
 | 2026-07-06 | В UI добавлено ручное управление full/retry прогонами |
+
+
+---
+
+## Code Review 2026-07-07
+
+Проведён полный code review (Hermes Agent), все пункты разобраны построчно. Изменения внесены напрямую в GitHub (коннектор был нестабилен).
+
+**Принято:**
+- BUG-023: убран `decodeEntities: false` из 5 файлов (appeal.ts, cassation.ts, district.ts, magistrate.ts, courts.ts)
+- - BUG-024: исправлена типизация `CourtType` в orchestrator.ts (`ADAPTERS`, `courtGroups`, `loadCaseHtml`)
+  - - BUG-025: stale lock после SIGKILL/OOM — добавлена проверка `isProcessAlive(pid)` через `process.kill(pid, 0)`
+    - - BUG-026: добавлен graceful shutdown в viewer/server.ts (SIGTERM/SIGINT → `serverInstance.close()` + fallback 5s)
+     
+      - **Отклонено:**
+      - - Пункт 10 (изменить `extractCourtId` для magistrate): брать предпоследний сегмент хоста — это сольёт разные участки одного региона в один `courtId`, что приведёт к перезатиранию данных. Схема `35.perm` осознанная.
+       
+        - **Отложено (техдолг):** тесты, ESLint/Prettier, pino, Zod, fallback captcha, XLSX, uuid vulnerability fix — см. CODE_REVIEW.md раздел «Ответ на ревю».
