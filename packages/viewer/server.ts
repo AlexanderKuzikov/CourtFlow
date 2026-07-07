@@ -144,3 +144,20 @@ app.post('/api/run/enrich-courts', (_req, res) => {
 const serverInstance = app.listen(config.viewer.port, config.viewer.host, () => {
   console.log(`[viewer] http://${config.viewer.host}:${config.viewer.port}`);
 });
+
+// Graceful shutdown handlers
+function shutdown(signal: string) {
+  console.log(`[viewer] Получен ${signal}, закрываю сервер...`);
+  serverInstance.close(() => {
+    console.log('[viewer] Сервер закрыт, завершаю процесс');
+    process.exit(0);
+  });
+  // Fallback force-exit через 5 секунд
+  setTimeout(() => {
+    console.error('[viewer] Force exit после таймаута graceful shutdown');
+    process.exit(1);
+  }, 5000);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

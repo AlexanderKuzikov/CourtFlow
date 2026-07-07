@@ -30,7 +30,8 @@ export class MagistrateAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
     if (isCaptchaPage(html)) throw new CaptchaRequiredError(url);
 
-    const $ = cheerio.load(html, { decodeEntities: false });
+    // FIX (CODE_REVIEW #1): decodeEntities удалён — в cheerio 1.x эта опция убрана из CheerioOptions, false является дефолтом.
+    const $ = cheerio.load(html);
     const parsedUrl = new URL(url);
 
     // BUG-017: uid — судебный номер из заголовка h2, case_id только как fallback
