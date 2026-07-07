@@ -5,6 +5,8 @@
 // BUG-012: charset из Content-Type заголовка ответа
 // BUG-010: CaptchaRequiredError логируется отдельно, не как FAIL
 //
+// FIX (CODE_REVIEW #2): CourtType assignability — ADAPTERS, courtGroups, loadCaseHtml теперь используют CourtType, не string
+// FIX (CODE_REVIEW #6): stale lock — проверка PID через process.kill(pid,0), stale lock после SIGKILL/OOM больше не блокирует запуск
 // Режимы запуска:
 //   npm run parse          — полный прогон всех URL
 //   npm run parse --retry  — только stale URL (lastSuccess > staleThresholdH часов назад)
@@ -16,7 +18,7 @@ import { loadConfig } from '../core/config.js';
 import { loadUrls } from '../core/urls.js';
 import { withRetry } from '../core/retry.js';
 import { CaptchaRequiredError } from '../core/errors.js';
-import type { RunResult, CourtAdapter } from '../core/types.js';
+import type { RunResult, CourtAdapter, CourtType } from '../core/types.js';
 import { DistrictAdapter } from '../adapters/district.js';
 import { AppealAdapter } from '../adapters/appeal.js';
 import { CassationAdapter } from '../adapters/cassation.js';
@@ -24,7 +26,7 @@ import { MagistrateAdapter } from '../adapters/magistrate.js';
 import { fetchMagistrateHtml } from '../captcha/session.js';
 import { exportJson } from '../exporter/json.js';
 
-const ADAPTERS: Record<string, CourtAdapter> = {
+const ADAPTERS: Record<CourtType, CourtAdapter> = {
   district:   new DistrictAdapter(),
   appeal:     new AppealAdapter(),
   cassation:  new CassationAdapter(),
@@ -49,7 +51,7 @@ async function fetchHtml(url: string, timeoutMs: number): Promise<string> {
   return iconv.decode(Buffer.from(buffer), charset);
 }
 
-async function loadCaseHtml(url: string, courtType: string, timeoutMs: number, apiKey: string): Promise<string> {
+async function loadCaseHtml(url: string, courtType: CourtType, timeoutMs: number, apiKey: string): Promise<string> {
   if (courtType === 'magistrate') {
     if (!apiKey) throw new Error('RUCAPTCHA_API_KEY is not set');
     return fetchMagistrateHtml({
@@ -94,10 +96,15 @@ async function run() {
   if (!existsSync(logsDir)) mkdirSync(logsDir, { recursive: true });
 
   const lockPath = resolve(logsDir, 'orchestrator.lock');
-  if (existsSync(lockPath)) {
-    console.warn('[orchestrator] Уже запущен (lock есть). Выход.');
-    process.exit(0);
-  }
+    // FIX (CODE_REVIEW #6): проверяем жив ли процесс-владелец lock (stale lock после SIGKILL/OOM)
+      if (existsSync(lockPath)) {
+        const rawPid = readFileSync(lockPath, 'utf-8').trim();
+            const pid = parseInt(rawPid, 10);
+            let alive = false;
+            if (!Number.isNaN(pid)) { try { process.kill(pid, 0); alive = true; } catch {} }
+            if (alive) { console.warn(`[orchestrator] Уже запущен (PID ${pid} жив). Выход.`); process.exit(0); }
+            console.warn(`[orchestrator] Stale lock (PID ${rawPid} не отвечает). Перезаписываю.`);
+    }
   writeFileSync(lockPath, String(process.pid));
 
   // В режиме --retry фильтруем только stale URL
@@ -118,7 +125,7 @@ async function run() {
     }
   }
 
-  const courtGroups = new Map<string, { type: string; urls: string[] }>();
+  const courtGroups = new Map<string, { type: CourtType; urls: string[] }>();
   for (const { url, courtType, courtId } of urlsToProcess) {
     if (!courtGroups.has(courtId)) courtGroups.set(courtId, { type: courtType, urls: [] });
     courtGroups.get(courtId)!.urls.push(url);
