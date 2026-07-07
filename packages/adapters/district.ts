@@ -24,7 +24,8 @@ export class DistrictAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
     if (isCaptchaPage(html)) throw new CaptchaRequiredError(url);
 
-    const $ = cheerio.load(html, { decodeEntities: false });
+        // FIX (CODE_REVIEW #1): decodeEntities удалён — в cheerio 1.x эта опция убрана из CheerioOptions, false является дефолтом.
+        const $ = cheerio.load(html);
 
     // BUG-009: uid ищем в HTML, fallback — case_uid из URL
     const parsedUrl = new URL(url);
