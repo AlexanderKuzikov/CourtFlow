@@ -59,7 +59,8 @@ export async function fetchCourtDirectoryItem(courtId: string, courtType: CourtT
     : `https://${courtId}.sudrf.ru/`;
 
   const html = await fetchHtml(sourceUrl);
-  const $ = cheerio.load(html, { decodeEntities: false });
+      // FIX (CODE_REVIEW #1): decodeEntities удалён — в cheerio 1.x эта опция убрана из CheerioOptions.
+      const $ = cheerio.load(html);
 
   const name = normalizeText($('h5.heading.heading_title').first().text()) || courtId;
   const addrHtml = $('#show').html() ?? '';
