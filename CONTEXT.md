@@ -127,3 +127,20 @@ pm2 status
 ## Промпт для новой сессии
 
 См. файл `PROMPT_FOR_NEW_SESSION.md`.
+
+
+---
+
+## Статус после Code Review (2026-07-07)
+
+**Что закрыто:**
+- ✅ TS-компиляция чистая: `decodeEntities` и `CourtType` ошибки устранены (BUG-023, BUG-024)
+- - ✅ Lock-файл orchestrator устойчив к SIGKILL/OOM — stale lock проверяет PID через `process.kill(pid, 0)` (BUG-025)
+  - - ✅ Viewer поддерживает graceful shutdown (SIGTERM/SIGINT) — совместим с `pm2 restart` (BUG-026)
+    - - ✅ Полный ответ на ревю добавлен в CODE_REVIEW.md (принято / отклонено / отложено)
+     
+      - **Техдолг (backlog):**
+      - - Unit-тест `extractUrls()` + CI smoke с exit code
+        - - Fallback captcha (2captcha) — при первом инциденте RuCaptcha
+          - - Обновить exceljs до 4.4.0+ (фикс uuid уязвимости)
+            - - ESLint/Prettier, pino, Zod-валидация конфига
