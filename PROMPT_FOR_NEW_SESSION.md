@@ -14,9 +14,9 @@ CourtFlow — система мониторинга судебных дел РФ
 - Целевой сервер: **Ubuntu Linux**
 - Менеджер процессов на Linux: **pm2**
 
-## Текущее состояние (2026-07-06)
 
-### ✅ Всё работает
+
+## Текущее состояние (2026-07-07)
 - `npm run parse` — **26/26 дел, 100% success**
 - `npm run parse -- --retry` — retry только для stale URL
 - `npm start` — web-viewer работает
@@ -36,7 +36,7 @@ CourtFlow — система мониторинга судебных дел РФ
 2. При необходимости — архивирование/очистка старых `data/*.json`
 3. При необходимости — уведомления по stale/failed URL
 
-## Что было сделано в последней сессии (2026-07-06)
+## Что было сделано в последней сессии (2026-07-07)
 
 - **BUG-019 закрыт**: удалён `packages/captcha/solver.ts`
 - Добавлен `watch/` как основной источник URL
@@ -67,3 +67,10 @@ CourtFlow — система мониторинга судебных дел РФ
 3. `DECISIONS.md`
 4. `LINUX_DEPLOY.md`
 5. `ecosystem.config.cjs`
+
+- **Code Review пройдён полностью:** все пункты разобраны, изменения внесены напрямую в GitHub
+- - BUG-023 закрыт: убран `decodeEntities: false` из 5 файлов адаптеров + courts.ts
+  - - BUG-024 закрыт: исправлена типизация `CourtType` в orchestrator.ts
+    - - BUG-025 закрыт: stale lock после SIGKILL/OOM — `process.kill(pid, 0)` проверка живости PID
+      - - BUG-026 закрыт: добавлен graceful shutdown в viewer/server.ts (SIGTERM/SIGINT)
+        - - Ответ на ревю добавлен в CODE_REVIEW.md: принято/отклонено/отложено, пункт 10 (magistrate courtId) отклонён с аргументацией
