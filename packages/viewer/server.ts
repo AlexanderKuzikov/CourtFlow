@@ -140,6 +140,7 @@ app.post('/api/run/enrich-courts', (_req, res) => {
   res.json({ started: true, pid: child.pid ?? null });
 });
 
-app.listen(config.viewer.port, config.viewer.host, () => {
+// FIX (CODE_REVIEW #15): graceful shutdown — pm2 шлёт SIGTERM при restart/stop
+const serverInstance = app.listen(config.viewer.port, config.viewer.host, () => {
   console.log(`[viewer] http://${config.viewer.host}:${config.viewer.port}`);
 });
