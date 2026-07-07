@@ -31,6 +31,10 @@
 | BUG-020 | `ERR_CERT_COMMON_NAME_INVALID` в Puppeteer headless | 🟢 | Высокий |
 | BUG-021 | TS2503 `Cannot find namespace 'puppeteer'` в session.ts | 🟢 | Средний |
 | BUG-022 | TS2339 `Property 'getAttribute' does not exist on type 'Locator'` | 🟢 | Средний |
+| BUG-023 | `decodeEntities` TS2353 в адаптерах | 🟢 | Средний |
+| BUG-024 | `CourtType` assignability в orchestrator.ts | 🟢 | Средний |
+| BUG-025 | Stale lock после SIGKILL/OOM | 🟢 | Высокий |
+| BUG-026 | Viewer не поддерживал graceful shutdown | 🟢 | Средний |
 
 ---
 
@@ -58,3 +62,24 @@
 
 ### BUG-010 🟢 Капча не различалась от FAIL
 **Исправлено:** `CaptchaRequiredError`, `isCaptchaPage`, `[CAPTCHA]` в оркестраторе.
+
+
+### BUG-023 🟢 `decodeEntities` TS2353 в адаптерах
+**Файлы:** `packages/adapters/appeal.ts`, `cassation.ts`, `district.ts`, `magistrate.ts`, `packages/core/courts.ts`
+**Причина:** cheerio 1.x удалил опцию `decodeEntities` из `CheerioOptions`, `tsc --noEmit` падал с TS2353.
+**Исправлено:** убран второй аргумент `{ decodeEntities: false }` из всех вызовов `cheerio.load()` — false является дефолтом в v1. **Источник:** CODE_REVIEW.md пункт 1.
+
+### BUG-024 🟢 `CourtType` assignability в orchestrator.ts
+**Файл:** `packages/scheduler/orchestrator.ts`
+**Причина:** `ADAPTERS` и `courtGroups` использовали `string` вместо union `CourtType`, `tsc --noEmit` падал с TS2322.
+**Исправлено:** `ADAPTERS: Record<CourtType, CourtAdapter>`, `courtGroups: Map<string, { type: CourtType; urls: string[] }>`, `loadCaseHtml(..., courtType: CourtType)`, `CourtType` добавлен в импорт. **Источник:** CODE_REVIEW.md пункт 2.
+
+### BUG-025 🟢 Stale lock после SIGKILL/OOM
+**Файл:** `packages/scheduler/orchestrator.ts`
+**Причина:** `unlinkSync(lockPath)` вызывался только в `finally`. При жёстком завершении (SIGKILL, OOM) lock оставался навсегда, блокируя все последующие запуски.
+**Исправлено:** добавлена `isProcessAlive(pid)` через `process.kill(pid, 0)` и `acquireLock()`: stale lock (мёртвый PID) перезаписывается, живой процесс блокирует как прежде. **Источник:** CODE_REVIEW.md пункт 6.
+
+### BUG-026 🟢 Viewer не поддерживал graceful shutdown
+**Файл:** `packages/viewer/server.ts`
+**Причина:** pm2 отправляет SIGTERM при `restart`/`stop`. Express-процесс завершался без `server.close()`, обрубая активные соединения.
+**Исправлено:** добавлены обработчики `SIGTERM`/`SIGINT` с `serverInstance.close()` и fallback force-exit через 5 секунд. **Источник:** CODE_REVIEW.md пункт 15.
