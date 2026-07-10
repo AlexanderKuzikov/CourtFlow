@@ -49,7 +49,7 @@ npm start
 
 1. Зарегистрироваться на [rucaptcha.com](https://rucaptcha.com), получить API-ключ
 2. Прописать `RUCAPTCHA_API_KEY=...` в `.env`
-3. Пополнить баланс на rucaptcha.com (оплата в RUB, ~1₽/100 капч)
+3. Пополнить баланс на rucaptcha.com (оплата в RUB, ~1руб/100 капч)
 4. На **Linux**-сервере: установить зависимости Chromium
 
 ```bash
@@ -75,7 +75,8 @@ sudo apt-get install -y \
 | `npm run parse -- --retry` | Retry-прогон (только stale URL) |
 | `npm run test:smoke` | Проверка адаптеров (по 1 URL каждого типа) |
 | `npm run enrich:courts` | Заполнить справочник судов |
-| `npm start` | Запустить web-viewer (по умолчанию http://localhost:3000) |
+| `npm test` | Unit-тесты |
+| `npm start` | Web-viewer (http://localhost:3000) |
 
 ## Linux / pm2
 
@@ -97,4 +98,5 @@ pm2 logs courtflow-viewer
 - `CONTEXT.md` — текущее состояние и архитектура
 - `DECISIONS.md` — принятые архитектурные решения
 - `BUG_REPORT.md` — журнал ошибок
+- `CODE_REVIEW.md` — журнал code review
 - `PROMPT_FOR_NEW_SESSION.md` — инструкция для новой AI-сессии

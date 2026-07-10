@@ -1,5 +1,5 @@
 // packages/scheduler/smoke.ts
-// Проверка по одному URL каждого типа суда из urls.txt
+// Проверка по одному URL каждого типа суда
 // Лог пишется в logs/smoke-last.log (UTF-8) автоматически,
 // если в config.json установлен "smokeSaveLog": true
 
@@ -61,7 +61,7 @@ async function main() {
     log.write('[config] ⚠️  Есть magistrate-дела, но RUCAPTCHA_API_KEY и TWOCAPTCHA_API_KEY не заданы. Капча не будет работать.');
   }
 
-  log.write(`[smoke] Всего URL в urls.txt: ${allUrls.length}`);
+  log.write(`[smoke] Всего URL: ${allUrls.length}`);
   if (saveLog) log.write(`[smoke] Лог сохраняется в logs/smoke-last.log`);
 
   // Берём по одному URL каждого типа
@@ -78,7 +78,26 @@ async function main() {
     log.write(`    URL: ${url}`);
 
     if (courtType === 'magistrate') {
-      log.write('    [пропущено: magistrate требует Puppeteer]');
+      const cachedPath = path.resolve('logs', 'magistrate-last.html');
+      if (fs.existsSync(cachedPath)) {
+        log.write('    [тест на cached HTML из logs/magistrate-last.html]');
+        try {
+          const html = fs.readFileSync(cachedPath, 'utf-8');
+          const data = await adapter.parse(html, url);
+          log.write(`    [✓] UID:      ${data.uid}`);
+          log.write(`         Суд:      ${data.court}`);
+          log.write(`         Номер:    ${data.number}`);
+          log.write(`         Судья:    ${data.card.judge ?? '—'}`);
+          log.write(`         Сторон:   ${data.parties.length}`);
+          log.write(`         Событий:  ${data.events.length}`);
+          if (data.publishedAt) log.write(`         Опубл.:   ${data.publishedAt}`);
+          if (data.modifiedAt)  log.write(`         Изменено: ${data.modifiedAt}`);
+        } catch (err) {
+          log.write(`    [×] ${err instanceof Error ? err.message : err}`);
+        }
+      } else {
+        log.write('    [пропущено: нет cached HTML — выполни npm run parse]');
+      }
       continue;
     }
 

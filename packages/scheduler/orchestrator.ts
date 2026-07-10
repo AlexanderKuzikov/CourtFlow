@@ -51,14 +51,25 @@ async function fetchHtml(url: string, timeoutMs: number): Promise<string> {
   return iconv.decode(Buffer.from(buffer), charset);
 }
 
-async function loadCaseHtml(url: string, courtType: CourtType, timeoutMs: number, apiKey: string): Promise<string> {
+async function loadCaseHtml(
+  url: string,
+  courtType: CourtType,
+  timeoutMs: number,
+  apiKey: string,
+  fallbackApiKey: string,
+): Promise<string> {
   if (courtType === 'magistrate') {
-    if (!apiKey) throw new Error('RUCAPTCHA_API_KEY is not set');
-    return fetchMagistrateHtml({
-      url,
-      apiKey,
-      debugDir: resolve(process.cwd(), 'logs'),
-    });
+    if (!apiKey && !fallbackApiKey) throw new Error('RUCAPTCHA_API_KEY is not set');
+    const primaryKey = apiKey || fallbackApiKey;
+    try {
+      return await fetchMagistrateHtml({ url, apiKey: primaryKey, debugDir: resolve(process.cwd(), 'logs') });
+    } catch (err) {
+      if (fallbackApiKey && apiKey) {
+        console.warn(`[orchestrator] Primary captcha failed, trying fallback: ${err instanceof Error ? err.message : String(err)}`);
+        return await fetchMagistrateHtml({ url, apiKey: fallbackApiKey, debugDir: resolve(process.cwd(), 'logs') });
+      }
+      throw err;
+    }
   }
   return fetchHtml(url, timeoutMs);
 }
@@ -152,14 +163,19 @@ async function run() {
         const label = `${courtId} → ${caseId}`;
         try {
           const html = await withRetry(
-            () => loadCaseHtml(url, type, config.retry.timeoutMs, config.captcha.apiKey),
+            () => loadCaseHtml(url, type, config.retry.timeoutMs, config.captcha.apiKey, config.captcha.fallbackApiKey),
             config.retry,
             label
           );
-          const parsePromise = adapter.parse(html, url);
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('parse timeout')), 10000)
-          );
+          const ac = new AbortController();
+          const parsePromise = adapter.parse(html, url).then(data => {
+            if (ac.signal.aborted) throw new Error('parse timeout');
+            return data;
+          });
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            const id = setTimeout(() => { ac.abort(); reject(new Error('parse timeout')); }, 10000);
+            ac.signal.addEventListener('abort', () => clearTimeout(id));
+          });
           const caseData = await Promise.race([parsePromise, timeoutPromise]);
           cases.push(caseData);
           results.push({

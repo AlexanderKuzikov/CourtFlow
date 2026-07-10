@@ -3,10 +3,11 @@
 
 import { loadUrls } from '../core/urls.js';
 import { enrichCourts } from '../core/courts.js';
+import type { CourtType } from '../core/types.js';
 
 async function run() {
   const urls = loadUrls();
-  const uniq = new Map<string, { courtId: string; courtType: any }>();
+  const uniq = new Map<string, { courtId: string; courtType: CourtType }>();
   for (const u of urls) {
     if (!uniq.has(u.courtId)) uniq.set(u.courtId, { courtId: u.courtId, courtType: u.courtType });
   }

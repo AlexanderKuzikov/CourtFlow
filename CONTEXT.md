@@ -25,11 +25,15 @@ courtflow/
 ├── urls.txt                 # Fallback если watch/ отсутствует или пуста
 ├── .env                     # RUCAPTCHA_API_KEY (не коммитить)
 ├── ecosystem.config.cjs    # ✅ pm2: viewer + parser + parser-retry
+├── CODE_REVIEW.md         # ✅ Журнал code review (2 ревю)
+├── AUDIT_REPORT.md         # ⚠️ Исторический (2026-07-02, есть баннер)
+├── RUCAPTCHA_INTEGRATION_GUIDE.md
 ├── LINUX_DEPLOY.md         # ✅ Инструкция по деплою
 ├── HTML_STRUCTURE.md
 ├── DECISIONS.md
 ├── BUG_REPORT.md
 ├── CONTEXT.md
+├── PROMPT_FOR_NEW_SESSION.md
 ├── logs/
 └── packages/
     ├── core/
@@ -38,7 +42,8 @@ courtflow/
     │   ├── courts.ts
     │   ├── errors.ts
     │   ├── types.ts
-    │   └── retry.ts
+    │   ├── retry.ts
+    │   └── urls.test.ts         # ✅ 19 unit-тестов extractUrls / CourtType / CourtId
     ├── adapters/
     │   ├── district.ts
     │   ├── appeal.ts
@@ -65,16 +70,18 @@ courtflow/
 ### ✅ Всё работает
 - `npm run parse` — 26/26 дел, 100% success (Windows + Linux)
 - `npm run parse -- --retry` — только stale URL (lastSuccess > staleThresholdH часов)
+- `npm test` — 19/19 unit-тестов (`urls.test.ts`)
 - Linux-деплой прошёл, демонстрация успешна
-- Code review пройдён: BUG-023..026 закрыты (TS-ошибки, stale lock, graceful shutdown)
+- Code review #1: BUG-023..026 закрыты (TS-ошибки, stale lock, graceful shutdown)
+- Code review #2: 2 блокера + 5 важных закрыты (Promise.race, fallback captcha, magistrate UID, smoke, тесты)
 - UI: показывает только активные суды из `watch/`
 - Ручной запуск full-run / retry-run есть в UI
 - `watch/` принимает `.txt`, `.json`, `.csv`, файлы без расширения, пробельное разделение ссылок, кавычки и смешанные разделители
 
 ### ⏳ Следующие шаги (очередь)
 1. **XLSX** — `packages/exporter/xlsx.ts` (низкий приоритет, всё ещё заглушка)
-2. **Тесты** — unit-тест `extractUrls()` + CI smoke с exit code (отложено в CODE_REVIEW)
-3. **Fallback captcha** — 2captcha при первом инциденте RuCaptcha
+2. **Singleton browser** — кешировать Puppeteer browser/page для magistrate в пределах прогона
+3. **Rate-limiting** — `delayBetweenRequestsMs` между запросами к одному суду
 4. При необходимости — очистка/архивация старых `data/*.json` вне активного мониторинга
 5. При необходимости — уведомления о недоступных судах / stale URL
 
@@ -116,6 +123,7 @@ courtflow/
 npm run test:smoke
 npm run parse
 npm run parse -- --retry
+npm test
 npm start
 npm run enrich:courts
 
@@ -134,16 +142,29 @@ pm2 status
 
 ---
 
-## Статус после Code Review (2026-07-07)
+## Статус после Code Review #1 (2026-07-07)
 
 **Что закрыто:**
 - ✅ TS-компиляция чистая: `decodeEntities` и `CourtType` ошибки устранены (BUG-023, BUG-024)
-- ✅ Lock-файл orchestrator устойчив к SIGKILL/OOM — stale lock проверяет PID через `process.kill(pid, 0)` (BUG-025)
-- ✅ Viewer поддерживает graceful shutdown (SIGTERM/SIGINT) — совместим с `pm2 restart` (BUG-026)
-- ✅ Полный ответ на ревю добавлен в CODE_REVIEW.md (принято / отклонено / отложено)
+- ✅ Lock-файл orchestrator устойчив к SIGKILL/OOM (BUG-025)
+- ✅ Viewer поддерживает graceful shutdown (BUG-026)
+- ✅ Полный ответ на ревю в CODE_REVIEW.md
+
+## Статус после Code Review #2 (2026-07-10)
+
+**Блокеры закрыты:**
+- ✅ `courtType: any` → `CourtType` в enrich-courts.ts (B1)
+- ✅ Promise.race leak → AbortController в orchestrator.ts (B2)
+
+**Важное закрыто:**
+- ✅ Fallback UID из case_id в magistrate.ts (V1)
+- ✅ Fallback captcha provider 2captcha в loadCaseHtml (V3)
+- ✅ Magistrate тест через cached HTML в smoke.ts (V4)
+- ✅ Unit-тесты: `urls.test.ts` — 19 тестов extractUrls/detectCourtType/extractCourtId (V5)
 
 **Техдолг (backlog):**
-- Unit-тест `extractUrls()` + CI smoke с exit code
-- Fallback captcha (2captcha) — при первом инциденте RuCaptcha
+- Singleton browser для magistrate
+- Rate-limiting между запросами
 - Обновить exceljs до 4.4.0+ (фикс uuid уязвимости)
 - ESLint/Prettier, pino, Zod-валидация конфига
+- XLSX exporter (низкий приоритет)

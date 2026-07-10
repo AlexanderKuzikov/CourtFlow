@@ -34,10 +34,10 @@ export class MagistrateAdapter implements CourtAdapter {
     const $ = cheerio.load(html);
     const parsedUrl = new URL(url);
 
-    // BUG-017: uid — судебный номер из заголовка h2, case_id только как fallback
+    // BUG-017: uid — судебный номер из заголовка h2, fallback — case_id из URL
     const caseNumber = cleanText(
       $('h2').filter((_i, el) => $(el).text().includes('ДЕЛО №')).first().text().replace(/ДЕЛО\s*№/i, '')
-    ) ?? '';
+    ) ?? parsedUrl.searchParams.get('case_id') ?? '';
 
     if (!caseNumber) throw new Error('MagistrateAdapter: не удалось определить номер дела');
 

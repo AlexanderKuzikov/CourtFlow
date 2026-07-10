@@ -246,7 +246,7 @@ const browser = await puppeteer.launch({
 // Запуск: npx tsx solve-captcha-example.ts
 // Требует: RUCAPTCHA_API_KEY в .env или env
 
-import { RuCaptchaClient, RuCaptchaError } from './rucaptcha-client.js';
+import { RuCaptchaClient } from './rucaptcha-client.js';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 

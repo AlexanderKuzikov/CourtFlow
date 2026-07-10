@@ -45,7 +45,7 @@ mkdir -p /opt/courtflow/watch
 # 6. Проверка
 npm run test:smoke
 npm run parse
-# Ожидаем: [orchestrator] Готово. OK: 26, FAIL: 0, CAPTCHA: 0
+# Ожидаем: [orchestrator] Готово. OK: [все URL], FAIL: 0, CAPTCHA: 0
 
 # 7. pm2
 npm install -g pm2

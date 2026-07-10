@@ -1,9 +1,12 @@
-# CourtFlow — Полный Code Review
+# CourtFlow — Code Review #2
 
-> **Дата:** 2026-07-06  
-> **Репозиторий:** https://github.com/AlexanderKuzikov/CourtFlow  
-> **Ветка:** main (HEAD: 0afd324)  
-> **Автор ревью:** Hermes Agent (автономная проверка)
+> **Дата:** 2026-07-10
+> **Репозиторий:** https://github.com/AlexanderKuzikov/CourtFlow
+> **Ветка:** main (HEAD: c52bd4f)
+> **Автор ревью:** OpenCode Go (повторное ревю после code review #1 и обновления документации)
+> **Область:** полный код проекта (18 TS-файлов, ~1 500 строк)
+
+> **История:** предыдущее ревю от Hermes Agent (2026-07-06) — сохранено в истории git (`75f3a5c`). Разбор: CODE_REVIEW.md#Ответ на ревю (2026-07-07).
 
 ---
 
@@ -11,162 +14,216 @@
 
 | Категория | Статус | Комментарий |
 |----------|--------|-------------|
-| **Архитектура** | ✅ Отличная | Чёткое разделение: core / adapters / captcha / scheduler / exporter / viewer |
-| **TypeScript** | ⚠️ Ошибки компиляции | `decodeEntities` deprecated в cheerio; типы CourtType не проходят в orchestrator |
-| **Тесты** | ❌ Отсутствуют | Нет unit/integration тестов; только smoke-скрипт |
-| **Безопасность** | ✅ Хорошо | Секреты в .env, SafeAppConfig без ключей в API, lock-файл |
-| **Зависимости** | ⚠️ 2 moderate vulns | `uuid` <11.1.1 (через exceljs); рекомендуется обновить exceljs до 4.4.0+ |
-| **Документация** | ✅ Отличная | CONTEXT.md, DECISIONS.md, BUG_REPORT.md, HTML_STRUCTURE.md, LINUX_DEPLOY.md |
+| **Архитектура** | ✅ Отличная | Модульность core/adapters/captcha/scheduler/exporter/viewer сохранена |
+| **TypeScript** | ⚠️ Одно место с `any` | `enrich-courts.ts:9` — `courtType: any` вместо `CourtType` |
+| **Тесты** | ❌ Отсутствуют | `vitest` настроен, но 0 файлов `*.test.ts`. Smoke не CI-совместим |
+| **Безопасность** | ✅ Хорошо | SafeAppConfig, `.env` в gitignore, lock-файл с PID-проверкой |
+| **Зависимости** | ⚠️ 2 moderate vulns | `uuid` <11.1.1 через exceljs (не эксплуатируется: `exportXlsx: false`) |
+| **Документация** | ✅ Обновлена | README, CONTEXT, AUDIT_REPORT, RUCAPTCHA_GUIDE, HTML_STRUCTURE синхронизированы 2026-07-10 |
 
 ---
 
-## 🔴 Critical Issues (блокеры)
+## 🔴 Блокеры
 
-### 1. TypeScript компиляция падает — `decodeEntities` не существует
-**Файлы:** `packages/adapters/*.ts`, `packages/core/courts.ts` (5 мест)  
-**Ошибка:** `TS2353: Object literal may only specify known properties, and 'decodeEntities' does not exist in type 'CheerioOptions'.`  
-**Причина:** Cheerio 1.x удалил опцию `decodeEntities`. По умолчанию теперь `false` (entities не декодируются).  
-**Фикс:** Убрать `decodeEntities: false` — это уже дефолт в v1.
+### B1. `enrich-courts.ts:9` — `courtType: any`
 
+**Файл:** `packages/scheduler/enrich-courts.ts:9`
+**Ошибка:** `const uniq = new Map<string, { courtId: string; courtType: any }>();`
+**Причина:** После исправления `CourtType` в orchestrator.ts и smoke.ts это место осталось с `any`.
+**Риск:** Пропускает невалидные значения типа суда. Нарушает типобезопасность, введённую в code review #1.
+
+**Фикс:**
 ```typescript
-// Было:
-cheerio.load(html, { decodeEntities: false });
-
-// Стало:
-cheerio.load(html);
+import type { CourtType } from '../core/types.js';
+const uniq = new Map<string, { courtId: string; courtType: CourtType }>();
 ```
 
-### 2. Type mismatch в orchestrator.ts — CourtType assignability
-**Файл:** `packages/scheduler/orchestrator.ts` строки 159, 168, 178  
-**Ошибка:** `Type 'string' is not assignable to type 'CourtType'.`  
-**Причина:** `courtGroups` использует `string` ключи, но `RunResult.courtType` требует union type.  
-**Фикс:** Добавить type assertion или привести тип:
+### B2. `orchestrator.ts:160-163` — Promise.race течёт ресурсами
 
+**Файл:** `packages/scheduler/orchestrator.ts:160-163`
+**Проблема:**
 ```typescript
-const courtType = type as CourtType; // или CourtType(type)
+const caseData = await Promise.race([parsePromise, timeoutPromise]);
 ```
+Проигравший промис не отменяется. Если `parsePromise` продолжается после таймаута:
+- его результат игнорируется — асинхронная работа выполняется вхолостую
+- если парсинг интенсивный (например, Puppeteer для magistrate), это тратит CPU/RAM
+- при большом количестве тайм-аутов накапливаются orphaned операции
 
----
-
-## ⚠️ Warnings (требуют внимания)
-
-### 3. Уязвимости зависимостей (npm audit)
-| Пакет | Severity | CVE | Путь |
-|-------|----------|-----|------|
-| `uuid` | moderate | GHSA-w5hq-g745-h8pq | `exceljs → uuid` |
-
-**Рекомендация:** Обновить `exceljs` до ≥4.4.0 (тянет uuid ≥11.1.1) или добавить `overrides` в package.json.
-
-```json
-"overrides": {
-  "uuid": "^11.1.1"
-}
-```
-
-### 4. XLSX экспортер — заглушка
-**Файл:** `packages/exporter/xlsx.ts`  
-**Статус:** `throw new Error('exportXlsx: не реализован')`  
-**В конфиге:** `exportXlsx: false` — поэтому не блокирует, но функция заявлена в архитектуре.  
-**Рекомендация:** Либо реализовать (exceljs уже в deps), либо убрать из конфига/доков.
-
-### 5. Нет автоматизированных тестов
-- `vitest` в devDependencies, но тестов нет (`*.test.ts` — 0 файлов)
-- Smoke-скрипт только ручной, не CI-совместим (нет exit code на failure)
-- **Риск:** Регрессии парсеров не ловятся автоматически при изменении HTML сайтов.
-
-### 6. Lock-файл — только в памяти процесса
-**Файл:** `orchestrator.ts` строки 96-101, 194-196  
-**Проблема:** При краше процесса lock-файл может остаться (`unlinkSync` в finally, но при нормальном выходе). При hard kill (SIGKILL, OOM) — lock останется навсегда.  
-**Рекомендация:** Добавить проверку валидности PID при старте:
-
+**Фикс:** Использовать `AbortController`:
 ```typescript
-if (existsSync(lockPath)) {
-  const pid = parseInt(readFileSync(lockPath, 'utf-8'), 10);
-  try { process.kill(pid, 0); } catch { /* процесс мёртв — можно перезаписать */ }
-  // если процесс жив — exit
-}
-```
-
-### 7. Retry-режим — нет fallback провайдера капчи
-**Файл:** `orchestrator.ts` строка 52-60, `config.json` имеет `fallbackProvider: '2captcha'`  
-**Проблема:** Код использует только `config.captcha.apiKey` (primary). Fallback ключ загружается в конфиг но **никогда не используется**.  
-**Рекомендация:** Реализовать fallback логику в `loadCaseHtml` для magistrate.
-
-### 8. Захардкоженные таймауты в smoke.ts
-**Файл:** `packages/scheduler/smoke.ts` строка 86  
-**Проблема:** Использует `config.retry.timeoutMs` (15s) для fetch, но сетевые задержки до судов могут быть выше. Smoke тест падает с timeout (как в выводе выше).  
-**Рекомендация:** Отдельный `smokeTimeoutMs` в конфиге или увеличить до 30-60s.
-
-### 9. `detectCourtType` — хрупкая эвристика
-**Файл:** `packages/core/urls.ts` строки 21-29  
-**Проблема:** Определяет тип суда по `delo_id` параметру, но если URL меняется — сломается.  
-**Рекомендация:** Добавить явный `courtType` в watch/ файлы (JSON с полем `courtType`) как опциональный override.
-
-### 10. `extractCourtId` — не покрывает поддомены типа `35.perm.msudrf.ru`
-**Файл:** `packages/core/urls.ts` строки 31-39  
-**Проблема:** `.replace('.msudrf.ru', '')` оставляет `35.perm` — это не уникальный courtId.  
-**Реальный courtId для magistrate** — вторая часть от конца (например `perm`). Сейчас `courtId = '35.perm'`, что дублируется при разных участках.  
-**Фикс:** Для magistrate брать предпоследний сегмент:
-
-```typescript
-if (host.includes('.msudrf.ru')) {
-  const parts = host.split('.');
-  return parts[parts.length - 2]; // 'perm' из '35.perm.msudrf.ru'
-}
-```
-
----
-
-## 💡 Suggestions (улучшения)
-
-### 11. Добавить vitest конфиг и CI-совместимый smoke
-```typescript
-// vitest.config.ts
-import { defineConfig } from 'vitest/config';
-export default defineConfig({
-  test: { environment: 'node', include: ['packages/**/*.test.ts'] }
+const ac = new AbortController();
+const parsePromise = adapter.parse(html, url).then(data => {
+  if (ac.signal.aborted) throw new Error('aborted');
+  return data;
+});
+const timeoutPromise = new Promise<never>((_, reject) => {
+  const id = setTimeout(() => { ac.abort(); reject(new Error('parse timeout')); }, 10000);
+  ac.signal.addEventListener('abort', () => clearTimeout(id));
 });
 ```
-Сделать `npm run test:smoke` возвращать ненулевой код при ошибках — для CI.
-
-### 12. Вынести общие селекторы в константы
-В 4 адаптерах дублируется логика поиска UID, типов, номеров. Можно вынести в `packages/core/selectors.ts` с картой селекторов по типам судов.
-
-### 13. Добавить ESLint / Prettier
-Сейчас только `tsc --noEmit`. Рекомендую:
-```bash
-npm i -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin prettier
-```
-
-### 14. Логирование — структурированный JSON
-Сейчас `console.log`/`warn`/`error`. Для продакшена удобнее `pino` или похожий — легко парсить в Loki/ELK.
-
-### 15. Graceful shutdown для viewer
-**Файл:** `packages/viewer/server.ts` — нет обработки SIGTERM/SIGINT. PM2 шлёт SIGTERM, процесс умирает без закрытия соединений.
-
-### 16. Валидация конфига при старте
-`loadConfig()` не валидирует обязательные поля (schedule, outputDir, retry.*). Добавить Zod схему или простую проверку.
-
-### 17. `courts.json` — нет vnkod в данных
-Структура есть (`vnkod: string | null`), но `fetchCourtDirectoryItem` всегда ставит `null`. Можно извлекать из ссылок `judicial_uid` на главной странице.
 
 ---
 
-## ✅ Looks Good (сильные стороны)
+## ⚠️ Важно
+
+### V1. `magistrate.ts:38-42` — нет fallback UID из URL
+
+**Файл:** `packages/adapters/magistrate.ts:38-42`
+```typescript
+const caseNumber = cleanText(
+  $('h2').filter(...).text().replace(/ДЕЛО\s*№/i, '')
+) ?? '';
+if (!caseNumber) throw new Error('MagistrateAdapter: не удалось определить номер дела');
+```
+District/appeal/cassation имеют fallback: `case_uid || case_id` из URL. Magistrate — нет.
+Если вёрстка msudrf.ru изменится (h2 уберут или переименуют) — парсер упадёт.
+
+**Фикс:**
+```typescript
+const caseNumber = cleanText(...) ?? parsedUrl.searchParams.get('case_id') ?? '';
+```
+
+### V2. `session.ts` — новый браузер на каждое дело magistrate
+
+**Файл:** `packages/captcha/session.ts:19`
+`puppeteer.launch({ headless })` вызывается при каждом вызове `fetchMagistrateHtml`.
+12 magistrate-дел = 12 запусков Chromium (~170 MB RAM каждый, 5-15 сек на запуск).
+
+**Рекомендация:** Кешировать browser/page между вызовами в пределах одного прогона. Либо передавать `browser` параметром, либо использовать module-level singleton с авто-закрытием в finally оркестратора.
+
+### V3. `config.json` — `captcha.fallbackProvider` никогда не используется
+
+**Файлы:** `config.json`, `packages/scheduler/orchestrator.ts:54-64`
+`loadCaseHtml` использует только `config.captcha.apiKey` (RuCaptcha). Ключ `TWOCAPTCHA_API_KEY` загружается в `loadConfig()`, проверяется `fallbackKeySet`, но **ни разу не задействован** в логике парсинга.
+
+Если RuCaptcha недоступен (баланс 0, API упал) — magistrate-дела падают с ошибкой, хотя fallback-ключ есть в `.env`.
+
+**Рекомендация:** Реализовать fallback в `loadCaseHtml`:
+```typescript
+if (courtType === 'magistrate') {
+  if (!apiKey) throw new Error('...');
+  try {
+    return await fetchMagistrateHtml({ url, apiKey, ... });
+  } catch {
+    if (config.captcha.fallbackKeySet) {
+      return await fetchMagistrateHtml({ url, apiKey: config.captcha.fallbackApiKey, ... });
+    }
+    throw;
+  }
+}
+```
+
+### V4. `smoke.ts:80-83` — magistrate пропускается
+
+**Файл:** `packages/scheduler/smoke.ts:80-83`
+```typescript
+if (courtType === 'magistrate') {
+  log.write('    [пропущено: magistrate требует Puppeteer]');
+  continue;
+}
+```
+Magistrate end-to-end закрыт (BUG-016: 12/12 success). Пропускать его в smoke-тесте некорректно — это единственный тип суда с капчей, и его всегда нужно проверять.
+
+**Рекомендация:** Убрать `continue` и тестировать magistrate, либо добавить отдельный `test:smoke:magistrate`.
+
+### V5. `package.json` — `vitest` настроен, тестов нет
+
+**Файл:** `package.json`
+```json
+"test": "vitest run",
+"test:watch": "vitest"
+```
+`vitest` в devDependencies, конфигурация неявная (infer). Но ни одного файла `*.test.ts`. Команда `npm test` выполняется успешно с 0 тестов — бесполезна.
+
+**Рекомендация минимальная:** Добавить `packages/core/urls.test.ts` с тестом `extractUrls()` на 5-6 кейсах (JSON, CSV, пробелы, кавычки, битые URL). Это даст реальную ценность без необходимости писать моки для HTML-парсеров.
+
+---
+
+## 💡 Советы
+
+### S1. `magistrate.ts:74` — 5-я колонка названа `note`, но это судья
+
+```typescript
+note: tds.length >= 5 ? cleanText(tds.eq(4).text()) : null, // судья (5-я колонка)
+```
+Поле `CaseEvent.note` описано как «примечание», но здесь попадает имя судьи. Либо должно быть отдельное поле `judge` в `CaseEvent`, либо правильно названо.
+
+### S2. `smoke.ts:64` — хардкод «urls.txt»
+
+```typescript
+log.write(`[smoke] Всего URL в urls.txt: ${allUrls.length}`);
+```
+URL могут грузиться из `watch/`, но лог всегда пишет «urls.txt». Заменить на нейтральное: «Всего URL:».
+
+### S3. `orchestrator.ts:162` — parse timeout 10000ms захардкожен
+
+```typescript
+const timeoutPromise = new Promise<never>((_, reject) =>
+  setTimeout(() => reject(new Error('parse timeout')), 10000)
+);
+```
+Таймаут парсинга не вынесен в `config.json`. Сложные magistrate-страницы с капчей могут занимать >10 сек. Рекомендуется вынести в `config.retry.parseTimeoutMs`.
+
+### S4. `config.ts:52-53` — мутация JSON-объекта
+
+```typescript
+cfg.captcha.apiKey = apiKey;
+cfg.captcha.fallbackApiKey = fallbackApiKey;
+```
+`JSON.parse` возвращает plain object, но мутировать его в `loadConfig` нарушает принцип immutability. Технически не баг, но может удивить вызывающий код.
+
+### S5. `courts.json` пуст
+
+**Файл:** `courts.json` — `{}`
+`enrich:courts` ни разу не был успешно запущен. UI показывает поддомены (`sverdlov--perm`) вместо названий судов (`Свердловский районный суд г. Перми`).
+
+### S6. `orchestrator.ts:196-198` — XLSX stub
+
+```typescript
+if (config.exportXlsx) {
+  console.log(`[xlsx] TODO: ${courtId}`);
+}
+```
+Если пользователь выставит `exportXlsx: true`, он получит только строчку в логах, а не XLSX-файлы. Следует либо убрать `exportXlsx` из конфига, либо сделать `throw new Error('exportXlsx: не реализован. Установите exportXlsx: false.')`.
+
+### S7. Нет rate-limiting между запросами к одному суду
+
+Оркестратор идёт по URL последовательно без пауз. Если в `watch/` 50 дел одного суда — пойдут подряд. Риск блокировки по IP на стороне ГАС «Правосудие».
+
+**Рекомендация:** Добавить `delayBetweenRequestsMs` в `config.json` с дефолтом 500-1000ms.
+
+### S8. `index.html` — 400 строк inline
+
+Ванільний HTML/JS — это осознанное решение, но 400 строк внутри `<script>` и `<style>` без разделения на файлы затрудняет поддержку. Даже без фреймворка можно разбить на `app.js`, `style.css`.
+
+### S9. `PROMPT_FOR_NEW_SESSION.md` — дата 2026-07-07
+
+Дата в заголовке устарела на 3 дня. Рекомендуется обновлять при каждом изменении проекта.
+
+### S10. `LINUX_DEPLOY.md:48` — хардкод «OK: 26»
+
+```bash
+# Ожидаем: [orchestrator] Готово. OK: 26, FAIL: 0, CAPTCHA: 0
+```
+Число 26 соответствует текущему `urls.txt`, но не будущему. Заменить на «все URL».
+
+---
+
+## ✅ Что хорошо
 
 | Аспект | Детали |
 |--------|--------|
-| **Модульность** | Чёткое разделение: `core`, `adapters`, `captcha`, `scheduler`, `exporter`, `viewer` |
-| **Изоляция адаптеров** | Один адаптер = один тип суда. Изменения HTML не ломают другие типы. |
-| **Watch/ папка** | Гибкий источник URL: любой формат, рекурсивный скан, дедупликация, fallback на urls.txt |
-| **Two-tier scheduling** | Full-run + retry-run по stale URL (на основе run-log истории) — правильный паттерн для нестабильных источников |
-| **Merge по UID** | `exporter/json.ts` не стирает историю, мержит новые данные |
-| **Lock-файл** | Защита от параллельного запуска оркестратора |
-| **SafeAppConfig** | API `/api/config` не утекает секреты |
-| **Puppeteer + RuCaptcha v2** | Правильный подход для magistrate: browser context + API v2 (не legacy) |
-| **Charset автоопределение** | Из Content-Type заголовка, fallback win1251 |
-| **Документация** | CONTEXT.md, DECISIONS.md, BUG_REPORT.md, HTML_STRUCTURE.md, LINUX_DEPLOY.md — уровень enterprise |
-| **pm2 ecosystem** | Готовый продакшен-конфиг с cron_restart |
+| **BUG-023..026 закрыты** | `decodeEntities`, `CourtType`, stale lock, graceful shutdown — все 4 блокера code review #1 исправлены |
+| **Lock-файл зрелый** | PID-проверка через `process.kill(pid, 0)` + перезапись stale lock. Устойчив к SIGKILL/OOM |
+| **Graceful shutdown** | viewer/server.ts обрабатывает SIGTERM/SIGINT с `serverInstance.close()` + fallback force-exit 5s |
+| **SafeAppConfig** | `/api/config` возвращает конфиг без API-ключей. Защита от утечки секретов через API |
+| **Архитектура** | Неизменна с code review #1: core/adapters/captcha/scheduler/exporter/viewer — чистая модульность |
+| **Атомарная запись** | `json.ts` и `courts.ts` пишут через `.tmp` + `renameSync` — нет риска повреждения файла при краше |
+| **Charset detection** | Из Content-Type заголовка (не guess). Fallback на win1251. Корректно для судовых сайтов |
+| **Run-log история** | `buildLastSuccessMap()` читает все run-log-*.json и строит карту lastSuccess по URL. Основа для retry |
+| **Smoke-лог** | Автоматически пишет `logs/smoke-last.log` в UTF-8. Флаг `smokeSaveLog` в конфиге |
+| **Документация обновлена** | README, CONTEXT, AUDIT_REPORT, RUCAPTCHA_GUIDE, HTML_STRUCTURE синхронизированы с кодом |
 
 ---
 
@@ -174,127 +231,85 @@ npm i -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin prett
 
 | Файл | Статус | Заметки |
 |------|--------|---------|
-| `packages/core/types.ts` | ✅ | Чёткие интерфейсы, `$schema` для версионирования |
-| `packages/core/config.ts` | ✅ | SafeAppConfig паттерн, dotenv загрузка |
-| `packages/core/urls.ts` | ⚠️ | `extractCourtId` для magistrate, `detectCourtType` эвристика |
+| `packages/core/types.ts` | ✅ | `Case`, `CaseEvent`, `CaseParty`, `CourtAdapter`, `RunResult` — полные и консистентные |
+| `packages/core/config.ts` | ⚠️ | Мутация JSON-объекта (S4). Нет валидации обязательных полей |
+| `packages/core/urls.ts` | ✅ | watch/ + fuzzy extractor + fallback. `extractCourtId` для magistrate — осознанное решение |
 | `packages/core/errors.ts` | ✅ | `CaptchaRequiredError`, `isCaptchaPage` |
-| `packages/core/retry.ts` | ✅ | Exponential backoff, чистая реализация |
-| `packages/core/courts.ts` | ⚠️ | `decodeEntities` ошибка TS, `vnkod` не заполняется |
-| `packages/adapters/district.ts` | ⚠️ | `decodeEntities` ошибка TS |
-| `packages/adapters/appeal.ts` | ⚠️ | `decodeEntities` ошибка TS |
-| `packages/adapters/cassation.ts` | ⚠️ | `decodeEntities` ошибка TS |
-| `packages/adapters/magistrate.ts` | ⚠️ | `decodeEntities` ошибка TS |
-| `packages/captcha/rucaptcha.ts` | ✅ | API v2, правильные параметры ImageToTextTask |
-| `packages/captcha/session.ts` | ✅ | Puppeteer + fetch в browser context, `--ignore-certificate-errors` |
-| `packages/scheduler/orchestrator.ts` | ⚠️ | TS ошибки CourtType, lock уязвимость, fallback капча не используется |
-| `packages/scheduler/smoke.ts` | ⚠️ | Таймауты, нет exit code для CI |
-| `packages/scheduler/enrich-courts.ts` | ✅ | Простая обёртка, работает |
-| `packages/exporter/json.ts` | ✅ | Merge по UID, атомарная запись через .tmp |
-| `packages/exporter/xlsx.ts` | ❌ | Заглушка, не реализован |
-| `packages/viewer/server.ts` | ⚠️ | Нет graceful shutdown, reconciliation работает |
+| `packages/core/retry.ts` | ✅ | Exponential backoff |
+| `packages/core/courts.ts` | ✅ | `fetchCourtDirectoryItem` работает, `vnkod` пока null (низкий приоритет) |
+| `packages/adapters/district.ts` | ✅ | |
+| `packages/adapters/appeal.ts` | ✅ | `publishInfo` из предпоследней вкладки — корректно |
+| `packages/adapters/cassation.ts` | ✅ | |
+| `packages/adapters/magistrate.ts` | ✅ | Fallback UID из URL (V1). Колонка судьи в `note` (S1 — совет) |
+| `packages/captcha/rucaptcha.ts` | ✅ | API v2, правильные параметры |
+| `packages/captcha/session.ts` | ⚠️ | Новый браузер на каждое дело (V2 — backlog) |
+| `packages/scheduler/orchestrator.ts` | ✅ | Promise.race с AbortController (B2), fallback captcha (V3). XLSX stub (S6 — backlog) |
+| `packages/scheduler/smoke.ts` | ✅ | Magistrate из cached HTML (V4), «urls.txt» исправлен (S2) |
+| `packages/scheduler/enrich-courts.ts` | ✅ | `courtType: CourtType` (B1) |
+| `packages/exporter/json.ts` | ✅ | Merge по UID, атомарная запись |
+| `packages/exporter/xlsx.ts` | ❌ | Заглушка (S6 — backlog) |
+| `packages/viewer/server.ts` | ✅ | Graceful shutdown, SafeAppConfig, `/api/run/enrich-courts`, `/api/run/status` |
+| `packages/core/urls.test.ts` | ✅ | 19 unit-тестов: `extractUrls`, `detectCourtType`, `extractCourtId` |
 
 ---
 
-## 🔧 Plan of Action (рекомендуемый порядок фиксов)
+## 🔧 План действий
 
-### Приоритет 1 (Блокеры компиляции)
-1. Убрать `decodeEntities: false` из 5 файлов адаптеров + courts.ts
-2. Исправить `CourtType` assignability в orchestrator.ts (3 места)
+### ✅ Приоритет 1 — Блокеры (исправлено 2026-07-10)
+1. ~~**B1** — `courtType: any` → `CourtType` в `enrich-courts.ts`~~ ✅
+2. ~~**B2** — `Promise.race` leak в `orchestrator.ts:160-163`~~ ✅
 
-### Приоритет 2 (Надёжность)
-3. Добавить проверку валидности PID в lock-файл
-4. Реализовать fallback провайдера капчи (2captcha) в orchestrator
-5. Исправить `extractCourtId` для magistrate поддоменов
+### ✅ Приоритет 2 — Важно (исправлено 2026-07-10)
+3. ~~**V1** — fallback UID в `magistrate.ts`~~ ✅
+4. ~~**V4** — magistrate в smoke-тесте~~ ✅
+5. ~~**V3** — fallback captcha в `loadCaseHtml`~~ ✅
+6. ~~**V5** — unit-тест `extractUrls()`~~ ✅ (19 тестов, `packages/core/urls.test.ts`) + S2 фикс хардкода «urls.txt»
 
-### Приоритет 3 (Качество)
-6. Добавить vitest конфиг + минимум 1 тест на адаптер
-7. Сделать smoke тест CI-совместимым (exit code)
-8. Реализовать `exportXlsx` или убрать из конфига/доков
-9. Добавить ESLint + Prettier
-10. Graceful shutdown в viewer
-
-### Приоритет 4 (Низкий)
-11. Обновить exceljs (фикс уязвимости uuid)
-12. Структурированное логирование (pino)
-13. Валидация конфига (Zod)
-14. Извлечение vnkod в courts.ts
-
----
-
-## 📦 Как применить фиксы
-
-Все изменения можно сделать локально, закоммитить и запушить:
-
-```bash
-cd /path/to/CourtFlow
-
-# 1. Fix decodeEntities
-sed -i 's/{ decodeEntities: false }//g' packages/adapters/*.ts packages/core/courts.ts
-# (аккуратно — оставить пустые скобки или убрать второй аргумент)
-
-# 2. Fix CourtType в orchestrator.ts
-# Добавить: const courtType = type as CourtType;
-
-# 3. Fix extractCourtId в urls.ts
-# Обновить логику для .msudrf.ru
-
-# 4. Commit & push
-git add -A
-git commit -m "fix: resolve TS compilation errors + courtId extraction"
-git push origin main
-```
+### Приоритет 3 — Советы (backlog, не блокирует)
+7. **S3** — вынести parse timeout в `config.json`
+8. **S6** — XLSX: либо реализовать, либо убрать из конфига
+9. **V2** — singleton browser для magistrate
+10. **S7** — rate-limiting между запросами
+11. **S1** — поле `note` → `judge` в `CaseEvent`
+12. **S5** — запустить `enrich:courts`, заполнить справочник
+13. **S8** — разбить `index.html`
+14. **S9** — обновить `PROMPT_FOR_NEW_SESSION.md`
+15. **S10** — убрать хардкод «26» в `LINUX_DEPLOY.md`
 
 ---
 
-## 📊 Метрики репозитория
+## 📊 Метрики репозитория (2026-07-10)
 
 | Метрика | Значение |
 |---------|----------|
-| TypeScript файлов | 14 |
-| Строк кода (packages/) | ~1,500 |
+| TypeScript файлов | 18 |
+| Строк кода (packages/) | ~4 250 |
 | Зависимостей (prod) | 6 |
 | Зависимостей (dev) | 5 |
-| Уязвимостей (moderate) | 2 |
+| Уязвимостей (moderate) | 2 (uuid через exceljs) |
 | Тестов | 0 |
 | Документационных файлов | 8 |
+| Коммитов (main) | 41 |
+| Покрытых судов | 26 |
+| Типов судов | 4 (district, appeal, cassation, magistrate) |
 
 ---
 
+## 🔄 Сравнение с Code Review #1 (2026-07-06)
 
----
+| Пункт #1 | Статус в #2 | Комментарий |
+|---|---|---|
+| #1 decodeEntities | ✅ Исправлен | Во всех 5 файлах |
+| #2 CourtType assignability | ✅ Исправлен | Везде, включая enrich-courts.ts (B1 закрыт) |
+| #6 Stale lock | ✅ Исправлен | PID-проверка работает |
+| #15 Graceful shutdown | ✅ Исправлен | SIGTERM/SIGINT обрабатываются |
+| #3 uuid vuln | ⏳ Не изменилось | exceljs опциональный |
+| #4 XLSX exporter | ❌ Не изменилось | Заглушка (S6 backlog) |
+| #5 Тесты | ✅ Первые тесты | `urls.test.ts`: 19 тестов (V5) |
+| #7 Fallback captcha | ✅ Реализован | fallbackApiKey в loadCaseHtml (V3) |
+| #8 Таймауты smoke | ⏳ Не изменилось | |
+| #9 detectCourtType | ⏳ Не изменилось | Эвристика осознанная |
+| #10 extractCourtId magistrate | ❌ Отклонён | Осознанное решение |
+| #11-17 ESLint/pino/Zod/vnkod | ⏳ Не изменилось | Техдолг |
 
-## 📝 Ответ на ревю (2026-07-07)
-
-> Автор: Comet (Perplexity AI). Разбор проведён после аварии с электричеством, прервавшей сессию. Изменения внесены напрямую в GitHub.
->
-> ### ✅ Принято и исправлено
->
-> | # | Пункт | Статус | Что сделано |
-> |---|---|---|---|
-> | 1 | `decodeEntities` TS2353 | ✅ Исправлено | Убран второй аргумент `cheerio.load()` в 5 файлах: appeal.ts, cassation.ts, district.ts, magistrate.ts, courts.ts |
-> | 2 | `CourtType` assignability | ✅ Исправлено | `ADAPTERS: Record<CourtType, CourtAdapter>`, `courtGroups: Map<string, { type: CourtType; ... }>`, `loadCaseHtml(..., courtType: CourtType)` |
-> | 6 | Stale lock после SIGKILL/OOM | ✅ Исправлено | Добавлена `isProcessAlive()` через `process.kill(pid, 0)`. Stale lock перезаписывается, не блокирует запуск |
-> | 15 | Graceful shutdown viewer | ✅ Исправлено | `SIGTERM`/`SIGINT` → `serverInstance.close()` + fallback force-exit 5s. `app.listen()` сохраняется в `serverInstance` |
->
-> ### ❌ Отклонено
->
-> | # | Пункт | Причина отклонения |
-> |---|---|---|
-> | 10 | `extractCourtId` для magistrate — брать предпоследний сегмент (`perm` вместо `35.perm`) | **Отклонено.** Предложенный фикс сольёт разные судебные участки одного региона в один `courtId = 'perm'`. Это приведёт к перезатиранию данных при `exportJson()` и потерям дел в UI. Текущая схема `35.perm` сохраняет уникальность каждого участка — это осознанное архитектурное решение. |
->
-> ### ⏳ Отложено (осознанно, не блокирует продакшен)
->
-> | # | Пункт | Почему отложено |
-> |---|---|---|
-> | 3 | uuid уязвимость (exceljs) | exceljs опциональный, `exportXlsx: false` по умолчанию; риск не эксплуатируется |
-> | 4 | XLSX экспортер | Низкий приоритет, зафиксирован как Фаза 4 в DECISIONS.md |
-> | 5 | Unit/integration тесты | HTML судов меняется непредсказуемо; план: unit-тест `extractUrls()` + CI smoke с exit code |
-> | 7 | Fallback captcha (2captcha) | RuCaptcha стабилен; возьмём при первом реальном инциденте |
-> | 8 | Таймауты в smoke.ts | 15s выбрано осознанно; пересмотрим при первом false positive |
-> | 9 | `detectCourtType` эвристика | URL-схема ГАС «Правосудие» стабильна; риск изменения низкий |
-> | 11–14, 16–17 | ESLint/Prettier, pino, Zod, vnkod | Техдолг; не влияют на корректность работы |
->
-> ### Итог
->
-> Из 2 критических и 8 warning-пунктов: **4 исправлены** (пункты 1, 2, 6, 15), **1 отклонён** с аргументацией (пункт 10), **остальные 9 осознанно отложены** с указанием условий возврата. Ни один пункт не остался без ответа.
-*Ревью выполнено автоматически Hermes Agent. Все выводы основаны на статическом анализе кода, конфигурации и документации репозитория на GitHub.*
+**Итого:** 8 пунктов исправлены из 17. Блокеры B1/B2 и важные V1/V3/V4/V5 закрыты 2026-07-10. Остался техдолг (ESLint/pino/Zod/XLSX/vnkod).

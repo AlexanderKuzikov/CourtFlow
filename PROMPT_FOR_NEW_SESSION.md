@@ -16,7 +16,7 @@ CourtFlow — система мониторинга судебных дел РФ
 
 
 
-## Текущее состояние (2026-07-07)
+## Текущее состояние (2026-07-10)
 - `npm run parse` — **26/26 дел, 100% success**
 - `npm run parse -- --retry` — retry только для stale URL
 - `npm start` — web-viewer работает
@@ -33,22 +33,23 @@ CourtFlow — система мониторинга судебных дел РФ
 ### ⏳ Очередь задач
 
 1. **XLSX** — реализовать `packages/exporter/xlsx.ts` (низкий приоритет)
-2. При необходимости — архивирование/очистка старых `data/*.json`
-3. При необходимости — уведомления по stale/failed URL
+2. **Singleton browser** — кешировать `browser`/`page` для magistrate в пределах прогона
+3. При необходимости — архивирование/очистка старых `data/*.json`
+4. При необходимости — уведомления по stale/failed URL
 
-## Что было сделано в последней сессии (2026-07-07)
+## Что было сделано в последней сессии (2026-07-10)
 
-- **BUG-019 закрыт**: удалён `packages/captcha/solver.ts`
-- Добавлен `watch/` как основной источник URL
-- `packages/core/urls.ts` переписан: fuzzy extraction из text/JSON/CSV/space-separated input
-- Добавлен reconciliation: `/api/cases` показывает только активные courtId
-- Добавлен `/api/active-courts`
-- Добавлен `scheduleRetry` + `staleThresholdH` в `config.json`
-- `packages/scheduler/orchestrator.ts` получил `--retry` режим по `run-log-*.json`
-- `ecosystem.config.cjs`: добавлен `courtflow-parser-retry`
-- `packages/viewer/server.ts`: добавлены `/api/run/retry`, `/api/run/enrich-courts`, новый `/api/run/status`
-- `packages/viewer/public/index.html`: управление full/retry прогонами и статусами
-- `LINUX_DEPLOY.md`, `CONTEXT.md`, `DECISIONS.md`, `BUG_REPORT.md` обновлены
+- **Code Review #2**: полный аудит кода, зафиксирован в CODE_REVIEW.md
+- **Документация синхронизирована**: README (переписан), CONTEXT (дата/очередь), AUDIT_REPORT (баннер устаревания), RUCAPTCHA_GUIDE (синхронизация кода), HTML_STRUCTURE (дата)
+- **B1 закрыт**: `courtType: any` → `CourtType` в enrich-courts.ts
+- **B2 закрыт**: Promise.race leak → AbortController в orchestrator.ts
+- **V1 закрыт**: fallback UID из `case_id` в magistrate.ts
+- **V3 закрыт**: fallback captcha provider (2captcha) в loadCaseHtml
+- **V4 закрыт**: magistrate тест через cached HTML в smoke.ts (если `logs/magistrate-last.html` существует)
+- **V5 закрыт**: unit-тесты `urls.test.ts` — 19 тестов (`extractUrls`, `detectCourtType`, `extractCourtId`)
+- **S2 закрыт**: хардкод «urls.txt» → «Всего URL» в smoke.ts
+- **S9 закрыт**: дата PROMPT_FOR_NEW_SESSION → 2026-07-10
+- **S10 закрыт**: хардкод «ОК: 26» → «все URL» в LINUX_DEPLOY.md
 
 ## Правила работы
 
@@ -68,9 +69,6 @@ CourtFlow — система мониторинга судебных дел РФ
 4. `LINUX_DEPLOY.md`
 5. `ecosystem.config.cjs`
 
-- **Code Review пройдён полностью:** все пункты разобраны, изменения внесены напрямую в GitHub
-- - BUG-023 закрыт: убран `decodeEntities: false` из 5 файлов адаптеров + courts.ts
-  - - BUG-024 закрыт: исправлена типизация `CourtType` в orchestrator.ts
-    - - BUG-025 закрыт: stale lock после SIGKILL/OOM — `process.kill(pid, 0)` проверка живости PID
-      - - BUG-026 закрыт: добавлен graceful shutdown в viewer/server.ts (SIGTERM/SIGINT)
-        - - Ответ на ревю добавлен в CODE_REVIEW.md: принято/отклонено/отложено, пункт 10 (magistrate courtId) отклонён с аргументацией
+- **Code Review #2 (2026-07-10):** 2 блокера + 5 важных пунктов закрыты. Подробности в `CODE_REVIEW.md`.
+- BUG-023..026 закрыты (code review #1)
+- Первые unit-тесты: `packages/core/urls.test.ts` (19 тестов, `npm test`)
