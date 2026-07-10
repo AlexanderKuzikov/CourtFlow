@@ -1,5 +1,13 @@
 # CourtFlow — Полный аудит репозитория
 
+> ⚠️ **Аудит проведён 2026-07-02 (до code review 2026-07-07).**
+> Часть пунктов устарела. **Свежее состояние — в `CONTEXT.md`, `CODE_REVIEW.md`, `BUG_REPORT.md`.**
+> Ниже устаревшие пункты зачёркнуты и помечены статусом «решено».
+
+---
+
+
+
 ## 📊 Общая оценка: **8/10** (Production-ready для Windows, требует доработки для Linux-продакшена)
 
 ---
@@ -24,16 +32,10 @@
 
 ## 🔴 Критические баги / блокеры для продакшена
 
-### 1. **BUG-019: `packages/captcha/solver.ts` — нереализованная заглушка** (открыт в BUG_REPORT.md)
-```typescript
-// packages/captcha/solver.ts
-export async function solveCaptcha(): Promise<string> {
-  throw new Error('solveCaptcha: не реализован');
-}
-```
-**Влияние:** Не блокер (оркестратор не использует этот файл), но **технический долг**. Файл нигде не импортируется — мусор в кодовой базе.
+~~### 1. **BUG-019: `packages/captcha/solver.ts` — нереализованная заглушка**~~
+~~**Влияние:** Не блокер, но техдолг.~~
 
-**Рекомендация:** Удалить файл или реализовать как fallback-обёртку над `RuCaptchaClient`.
+> ✅ **Решено 2026-07-06:** файл `solver.ts` удалён. См. `BUG_REPORT.md` BUG-019.
 
 ---
 
@@ -85,7 +87,7 @@ const caseNumber = cleanText(...) ?? parsedUrl.searchParams.get('case_id') ?? ''
 | 1 | **Hardcoded `delo_id` в detectCourtType** | `urls.ts:16-24` | Если суды сменят `delo_id` — сломается автоопределение типа. Лучше определять по домену (`oblsud--*`, `*kas.*`, `*.msudrf.ru`). |
 | 2 | **Нет валидации `urls.txt` при загрузке** | `urls.ts:41-56` | Битые URL (нет протокола, битые параметры) упадут позже с непонятной ошибкой. |
 | 3 | **`courts.json` — только ручное `enrich:courts`** | `courts.ts` | Если суд не в справочнике — в UI будет поддомен вместо названия. Нет автодополнения при парсинге. |
-| 4 | **`viewer` не имеет `/api/run/enrich-courts` endpoint** | `server.ts:82-95` | В UI кнопка «Справочник судов» шлёт POST на несуществующий эндпоинт. |
+| ~~4~~ | ✅ ~~**`viewer` не имеет `/api/run/enrich-courts` endpoint**~~ | ~~`server.ts:82-95`~~ | ~~В UI кнопка «Справочник судов» шлёт POST на несуществующий эндпоинт.~~ **Решено 2026-07-06** (`POST /api/run/enrich-courts` добавлен). |
 | 5 | **`puppeteer.launch` создаёт новый браузер на КАЖДОЕ дело magistrate** | `session.ts:19-28` | Медленно (10-10-15 сек/дело. Для 10+ дел — минуты. Можно переиспользовать `browser`/`page`. |
 | 6 | **Нет health-check / readiness эндпоинта у viewer** | `server.ts` | PM2 не может проверить живость кроме процесса. |
 | 7 | **`ecosystem.config.cjs` — `cron_restart` работает только в PM2 Pro** | `ecosystem.config.cjs` | В бесплатном PM2 cron не работает. Нужен внешний cron/systemd. |
@@ -211,17 +213,17 @@ const caseNumber = cleanText(...) ?? parsedUrl.searchParams.get('case_id') ?? ''
 
 ## 🎯 План минимального релиза v0.2.0 (Production Ready)
 
-| Задача | Приоритет | Трудозатраты |
-|--------|-----------|--------------|
-| Удалить `packages/captcha/solver.ts` | 🔴 Critical | 5 мин |
-| Реализовать `exportXlsx` в `packages/exporter/xlsx.ts` | 🔴 Critical | 30 мин |
-| Добавить fallback UID в `MagistrateAdapter` | 🟡 High | 10 мин |
-| Добавить `delayBetweenRequestsMs` в config + orchestrator | 🟡 High | 15 мин |
-| Добавить `POST /api/run/enrich-courts` в viewer | 🟡 High | 10 мин |
-| Заменить pm2 cron на systemd timer | 🟡 High | 20 мин |
-| Добавить `GET /api/health` endpoint | 🟢 Medium | 10 мин |
-| Вынести `softId` RuCaptcha в config/env | 🟢 Medium | 5 мин |
-| Написать unit-тесты адаптеров (Vitest) | 🟢 Low | 1-2 ч |
+| Задача | Приоритет | Статус | Трудозатраты |
+|--------|-----------|--------|--------------|
+| Удалить `packages/captcha/solver.ts` | 🔴 Critical | ✅ **решено** | 5 мин |
+| Реализовать `exportXlsx` в `packages/exporter/xlsx.ts` | 🔴 Critical | ⏳ не реализован | 30 мин |
+| Добавить fallback UID в `MagistrateAdapter` | 🟡 High | ⏳ не реализован | 10 мин |
+| Добавить `delayBetweenRequestsMs` в config + orchestrator | 🟡 High | ⏳ не реализован | 15 мин |
+| Добавить `POST /api/run/enrich-courts` в viewer | 🟡 High | ✅ **решено** | 10 мин |
+| Заменить pm2 cron на systemd timer | 🟡 High | ⏳ не реализован | 20 мин |
+| Добавить `GET /api/health` endpoint | 🟢 Medium | ⏳ не реализован | 10 мин |
+| Вынести `softId` RuCaptcha в config/env | 🟢 Medium | ⏳ не реализован | 5 мин |
+| Написать unit-тесты адаптеров (Vitest) | 🟢 Low | ⏳ не реализован | 1-2 ч |
 
 ---
 

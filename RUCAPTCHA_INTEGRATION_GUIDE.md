@@ -49,26 +49,6 @@ export interface RuCaptchaClientOptions {
   timeoutMs?: number;
 }
 
-export interface ImageToTextTaskParams {
-  /** 0=любые, 1=только цифры, 2=только буквы, 4=цифры+буквы */
-  numeric?: 0 | 1 | 2 | 4;
-  /** Мин. длина ответа */
-  minLength?: number;
-  /** Макс. длина ответа */
-  maxLength?: number;
-  /** Чувствительность к регистру */
-  case?: boolean;
-  /** Пул языков: 'rn'=ru+en, 'en'=en, 'ru'=ru */
-  languagePool?: 'rn' | 'en' | 'ru';
-  /** Ваш softId (для статистики в кабинете) */
-  softId?: string;
-}
-
-export interface RuCaptchaResult {
-  text: string;
-  taskId: number;
-}
-
 export class RuCaptchaClient {
   private readonly apiKey: string;
   private readonly pollingIntervalMs: number;
@@ -83,21 +63,13 @@ export class RuCaptchaClient {
   /**
    * Решает капчу по base64 изображению
    * @param imageBase64 — картинка в base64 (без data:image/... префикса)
-   * @param taskParams — параметры ImageToTextTask (опционально, есть дефолты)
    */
-  async solveImage(
-    imageBase64: string,
-    taskParams: ImageToTextTaskParams = {}
-  ): Promise<RuCaptchaResult> {
-    const taskId = await this.createTask(imageBase64, taskParams);
-    const text = await this.pollResult(taskId);
-    return { text, taskId };
+  async solveImage(imageBase64: string): Promise<string> {
+    const taskId = await this.createTask(imageBase64);
+    return this.pollResult(taskId);
   }
 
-  private async createTask(
-    imageBase64: string,
-    taskParams: ImageToTextTaskParams
-  ): Promise<number> {
+  private async createTask(imageBase64: string): Promise<number> {
     const res = await fetch(`${API_BASE}/createTask`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -106,12 +78,12 @@ export class RuCaptchaClient {
         task: {
           type: 'ImageToTextTask',
           body: imageBase64,
-          numeric: taskParams.numeric ?? 4,
-          minLength: taskParams.minLength ?? 4,
-          maxLength: taskParams.maxLength ?? 6,
-          case: taskParams.case ?? false,
-          languagePool: taskParams.languagePool ?? 'rn',
-          softId: taskParams.softId ?? '3898',
+          numeric: 4,
+          minLength: 4,
+          maxLength: 6,
+          case: false,
+          languagePool: 'rn',
+          softId: '3898',
         },
       }),
     });
@@ -123,14 +95,10 @@ export class RuCaptchaClient {
     };
 
     if (json.errorId !== 0) {
-      throw new RuCaptchaError(
-        `createTask: ${json.errorCode ?? json.errorId}`,
-        json.errorCode,
-        json.errorId
-      );
+      throw new Error(`RuCaptcha createTask error: ${json.errorCode ?? json.errorId}`);
     }
     if (!json.taskId) {
-      throw new RuCaptchaError('createTask: нет taskId в ответе');
+      throw new Error('RuCaptcha createTask: нет taskId в ответе');
     }
     return json.taskId;
   }
@@ -155,33 +123,18 @@ export class RuCaptchaClient {
       };
 
       if (json.errorId !== 0) {
-        throw new RuCaptchaError(
-          `getTaskResult: ${json.errorCode ?? json.errorId}`,
-          json.errorCode,
-          json.errorId
-        );
+        throw new Error(`RuCaptcha getTaskResult error: ${json.errorCode ?? json.errorId}`);
       }
       if (json.status === 'processing') continue;
       if (json.status === 'ready') {
         if (!json.solution?.text) {
-          throw new RuCaptchaError('Статус ready, но solution.text отсутствует');
+          throw new Error('RuCaptcha: статус ready, но solution.text отсутствует');
         }
         return json.solution.text;
       }
-      throw new RuCaptchaError(`Неожиданный статус: ${json.status}`);
+      throw new Error(`RuCaptcha: неожиданный статус: ${json.status}`);
     }
-    throw new RuCaptchaError('Timeout: капча не решена за отведенное время');
-  }
-}
-
-export class RuCaptchaError extends Error {
-  constructor(
-    message: string,
-    public readonly errorCode?: string,
-    public readonly errorId?: number
-  ) {
-    super(`RuCaptchaError: ${message}`);
-    this.name = 'RuCaptchaError';
+    throw new Error('RuCaptcha timeout');
   }
 }
 
@@ -320,16 +273,6 @@ async function main() {
     timeoutMs: 120000,
   });
 
-  // Параметры под вашу капчу (пример для msudrf.ru)
-  const taskParams = {
-    numeric: 4,        // цифры + буквы
-    minLength: 4,
-    maxLength: 6,
-    case: false,
-    languagePool: 'rn' as const,
-    softId: '3898',    // замените на свой или уберите
-  };
-
   try {
     // Вариант 1: из файла
     const imageBase64 = fileToBase64('./captcha-sample.png');
@@ -338,17 +281,11 @@ async function main() {
     // const imageBase64 = await fetchCaptchaImageAsBase64(page, 'form#kcaptchaForm img');
 
     console.log('🔄 Отправка капчи в RuCaptcha...');
-    const { text, taskId } = await client.solveImage(imageBase64, taskParams);
+    const text = await client.solveImage(imageBase64);
     
-    console.log(`✅ Решено! TaskID: ${taskId}`);
-    console.log(`📝 Текст: "${text}"`);
+    console.log(`✅ Решено! Текст: "${text}"`);
   } catch (err) {
-    if (err instanceof RuCaptchaError) {
-      console.error(`❌ RuCaptcha ошибка: ${err.message}`);
-      console.error(`   errorCode: ${err.errorCode}, errorId: ${err.errorId}`);
-    } else {
-      console.error('❌ Неожиданная ошибка:', err);
-    }
+    console.error('❌ Ошибка:', err instanceof Error ? err.message : err);
     process.exit(1);
   }
 }

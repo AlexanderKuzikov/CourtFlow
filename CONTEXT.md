@@ -60,20 +60,23 @@ courtflow/
             └── index.html       # ✅ UI управления прогонами
 ```
 
-## Текущее состояние (2026-07-06)
+## Текущее состояние (2026-07-10)
 
 ### ✅ Всё работает
 - `npm run parse` — 26/26 дел, 100% success (Windows + Linux)
 - `npm run parse -- --retry` — только stale URL (lastSuccess > staleThresholdH часов)
 - Linux-деплой прошёл, демонстрация успешна
+- Code review пройдён: BUG-023..026 закрыты (TS-ошибки, stale lock, graceful shutdown)
 - UI: показывает только активные суды из `watch/`
 - Ручной запуск full-run / retry-run есть в UI
 - `watch/` принимает `.txt`, `.json`, `.csv`, файлы без расширения, пробельное разделение ссылок, кавычки и смешанные разделители
 
 ### ⏳ Следующие шаги (очередь)
-1. **XLSX** — `packages/exporter/xlsx.ts` (низкий приоритет)
-2. При необходимости — очистка/архивация старых `data/*.json` вне активного мониторинга
-3. При необходимости — уведомления о недоступных судах / stale URL
+1. **XLSX** — `packages/exporter/xlsx.ts` (низкий приоритет, всё ещё заглушка)
+2. **Тесты** — unit-тест `extractUrls()` + CI smoke с exit code (отложено в CODE_REVIEW)
+3. **Fallback captcha** — 2captcha при первом инциденте RuCaptcha
+4. При необходимости — очистка/архивация старых `data/*.json` вне активного мониторинга
+5. При необходимости — уведомления о недоступных судах / stale URL
 
 ## watch/ — источник URL
 
@@ -135,12 +138,12 @@ pm2 status
 
 **Что закрыто:**
 - ✅ TS-компиляция чистая: `decodeEntities` и `CourtType` ошибки устранены (BUG-023, BUG-024)
-- - ✅ Lock-файл orchestrator устойчив к SIGKILL/OOM — stale lock проверяет PID через `process.kill(pid, 0)` (BUG-025)
-  - - ✅ Viewer поддерживает graceful shutdown (SIGTERM/SIGINT) — совместим с `pm2 restart` (BUG-026)
-    - - ✅ Полный ответ на ревю добавлен в CODE_REVIEW.md (принято / отклонено / отложено)
-     
-      - **Техдолг (backlog):**
-      - - Unit-тест `extractUrls()` + CI smoke с exit code
-        - - Fallback captcha (2captcha) — при первом инциденте RuCaptcha
-          - - Обновить exceljs до 4.4.0+ (фикс uuid уязвимости)
-            - - ESLint/Prettier, pino, Zod-валидация конфига
+- ✅ Lock-файл orchestrator устойчив к SIGKILL/OOM — stale lock проверяет PID через `process.kill(pid, 0)` (BUG-025)
+- ✅ Viewer поддерживает graceful shutdown (SIGTERM/SIGINT) — совместим с `pm2 restart` (BUG-026)
+- ✅ Полный ответ на ревю добавлен в CODE_REVIEW.md (принято / отклонено / отложено)
+
+**Техдолг (backlog):**
+- Unit-тест `extractUrls()` + CI smoke с exit code
+- Fallback captcha (2captcha) — при первом инциденте RuCaptcha
+- Обновить exceljs до 4.4.0+ (фикс uuid уязвимости)
+- ESLint/Prettier, pino, Zod-валидация конфига
