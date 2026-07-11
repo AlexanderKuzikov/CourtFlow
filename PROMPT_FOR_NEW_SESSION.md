@@ -8,57 +8,69 @@
 
 ## Контекст проекта
 
-CourtFlow — система мониторинга судебных дел РФ. Парсит карточки дел с sudrf.ru (районные, апелляционные, кассационные) и msudrf.ru (мировые). Node.js 24, TypeScript 6, ESM, `tsx` без сборки.
+CourtFlow — система мониторинга судебных дел РФ. Парсит карточки дел с sudrf.ru (районные, апелляционные, кассационные) и msudrf.ru (мировые). Node.js 24 LTS, TypeScript 7.0, ESM, `tsx` без сборки.
 
 - Разработка: Windows 11 (PowerShell)
 - Целевой сервер: **Ubuntu Linux**
 - Менеджер процессов на Linux: **pm2**
 
+## Экосистема (важно!)
 
+CourtFlow — часть экосистемы из 5+ проектов в `D:\GitHub\`:
+- **Court-Harvester** — каталог 10 206 судов РФ (DaData API)
+- **FIAS-parser** — привязка адресов к ГАР/OKTMO
+- **SudRF-Parser** — легаси-парсер (cheerio)
+- **Court-Viewer** — легаси-вьюер (Express)
+- **court-data** — репо-хранилище JSON
+
+План: CourtFlow интегрируется с Court-Harvester (каталог судов) и CRM для юристов.
 
 ## Текущее состояние (2026-07-11)
+
+### Работает
 - `npm run parse` — **26/26 дел, 100% success**
 - `npm run parse -- --retry` — retry только для stale URL
-- `npm start` — web-viewer работает (авто-поиск порта, по умолчанию 8791)
+- `npm start` — web-viewer (авто-поиск порта, по умолчанию 8791)
 - `npm run tui` — терминальный дашборд на blessed (SSH, терминал)
+- `npm test` — 19/19 unit-тестов
 - Linux-деплой и демонстрация — успешны
-- `watch/` — основной источник URL для мониторинга
-- `watch/` принимает текст, JSON, CSV, файлы без расширения, ссылки в кавычках и ссылки разделённые пробелами
-- Если `watch/` пуста — fallback на `urls.txt`
+- `watch/` — основной источник URL, fallback `urls.txt`
+- `watch/` принимает текст, JSON, CSV, файлы без расширения
 - UI показывает только активные суды из `watch/`
-- В браузерном UI и TUI есть ручной запуск full-run и retry-run
-- `courtflow-parser-retry` есть в pm2-конфиге
-- RuCaptcha API v2 работает
-- Puppeteer + `--ignore-certificate-errors` закрывает msudrf
-- dotenv удалён — .env загружается через `process.loadEnvFile()` (Node 21.7+)
-- Все пакеты обновлены до последних стабильных (TS 7.0.2, Puppeteer 25, Vitest 4, @types/node@24)
+- Браузерный UI и TUI: ручной запуск full-run и retry-run
+- RuCaptcha API v2 + Puppeteer для msudrf
+- UID ГАС «Правосудие» — источник истины уникальности дела
+- dotenv удалён — .env через `process.loadEnvFile()`
+- Порт 8791, авто-поиск свободного → `logs/.port`
+- Все пакеты обновлены: TS 7.0.2, Puppeteer 25, Vitest 4, @types/node@24
+
+### Сделано в сессии 2026-07-11
+- **TUI**: `packages/cli/tui.ts` — blessed list с `│`-разделителями, выделение white+black, скролл, индикатор сервера
+- **HTTP-клиент**: `packages/cli/client.ts` — читает `logs/.port`
+- **dotenv** → `process.loadEnvFile()`
+- **Порт**: 3000 → 8791, авто-поиск
+- **Пакеты**: все обновлены до latest stable
+- **README**: переписан (бэджи, Apache-2.0)
+- **Tauri**: отклонён
+- **Доки**: CONTEXT, DECISIONS, PROMPT, LINUX, RUCAPTCHA обновлены
 
 ### ⏳ Очередь задач
-
-1. **XLSX** — реализовать `packages/exporter/xlsx.ts` (низкий приоритет)
-2. **Singleton browser** — кешировать `browser`/`page` для magistrate в пределах прогона
-3. При необходимости — архивирование/очистка старых `data/*.json`
-4. При необходимости — уведомления по stale/failed URL
-
-## Что было сделано в последней сессии (2026-07-11)
-
-- **TUI дашборд**: `packages/cli/tui.ts` — терминальный интерфейс на blessed. Подключается к REST API, те же эндпоинты что и браузерный UI. Вкладки: Дела (таблица + поиск `/` + фильтр `F`), Логи, Запуск (full/retry/enrich).
-- **HTTP-клиент**: `packages/cli/client.ts` — общий для TUI и будущих CLI-команд. Читает `logs/.port` для авто-определения фактического порта.
-- **Порт**: 3000 → **8791**. Авто-поиск свободного порта при старте (проверка занятости + идентификация PID/процесса). Фактический порт → `logs/.port`.
-- **dotenv удалён**: заменён на `process.loadEnvFile()` (Node 21.7+, 0 зависимостей). `.env` остаётся.
-- **Пакеты обновлены**: TS 7.0.2, Puppeteer 25.3.0, Vitest 4.1.10, @types/node@24, tsx 4.23.0, iconv-lite 0.7.3.
-- **README переписан**: бэджи технологий, профессиональный формат, структура.
-- **Лицензия**: Apache-2.0 (не MIT — патентный грант важен для коммерческого использования).
-- **Tauri отклонён**: CourtFlow — серверное приложение, браузерный UI + TUI покрывают все сценарии.
+1. Интеграция Court-Harvester — замена courts.json
+2. UID → courtId — извлечение кода суда из UID
+3. POST /api/urls — программная подача URL
+4. externalId / relatedUids — поля для CRM
+5. XLSX exporter (низкий приоритет)
+6. Singleton browser для magistrate
+7. Rate-limiting
 
 ## Правила работы
 
 - Не объясняй базовые концепции — пользователь архитектор
 - Трогай только то что нужно, без рефакторинга соседнего кода
-- Фиксируй баги в `BUG_REPORT.md`, решения в `DECISIONS.md`, состояние в `CONTEXT.md` после каждого шага
-- Операционные файлы (`.env`, `urls.txt`) не пушать
-- `data/` не пушать, `logs/` (кроме `orchestrator.lock`) — пушать
-- `PUPPETEER_HEADLESS=false` — только локальная диагностика, не пушать в `.env`
+- Фиксируй баги в `BUG_REPORT.md`, решения в `DECISIONS.md`, состояние в `CONTEXT.md`
+- Операционные файлы (`.env`, `urls.txt`, `logs/.port`) не пушить
+- `data/` не пушить, `logs/` кроме `orchestrator.lock` и `.port` — пушить
+- `PUPPETEER_HEADLESS=false` — только локальная диагностика
 - Промпт для новой сессии обновлять в конце каждой сессии
 
 ## Файлы для обязательного чтения
@@ -68,7 +80,3 @@ CourtFlow — система мониторинга судебных дел РФ
 3. `DECISIONS.md`
 4. `LINUX_DEPLOY.md`
 5. `ecosystem.config.cjs`
-
-- **Code Review #2 (2026-07-10):** 2 блокера + 5 важных пунктов закрыты. Подробности в `CODE_REVIEW.md`.
-- BUG-023..026 закрыты (code review #1)
-- Первые unit-тесты: `packages/core/urls.test.ts` (19 тестов, `npm test`)
