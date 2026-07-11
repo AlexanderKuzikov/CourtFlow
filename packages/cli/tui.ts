@@ -28,29 +28,29 @@ let searchActive = false;
 let selectedCaseIdx = 0;
 
 // ─── Утилиты ────────────────────────────────────────────
-function typeLabel(t: string): string {
+export function typeLabel(t: string): string {
   return { district: 'Район', appeal: 'Апелл.', cassation: 'Касс.', magistrate: 'Мир.' }[t] || t;
 }
 
-function esc(s: string): string {
+export function esc(s: string): string {
   return (s ?? '').replace(/\{/g, '\\{').replace(/\}/g, '\\}').replace(/\n/g, ' ');
 }
 
-function pad(s: string, w: number): string {
+export function pad(s: string, w: number): string {
   return s.padEnd(w, ' ');
 }
 
-function clip(s: string, max: number): string {
+export function clip(s: string, max: number): string {
   if (s.length <= max) return s;
   return s.slice(0, max - 1) + '›';
 }
 
-function isoDate(d: string | null | undefined): string {
+export function isoDate(d: string | null | undefined): string {
   if (!d) return '—';
   return d.slice(0, 10);
 }
 
-function getSep(): string {
+export function getSep(): string {
   return screen.fullUnicode ? '│' : '|';
 }
 
@@ -182,10 +182,10 @@ async function autoRefresh(): Promise<void> {
 }
 
 // ─── Форматирование списка дел ───────────────────────────
-const COL = { num: 24, type: 10, court: 28, judge: 20, evt: 5, date: 10 };
+export const COL = { num: 24, type: 10, court: 28, judge: 20, evt: 5, date: 10 };
 const sep = getSep();
 
-function formatCaseItem(c: Case): string {
+export function formatCaseItem(c: Case): string {
   const cn = courts[c.court]?.shortName || courts[c.court]?.name || c.court;
   return (
     pad(clip(c.number || '—', COL.num - 1), COL.num) + sep +
@@ -197,7 +197,7 @@ function formatCaseItem(c: Case): string {
   );
 }
 
-function buildHeaderLine(): string {
+export function buildHeaderLine(): string {
   return (
     pad('№ дела', COL.num) + sep +
     pad('Тип', COL.type) + sep +
@@ -221,7 +221,7 @@ function getFilteredCases(): Case[] {
 // ─── Рендер ──────────────────────────────────────────────
 function renderCases(): void {
   const filtered = getFilteredCases();
-  const prevSelected = selectedCaseIdx;
+  const prevSelected = (casesList as any).selected ?? selectedCaseIdx;
   const items = filtered.map(formatCaseItem);
   casesHeader.setContent(buildHeaderLine());
   casesList.setItems(items);
@@ -411,6 +411,7 @@ async function enrichCourts(): Promise<void> {
 screen.key(['q', 'C-c'], () => {
   if (detailBox.visible) { hideDetail(); return; }
   if (refreshTimer) clearTimeout(refreshTimer);
+  screen.program.showCursor();
   screen.destroy();
   process.exit(0);
 });
@@ -487,9 +488,15 @@ screen.key(['e'], () => {
   if (tab === 'run') enrichCourts();
 });
 
-casesList.on('select', (_item: any, idx: number) => {
+// Сохраняем позицию при навигации (стрелки, PgUp/PgDn)
+casesList.on('select item', (_item: any, idx: number) => {
   if (tab !== 'cases') return;
   selectedCaseIdx = idx;
+});
+
+// Подтверждение выбора — Enter
+casesList.on('select', (_item: any, idx: number) => {
+  if (tab !== 'cases') return;
   showDetail(idx);
 });
 
@@ -504,6 +511,12 @@ async function loadCourtsConfig(): Promise<void> {
 async function init(): Promise<void> {
   header.setContent(` CourtFlow — Мониторинг дел  |  API: ${apiUrl}`);
 
+  // Скрыть мигающий курсор (blessed не делает это на Windows)
+  process.stdout.write('\x1b[?25l');
+  process.on('exit', () => process.stdout.write('\x1b[?25h'));
+  process.on('uncaughtException', () => { process.stdout.write('\x1b[?25h'); process.exit(1); });
+  process.on('unhandledRejection', () => { process.stdout.write('\x1b[?25h'); process.exit(1); });
+
   await Promise.all([loadCases(), loadCourtsConfig()]);
 
   showTab('cases');
@@ -515,8 +528,11 @@ screen.on('resize', () => {
   screen.render();
 });
 
-init().catch(err => {
-  screen.destroy();
-  console.error('TUI: ошибка инициализации:', err.message);
-  process.exit(1);
-});
+if (!process.env.VITEST) {
+  init().catch(err => {
+    screen.program.showCursor();
+    screen.destroy();
+    console.error('TUI: ошибка инициализации:', err.message);
+    process.exit(1);
+  });
+}
