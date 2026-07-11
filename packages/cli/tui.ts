@@ -21,9 +21,8 @@ let courtFilter: CourtType | '' = '';
 let searchQuery = '';
 let fullRunning = false;
 let retryRunning = false;
-let refreshTimer: ReturnType<typeof setInterval> | null = null;
-
 let staleThresholdH = 24;
+let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 // ─── Утилиты ────────────────────────────────────────────
 function typeLabel(t: string): string {
@@ -34,9 +33,13 @@ function esc(s: string): string {
   return (s ?? '').replace(/\{/g, '\\{').replace(/\}/g, '\\}').replace(/\n/g, ' ');
 }
 
+function pad(s: string, w: number): string {
+  return s.padEnd(w, ' ');
+}
+
 function clip(s: string, max: number): string {
   if (s.length <= max) return s;
-  return s.slice(0, max - 1) + '\u2026';
+  return s.slice(0, max - 1) + '\u203A';
 }
 
 function isoDate(d: string | null | undefined): string {
@@ -44,107 +47,88 @@ function isoDate(d: string | null | undefined): string {
   return d.slice(0, 10);
 }
 
-// ─── Экран и лэйаут ─────────────────────────────────────
+// ─── Экран ──────────────────────────────────────────────
 const screen = blessed.screen({
   smartCSR: true,
   title: 'CourtFlow',
-  cursor: { shape: 'line', blink: true, artificial: false, color: 'white' },
   fullUnicode: true,
 });
 
-const STYLES = {
-  header: { bg: 'blue' as const, fg: 'white' as const },
-  tabActive: { bg: 'blue' as const, fg: 'white' as const },
-  tabInactive: { bg: 'black' as const, fg: 'white' as const },
-  tableHeader: { fg: 'white' as const, bg: 'blue' as const, bold: true as const },
-  tableCell: { fg: 'white' as const, bg: 'black' as const },
-  tableSelected: { bg: 'cyan' as const, fg: 'black' as const },
-  statusbar: { bg: 'blue' as const, fg: 'white' as const },
-  detail: { bg: 'black' as const, fg: 'white' as const },
-  logOk: { fg: 'green' as const },
-  logFail: { fg: 'red' as const },
-  running: { fg: 'yellow' as const },
-  muted: { fg: 'grey' as const },
-};
-
-// Header
+// Header (строка 0)
 const header = blessed.box({
   parent: screen,
   top: 0, left: 0, width: '100%', height: 1,
-  content: ' CourtFlow \u2014 \u041C\u043E\u043D\u0438\u0442\u043E\u0440\u0438\u043D\u0433 \u0441\u0443\u0434\u0435\u0431\u043D\u044B\u0445 \u0434\u0435\u043B',
-  style: STYLES.header,
+  style: { bg: 'blue', fg: 'white' },
 });
 
-// Content area
-const content = blessed.box({
+// Column headers for cases list (строка 1)
+const casesHeader = blessed.box({
   parent: screen,
-  top: 1, left: 0, width: '100%', height: '100%-2',
-  style: { bg: 'black' },
+  top: 1, left: 0, width: '100%', height: 1,
+  style: { bg: 'blue', fg: 'white', bold: true },
 });
 
-// Status bar
-const statusbar = blessed.box({
+// Cases list (строка 2..дно-1)
+const casesList = blessed.list({
   parent: screen,
-  bottom: 0, left: 0, width: '100%', height: 1,
-  style: STYLES.statusbar,
-});
-
-// ─── Cases table ─────────────────────────────────────────
-const casesTable = blessed.listtable({
-  parent: content,
-  top: 0, left: 0, width: '100%', height: '100%',
-  align: 'left',
-  keys: false, vi: false, mouse: true,
-  tags: false,
+  top: 2, left: 0, width: '100%', height: '100%-3',
+  keys: true, vi: true, mouse: true,
+  scrollbar: { ch: ' ', track: { bg: 'grey' }, style: { inverse: true } },
   style: {
-    header: STYLES.tableHeader,
-    cell: STYLES.tableCell,
-    selected: STYLES.tableSelected,
+    item: { fg: 'white', bg: 'black' },
+    selected: { bg: 'white', fg: 'black', bold: true },
   },
 });
 
-// ─── Logs view ───────────────────────────────────────────
+// Logs view
 const logsBox = blessed.box({
-  parent: content,
-  top: 0, left: 0, width: '100%', height: '100%',
-  scrollable: true,
-  alwaysScroll: true,
+  parent: screen,
+  top: 1, left: 0, width: '100%', height: '100%-2',
+  scrollable: true, alwaysScroll: true,
   keys: true, vi: true, mouse: true,
-  style: { bg: 'black', fg: 'white' },
-  scrollbar: { ch: ' ', track: { bg: 'grey' }, style: { inverse: true } },
-  hidden: true,
-});
-
-// ─── Run view ────────────────────────────────────────────
-const runBox = blessed.box({
-  parent: content,
-  top: 2, left: 'center', width: 'shrink', height: 'shrink',
   tags: true,
   style: { bg: 'black', fg: 'white' },
-  hidden: true,
+  scrollbar: { ch: ' ', track: { bg: 'grey' }, style: { inverse: true } },
 });
 
+// Run view
 const runTitle = blessed.box({
-  parent: content,
-  top: 0, left: 'center', width: 'shrink', height: 1,
+  parent: screen,
+  top: 1, left: 'center', width: 'shrink', height: 1,
   content: ' Запуск парсинга ',
   style: { bg: 'blue', fg: 'white', bold: true },
-  hidden: true,
 });
 
-// ─── Detail popup ────────────────────────────────────────
+const runBox = blessed.box({
+  parent: screen,
+  top: 3, left: 'center', width: 'shrink', height: 'shrink',
+  tags: true,
+  style: { bg: 'black', fg: 'white' },
+});
+
+// Detail popup
 const detailBox = blessed.box({
   parent: screen,
   top: 'center', left: 'center', width: 62, height: 24,
   border: { type: 'line' },
   padding: { top: 1, left: 1, right: 1, bottom: 1 },
-  scrollable: true,
-  alwaysScroll: true,
+  scrollable: true, alwaysScroll: true,
   keys: true, vi: true, mouse: true,
+  tags: true,
   style: { border: { fg: 'blue' }, bg: 'black', fg: 'white' },
   scrollbar: { ch: ' ', track: { bg: 'grey' }, style: { inverse: true } },
-  hidden: true,
 });
+
+// Status bar (последняя строка)
+const statusbar = blessed.box({
+  parent: screen,
+  bottom: 0, left: 0, width: '100%', height: 1,
+  tags: true,
+  style: { bg: 'blue', fg: 'white' },
+});
+
+// ─── Начальное состояние ─────────────────────────────────
+[casesHeader, casesList, logsBox, runBox, runTitle, detailBox].forEach(el => el.hide());
 
 // ─── Данные ──────────────────────────────────────────────
 async function loadCases(): Promise<void> {
@@ -153,9 +137,7 @@ async function loadCases(): Promise<void> {
     cases = cs;
     courts = co;
     serverUp = true;
-  } catch {
-    serverUp = false;
-  }
+  } catch { serverUp = false; }
   renderCurrent();
 }
 
@@ -177,7 +159,32 @@ async function pollRunStatus(): Promise<void> {
   updateStatusBar();
 }
 
-// ─── Рендер ──────────────────────────────────────────────
+// ─── Форматирование списка дел ───────────────────────────
+const COL = { num: 24, type: 10, court: 28, judge: 20, evt: 5, date: 10 };
+
+function formatCaseItem(c: Case): string {
+  const cn = courts[c.court]?.shortName || courts[c.court]?.name || c.court;
+  return (
+    pad(clip(c.number || '\u2014', COL.num - 1), COL.num) + '\u2502' +
+    pad(typeLabel(c.courtType), COL.type) + '\u2502' +
+    pad(clip(cn, COL.court - 1), COL.court) + '\u2502' +
+    pad(clip(c.card?.judge || '\u2014', COL.judge - 1), COL.judge) + '\u2502' +
+    pad(String(c.events?.length ?? 0), COL.evt) + '\u2502' +
+    pad(isoDate(c.events?.at(-1)?.eventDate ?? c.card?.hearingDate), COL.date)
+  );
+}
+
+function buildHeaderLine(): string {
+  return (
+    pad('\u2116 дела', COL.num) + '\u2502' +
+    pad('Тип', COL.type) + '\u2502' +
+    pad('Суд', COL.court) + '\u2502' +
+    pad('Судья', COL.judge) + '\u2502' +
+    pad('Соб.', COL.evt) + '\u2502' +
+    pad('Посл.', COL.date)
+  );
+}
+
 function getFilteredCases(): Case[] {
   return cases.filter(c => {
     if (courtFilter && c.courtType !== courtFilter) return false;
@@ -188,41 +195,31 @@ function getFilteredCases(): Case[] {
   });
 }
 
+// ─── Рендер ──────────────────────────────────────────────
 function renderCases(): void {
   const filtered = getFilteredCases();
-  const rows: string[][] = [
-    ['\u2116 дела', 'Тип', 'Суд', 'Судья', 'Соб.', 'Посл.'],
-    ...filtered.map(c => {
-      const cn = courts[c.court]?.shortName || courts[c.court]?.name || c.court;
-      return [
-        clip(c.number || '\u2014', 18),
-        typeLabel(c.courtType),
-        clip(cn, 22),
-        clip(c.card?.judge || '\u2014', 16),
-        String(c.events?.length ?? 0),
-        isoDate(c.events?.at(-1)?.eventDate ?? c.card?.hearingDate),
-      ];
-    }),
-  ];
-  casesTable.setData(rows);
+  const prevSelected = (casesList as any).selected ?? 0;
+  const items = filtered.map(formatCaseItem);
+  casesHeader.setContent(buildHeaderLine());
+  casesList.setItems(items);
+  const sel = Math.min(prevSelected, Math.max(0, items.length - 1));
+  if (items.length > 0) casesList.select(sel);
   updateStatusBar();
 }
 
 function renderLogs(): void {
-  const lines: string[] = [];
   if (!logs.length) {
-    lines.push('  {grey-fg}Нет записей{/grey-fg}');
+    logsBox.setContent('  {grey-fg}Нет записей{/grey-fg}');
   } else {
-    const reversed = [...logs].reverse();
-    for (const e of reversed) {
+    const lines = [...logs].reverse().map(e => {
       const ts = (e.timestamp || '').slice(0, 19).replace('T', ' ');
-      const ok = e.success
-        ? `{green-fg}\u2713{/green-fg} {grey-fg}${e.duration}ms{/grey-fg}`
-        : `{red-fg}\u2715 {bold}${esc(e.error || '')}{/bold}{/red-fg}`;
-      lines.push(` ${ts}  {bold}${clip(e.courtId, 30)}{/bold}  ${esc(e.uid || '')}  ${ok}`);
-    }
+      if (e.success) {
+        return ` ${ts}  {bold}${clip(e.courtId, 30)}{/bold}  ${esc(e.uid || '')}  {green-fg}\u2713{/green-fg} {grey-fg}${e.duration}ms{/grey-fg}`;
+      }
+      return ` ${ts}  {bold}${clip(e.courtId, 30)}{/bold}  {red-fg}\u2715 {bold}${esc(e.error || '')}{/bold}{/red-fg}`;
+    });
+    logsBox.setContent(lines.join('\n'));
   }
-  logsBox.setContent(lines.join('\n'));
   updateStatusBar();
 }
 
@@ -256,9 +253,9 @@ function updateStatusBar(): void {
     ? ` {green-fg}\u25CF{/green-fg} ${apiUrl}`
     : ` {red-fg}\u25CF Сервер недоступен{/red-fg} {grey-fg}${apiUrl}{/grey-fg}`;
   const hints: Record<Tab, string> = {
-    cases: `\u2191\u2193 Выбор  Enter Детали  / Поиск  F Фильтр  R Обновить  Tab Вкладка  Q Выход`,
-    logs:  `\u2191\u2193 Скролл  D Дней:${logDays}  R Обновить  Tab Вкладка  Q Выход`,
-    run:   `F Основной  R Retry  E Суды  D Данные  Tab Вкладка  Q Выход`,
+    cases: `\u2191\u2193 Выбор  Enter Детали  / Поиск  F Фильтр  R Обновить  1\u25022\u25023 Вкладки  Q Выход`,
+    logs:  `\u2191\u2193 Скролл  D Дней:${logDays}  R Обновить  1\u25022\u25023 Вкладки  Q Выход`,
+    run:   `F Основной  R Retry  E Суды  D Данные  1\u25022\u25023 Вкладки  Q Выход`,
   };
   statusbar.setContent(` ${count} \u0434\u0435\u043B${runInfo}    ${connInfo}    ${hints[tab]}`);
 }
@@ -274,14 +271,29 @@ function renderCurrent(): void {
 // ─── Смена вкладки ───────────────────────────────────────
 function showTab(t: Tab): void {
   tab = t;
-  casesTable.hidden = t !== 'cases';
-  logsBox.hidden = t !== 'logs';
-  runBox.hidden = t !== 'run';
-  runTitle.hidden = t !== 'run';
 
-  if (t === 'cases') { casesTable.focus(); renderCases(); }
-  if (t === 'logs')  { logsBox.focus(); loadLogs(); }
-  if (t === 'run')   { runBox.focus(); pollRunStatus(); renderRun(); }
+  [casesHeader, casesList, logsBox, runBox, runTitle].forEach(el => el.hide());
+
+  switch (t) {
+    case 'cases':
+      casesHeader.show();
+      casesList.show();
+      renderCases();
+      casesList.focus();
+      break;
+    case 'logs':
+      logsBox.show();
+      loadLogs();
+      logsBox.focus();
+      break;
+    case 'run':
+      runTitle.show();
+      runBox.show();
+      pollRunStatus();
+      renderRun();
+      runBox.focus();
+      break;
+  }
 
   screen.render();
 }
@@ -297,6 +309,9 @@ function showDetail(idx: number): void {
   const c = filtered[idx];
   if (!c) return;
 
+  casesHeader.hide();
+  casesList.hide();
+
   const court = courts[c.court] || {};
   const events = (c.events || []).slice(-20).map(e =>
     `  ${isoDate(e.eventDate)}  ${esc(e.eventName || '')}  ${esc(e.result || '')}`
@@ -307,7 +322,7 @@ function showDetail(idx: number): void {
 
   const text = [
     `{cyan-fg}{bold}\u2116 ${esc(c.number || '\u2014')}{/bold}{/cyan-fg}`,
-    ``,
+    '',
     `{bold}\u0422\u0438\u043F:{/bold}       ${typeLabel(c.courtType)}`,
     `{bold}\u0421\u0443\u0434:{/bold}       ${esc(court.name || c.court)}`,
     `{bold}\u041F\u043E\u0434\u0434\u043E\u043C\u0435\u043D:{/bold}  ${esc(c.court)}`,
@@ -318,38 +333,40 @@ function showDetail(idx: number): void {
     `{bold}\u0422\u0435\u043B\u0435\u0444\u043E\u043D\u044B:{/bold}  ${(court.phones || []).join(', ') || '\u2014'}`,
     `{bold}\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438:{/bold}  (${c.parties?.length || 0})`,
     parties || '  {grey-fg}\u043D\u0435\u0442{/grey-fg}',
-    ``,
+    '',
     `{bold}\u0421\u043E\u0431\u044B\u0442\u0438\u044F:{/bold}  (${c.events?.length || 0})`,
     events || '  {grey-fg}\u043D\u0435\u0442{/grey-fg}',
-    ``,
+    '',
     `  {grey-fg}UID: ${esc(c.uid)}{/grey-fg}`,
   ].join('\n');
 
   detailBox.setContent(text);
   detailBox.setScroll(0);
-  detailBox.hidden = false;
+  detailBox.show();
   detailBox.focus();
   screen.render();
 }
 
 function hideDetail(): void {
-  detailBox.hidden = true;
+  detailBox.hide();
   showTab(tab);
 }
+
+detailBox.key('enter', () => { hideDetail(); });
 
 // ─── Запуск парсинга ─────────────────────────────────────
 async function startRun(mode: 'full' | 'retry'): Promise<void> {
   try {
     const r = mode === 'full' ? await api.startRun() : await api.startRetry();
     if (r.started) {
-      statusbar.setContent(` {yellow-fg}\u23F3 ${mode === 'full' ? '\u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0439' : 'Retry'} \u043F\u0440\u043E\u0433\u043E\u043D \u0437\u0430\u043F\u0443\u0449\u0435\u043D (PID ${r.pid}){/yellow-fg}`);
+      statusbar.setContent(` {yellow-fg}\u23F3 ${mode === 'full' ? 'Основной' : 'Retry'} прогон запущен (PID ${r.pid}){/yellow-fg}`);
     } else if (r.error) {
       statusbar.setContent(` {red-fg}\u2715 ${esc(r.error)}{/red-fg}`);
     }
     screen.render();
     setTimeout(pollRunStatus, 2000);
   } catch {
-    statusbar.setContent(' {red-fg}\u2715 \u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u043F\u0443\u0441\u043A\u0430{/red-fg}');
+    statusbar.setContent(' {red-fg}\u2715 Ошибка запуска{/red-fg}');
     screen.render();
   }
 }
@@ -358,51 +375,58 @@ async function enrichCourts(): Promise<void> {
   try {
     const res = await fetch(`${apiUrl}/api/run/enrich-courts`, { method: 'POST' });
     if (res.ok) {
-      statusbar.setContent(' {green-fg}\u2713 \u0421\u043F\u0440\u0430\u0432\u043E\u0447\u043D\u0438\u043A \u043E\u0431\u043D\u043E\u0432\u043B\u0451\u043D{/green-fg}');
+      statusbar.setContent(' {green-fg}\u2713 Справочник судов обновлён{/green-fg}');
     }
   } catch {
-    statusbar.setContent(' {red-fg}\u2715 \u041E\u0448\u0438\u0431\u043A\u0430{/red-fg}');
+    statusbar.setContent(' {red-fg}\u2715 Ошибка{/red-fg}');
   }
   screen.render();
 }
 
 // ─── Клавиатура ──────────────────────────────────────────
 screen.key(['q', 'C-c'], () => {
-  if (!detailBox.hidden) { hideDetail(); return; }
+  if (detailBox.visible) { hideDetail(); return; }
   if (refreshTimer) clearInterval(refreshTimer);
   screen.destroy();
   process.exit(0);
 });
 
 screen.key(['escape'], () => {
-  if (!detailBox.hidden) { hideDetail(); return; }
+  if (detailBox.visible) { hideDetail(); return; }
   if (searchQuery) { searchQuery = ''; renderCases(); screen.render(); return; }
   if (courtFilter) { courtFilter = ''; renderCases(); screen.render(); return; }
 });
 
 screen.key(['tab'], () => {
-  if (!detailBox.hidden) return;
+  if (detailBox.visible) return;
   nextTab();
 });
 
+screen.key(['1'], () => { if (!detailBox.visible) showTab('cases'); });
+screen.key(['2'], () => { if (!detailBox.visible) showTab('logs'); });
+screen.key(['3'], () => { if (!detailBox.visible) showTab('run'); });
+
 screen.key(['r'], () => {
-  if (!detailBox.hidden) return;
+  if (detailBox.visible) return;
   if (tab === 'cases') loadCases();
   if (tab === 'logs') loadLogs();
   if (tab === 'run') { pollRunStatus(); renderRun(); screen.render(); }
 });
 
 screen.key(['f'], () => {
-  if (!detailBox.hidden) return;
+  if (detailBox.visible) return;
   if (tab === 'run') { startRun('full'); return; }
-  const types: (CourtType | '')[] = ['', 'district', 'appeal', 'cassation', 'magistrate'];
-  const idx = types.indexOf(courtFilter);
-  courtFilter = types[(idx + 1) % types.length];
-  if (tab === 'cases') { renderCases(); screen.render(); }
+  if (tab === 'cases') {
+    const types: (CourtType | '')[] = ['', 'district', 'appeal', 'cassation', 'magistrate'];
+    const idx = types.indexOf(courtFilter);
+    courtFilter = types[(idx + 1) % types.length];
+    renderCases();
+    screen.render();
+  }
 });
 
 screen.key(['/'], () => {
-  if (!detailBox.hidden) return;
+  if (detailBox.visible) return;
   if (tab !== 'cases') return;
   const prompt = blessed.textbox({
     parent: screen,
@@ -414,8 +438,8 @@ screen.key(['/'], () => {
   prompt.readInput((_err, value) => {
     searchQuery = (value || '').trim();
     prompt.destroy();
-    if (tab === 'cases') { renderCases(); screen.render(); }
-    casesTable.focus();
+    renderCases();
+    casesList.focus();
     screen.render();
   });
   prompt.focus();
@@ -423,50 +447,23 @@ screen.key(['/'], () => {
 });
 
 screen.key(['d'], () => {
-  if (!detailBox.hidden) return;
+  if (detailBox.visible) return;
   if (tab === 'logs') {
     logDays = logDays === 1 ? 7 : logDays === 7 ? 30 : 1;
     loadLogs();
     return;
   }
-  if (tab === 'run') { loadCases(); loadCourtsConfig(); pollRunStatus(); renderRun(); screen.render(); return; }
+  if (tab === 'run') { loadCases(); loadCourtsConfig(); pollRunStatus(); renderRun(); screen.render(); }
 });
 
 screen.key(['e'], () => {
-  if (!detailBox.hidden) return;
+  if (detailBox.visible) return;
   if (tab === 'run') enrichCourts();
 });
 
-casesTable.on('select', (_item: any, index: number) => {
+casesList.on('select', (_item: any, idx: number) => {
   if (tab !== 'cases') return;
-  const realIdx = index < 1 ? 0 : index - 1;
-  showDetail(realIdx);
-});
-
-// Явная навигация по таблице (в обход keys:true — надёжнее на разных терминалах)
-screen.key(['up', 'k'], () => {
-  if (tab !== 'cases' || !detailBox.hidden) return;
-  casesTable.up(1);
-  screen.render();
-});
-
-screen.key(['down', 'j'], () => {
-  if (tab !== 'cases' || !detailBox.hidden) return;
-  casesTable.down(1);
-  screen.render();
-});
-
-screen.key(['home'], () => {
-  if (tab !== 'cases' || !detailBox.hidden) return;
-  casesTable.select(0);
-  screen.render();
-});
-
-screen.key(['end'], () => {
-  if (tab !== 'cases' || !detailBox.hidden) return;
-  const rows = getFilteredCases().length;
-  casesTable.select(rows > 0 ? rows : 0);
-  screen.render();
+  showDetail(idx);
 });
 
 // ─── Инициализация ───────────────────────────────────────
@@ -478,23 +475,21 @@ async function loadCourtsConfig(): Promise<void> {
 }
 
 async function init(): Promise<void> {
-  // Header info
   header.setContent(` CourtFlow \u2014 \u041C\u043E\u043D\u0438\u0442\u043E\u0440\u0438\u043D\u0433 \u0434\u0435\u043B  |  API: ${apiUrl}`);
 
   await Promise.all([loadCases(), loadCourtsConfig()]);
 
-  casesTable.focus();
-  renderCases();
-  screen.render();
+  showTab('cases');
 
   refreshTimer = setInterval(async () => {
+    if (detailBox.visible) return;
     await Promise.all([loadCases(), pollRunStatus()]);
   }, 5000);
 }
 
 screen.on('resize', () => {
-  screen.render();
   renderCurrent();
+  screen.render();
 });
 
 init().catch(err => {
