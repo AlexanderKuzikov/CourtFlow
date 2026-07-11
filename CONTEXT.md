@@ -171,6 +171,7 @@ courtflow/
 - **Пакеты** — TS 7.0.2, Puppeteer 25.3.0, Vitest 4.1.10, @types/node@24, tsx 4.23.0, iconv-lite 0.7.3
 - **README** — переписан (бэджи, профформат, Apache-2.0)
 - **Tauri** — рассмотрен и отклонён (браузерный UI + TUI покрывают все сценарии)
+- **TUI стабилизация** — исправлены: race condition автообновления (setInterval→setTimeout+refreshing), хрупкое поле selected, Unicode fallback (│→|), конфликт поиска с автообновлением, `\uXXXX` заменены на UTF-8, упрощён resize
 
 ### ✅ Общее состояние
 - `npm run parse` — 26/26 дел, 100% success (Windows + Linux)

@@ -219,6 +219,7 @@ Legacy API v1 (`rucaptcha.com/in.php`, `rucaptcha.com/res.php`, `URLSearchParams
 | 2026-07-11 | **TUI: list вместо listtable** — надёжное выделение строк (white+black), разделители `│`. |
 | 2026-07-11 | **Court-Harvester** (10 206 судов, DaData API) — будущий источник каталога судов. |
 | 2026-07-11 | **CRM-интеграция**: CourtFlow → компонент CRM для юристов. API + JSON, без смены стека. |
+| 2026-07-11 | **TUI стабилизация**: setInterval→рекурсивный setTimeout с refreshing, selectedCaseIdx, fullUnicode fallback, searchActive флаг, UTF-8 вместо \uXXXX. |
 
 
 ---

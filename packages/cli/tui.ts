@@ -22,7 +22,10 @@ let searchQuery = '';
 let fullRunning = false;
 let retryRunning = false;
 let staleThresholdH = 24;
-let refreshTimer: ReturnType<typeof setInterval> | null = null;
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+let refreshing = false;
+let searchActive = false;
+let selectedCaseIdx = 0;
 
 // ─── Утилиты ────────────────────────────────────────────
 function typeLabel(t: string): string {
@@ -39,12 +42,16 @@ function pad(s: string, w: number): string {
 
 function clip(s: string, max: number): string {
   if (s.length <= max) return s;
-  return s.slice(0, max - 1) + '\u203A';
+  return s.slice(0, max - 1) + '›';
 }
 
 function isoDate(d: string | null | undefined): string {
-  if (!d) return '\u2014';
+  if (!d) return '—';
   return d.slice(0, 10);
+}
+
+function getSep(): string {
+  return screen.fullUnicode ? '│' : '|';
 }
 
 // ─── Экран ──────────────────────────────────────────────
@@ -159,28 +166,44 @@ async function pollRunStatus(): Promise<void> {
   updateStatusBar();
 }
 
+// ─── Auto-refresh loop ───────────────────────────────────
+async function autoRefresh(): Promise<void> {
+  if (refreshing || detailBox.visible || searchActive) {
+    refreshTimer = setTimeout(autoRefresh, 5000);
+    return;
+  }
+  refreshing = true;
+  try {
+    await Promise.all([loadCases(), pollRunStatus()]);
+  } finally {
+    refreshing = false;
+    refreshTimer = setTimeout(autoRefresh, 5000);
+  }
+}
+
 // ─── Форматирование списка дел ───────────────────────────
 const COL = { num: 24, type: 10, court: 28, judge: 20, evt: 5, date: 10 };
+const sep = getSep();
 
 function formatCaseItem(c: Case): string {
   const cn = courts[c.court]?.shortName || courts[c.court]?.name || c.court;
   return (
-    pad(clip(c.number || '\u2014', COL.num - 1), COL.num) + '\u2502' +
-    pad(typeLabel(c.courtType), COL.type) + '\u2502' +
-    pad(clip(cn, COL.court - 1), COL.court) + '\u2502' +
-    pad(clip(c.card?.judge || '\u2014', COL.judge - 1), COL.judge) + '\u2502' +
-    pad(String(c.events?.length ?? 0), COL.evt) + '\u2502' +
+    pad(clip(c.number || '—', COL.num - 1), COL.num) + sep +
+    pad(typeLabel(c.courtType), COL.type) + sep +
+    pad(clip(cn, COL.court - 1), COL.court) + sep +
+    pad(clip(c.card?.judge || '—', COL.judge - 1), COL.judge) + sep +
+    pad(String(c.events?.length ?? 0), COL.evt) + sep +
     pad(isoDate(c.events?.at(-1)?.eventDate ?? c.card?.hearingDate), COL.date)
   );
 }
 
 function buildHeaderLine(): string {
   return (
-    pad('\u2116 дела', COL.num) + '\u2502' +
-    pad('Тип', COL.type) + '\u2502' +
-    pad('Суд', COL.court) + '\u2502' +
-    pad('Судья', COL.judge) + '\u2502' +
-    pad('Соб.', COL.evt) + '\u2502' +
+    pad('№ дела', COL.num) + sep +
+    pad('Тип', COL.type) + sep +
+    pad('Суд', COL.court) + sep +
+    pad('Судья', COL.judge) + sep +
+    pad('Соб.', COL.evt) + sep +
     pad('Посл.', COL.date)
   );
 }
@@ -198,12 +221,13 @@ function getFilteredCases(): Case[] {
 // ─── Рендер ──────────────────────────────────────────────
 function renderCases(): void {
   const filtered = getFilteredCases();
-  const prevSelected = (casesList as any).selected ?? 0;
+  const prevSelected = selectedCaseIdx;
   const items = filtered.map(formatCaseItem);
   casesHeader.setContent(buildHeaderLine());
   casesList.setItems(items);
   const sel = Math.min(prevSelected, Math.max(0, items.length - 1));
   if (items.length > 0) casesList.select(sel);
+  selectedCaseIdx = sel;
   updateStatusBar();
 }
 
@@ -214,9 +238,9 @@ function renderLogs(): void {
     const lines = [...logs].reverse().map(e => {
       const ts = (e.timestamp || '').slice(0, 19).replace('T', ' ');
       if (e.success) {
-        return ` ${ts}  {bold}${clip(e.courtId, 30)}{/bold}  ${esc(e.uid || '')}  {green-fg}\u2713{/green-fg} {grey-fg}${e.duration}ms{/grey-fg}`;
+        return ` ${ts}  {bold}${clip(e.courtId, 30)}{/bold}  ${esc(e.uid || '')}  {green-fg}✓{/green-fg} {grey-fg}${e.duration}ms{/grey-fg}`;
       }
-      return ` ${ts}  {bold}${clip(e.courtId, 30)}{/bold}  {red-fg}\u2715 {bold}${esc(e.error || '')}{/bold}{/red-fg}`;
+      return ` ${ts}  {bold}${clip(e.courtId, 30)}{/bold}  {red-fg}✕ {bold}${esc(e.error || '')}{/bold}{/red-fg}`;
     });
     logsBox.setContent(lines.join('\n'));
   }
@@ -225,22 +249,22 @@ function renderLogs(): void {
 
 function renderRun(): void {
   const lines = [
-    `  {blue-fg}{bold}\u25B6  Основной прогон{/bold}{/blue-fg}`,
+    `  {blue-fg}{bold}▶  Основной прогон{/bold}{/blue-fg}`,
     `     Все URL из watch/ — независимо от даты последнего обновления.`,
     '',
-    `     Состояние: ${fullRunning ? '{yellow-fg}\u23F3 В процессе{/yellow-fg}' : '{grey-fg}\u23F8 Ожидание{/grey-fg}'}`,
+    `     Состояние: ${fullRunning ? '{yellow-fg}⏳ В процессе{/yellow-fg}' : '{grey-fg}⏸ Ожидание{/grey-fg}'}`,
     '',
     '',
-    `  {yellow-fg}{bold}\u{1F504}  Retry-прогон{/bold}{/yellow-fg}`,
+    `  {yellow-fg}{bold}🔄  Retry-прогон{/bold}{/yellow-fg}`,
     `     Только те URL, которые не обновлялись дольше ${staleThresholdH} часов.`,
     '',
-    `     Состояние: ${retryRunning ? '{yellow-fg}\u23F3 В процессе{/yellow-fg}' : '{grey-fg}\u23F8 Ожидание{/grey-fg}'}`,
+    `     Состояние: ${retryRunning ? '{yellow-fg}⏳ В процессе{/yellow-fg}' : '{grey-fg}⏸ Ожидание{/grey-fg}'}`,
     '',
     '',
-    `  {grey-fg}\u{1F4E6}  Инструменты:{/grey-fg}`,
+    `  {grey-fg}📦  Инструменты:{/grey-fg}`,
     `     {bold}E{/bold}  Справочник судов  |  {bold}D{/bold}  Обновить данные`,
     '',
-    `  {cyan-fg}\u23CE Enter \u2014 запустить выбранное действие{/cyan-fg}`,
+    `  {cyan-fg}⏎ Enter — запустить выбранное действие{/cyan-fg}`,
   ];
   runBox.setContent(lines.join('\n'));
   updateStatusBar();
@@ -248,16 +272,16 @@ function renderRun(): void {
 
 function updateStatusBar(): void {
   const count = getFilteredCases().length;
-  const runInfo = fullRunning ? ' {yellow-fg}\u23F3 Парсинг{/yellow-fg}' : retryRunning ? ' {yellow-fg}\u23F3 Retry{/yellow-fg}' : '';
+  const runInfo = fullRunning ? ' {yellow-fg}⏳ Парсинг{/yellow-fg}' : retryRunning ? ' {yellow-fg}⏳ Retry{/yellow-fg}' : '';
   const connInfo = serverUp
-    ? ` {green-fg}\u25CF{/green-fg} ${apiUrl}`
-    : ` {red-fg}\u25CF Сервер недоступен{/red-fg} {grey-fg}${apiUrl}{/grey-fg}`;
+    ? ` {green-fg}●{/green-fg} ${apiUrl}`
+    : ` {red-fg}● Сервер недоступен{/red-fg} {grey-fg}${apiUrl}{/grey-fg}`;
   const hints: Record<Tab, string> = {
-    cases: `\u2191\u2193 Выбор  Enter Детали  / Поиск  F Фильтр  R Обновить  1\u25022\u25023 Вкладки  Q Выход`,
-    logs:  `\u2191\u2193 Скролл  D Дней:${logDays}  R Обновить  1\u25022\u25023 Вкладки  Q Выход`,
-    run:   `F Основной  R Retry  E Суды  D Данные  1\u25022\u25023 Вкладки  Q Выход`,
+    cases: `↑↓ Выбор  Enter Детали  / Поиск  F Фильтр  R Обновить  1|2|3 Вкладки  Q Выход`,
+    logs:  `↑↓ Скролл  D Дней:${logDays}  R Обновить  1|2|3 Вкладки  Q Выход`,
+    run:   `F Основной  R Retry  E Суды  D Данные  1|2|3 Вкладки  Q Выход`,
   };
-  statusbar.setContent(` ${count} \u0434\u0435\u043B${runInfo}    ${connInfo}    ${hints[tab]}`);
+  statusbar.setContent(` ${count} дел${runInfo}    ${connInfo}    ${hints[tab]}`);
 }
 
 function renderCurrent(): void {
@@ -317,25 +341,25 @@ function showDetail(idx: number): void {
     `  ${isoDate(e.eventDate)}  ${esc(e.eventName || '')}  ${esc(e.result || '')}`
   ).join('\n');
   const parties = (c.parties || []).map(p =>
-    `  ${esc(p.role || '\u2014')}  \u2014  ${esc(p.name || '\u2014')}`
+    `  ${esc(p.role || '—')}  —  ${esc(p.name || '—')}`
   ).join('\n');
 
   const text = [
-    `{cyan-fg}{bold}\u2116 ${esc(c.number || '\u2014')}{/bold}{/cyan-fg}`,
+    `{cyan-fg}{bold}№ ${esc(c.number || '—')}{/bold}{/cyan-fg}`,
     '',
-    `{bold}\u0422\u0438\u043F:{/bold}       ${typeLabel(c.courtType)}`,
-    `{bold}\u0421\u0443\u0434:{/bold}       ${esc(court.name || c.court)}`,
-    `{bold}\u041F\u043E\u0434\u0434\u043E\u043C\u0435\u043D:{/bold}  ${esc(c.court)}`,
-    `{bold}\u0421\u0443\u0434\u044C\u044F:{/bold}     ${esc(c.card?.judge || '\u2014')}`,
-    `{bold}\u041F\u043E\u0441\u0442\u0443\u043F\u043B\u0435\u043D\u0438\u0435:{/bold} ${isoDate(c.card?.filingDate)}`,
-    `{bold}\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442:{/bold}   ${esc(c.card?.result || '\u2014')}`,
-    `{bold}\u0410\u0434\u0440\u0435\u0441:{/bold}     ${esc(court.address || '\u2014')}`,
-    `{bold}\u0422\u0435\u043B\u0435\u0444\u043E\u043D\u044B:{/bold}  ${(court.phones || []).join(', ') || '\u2014'}`,
-    `{bold}\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438:{/bold}  (${c.parties?.length || 0})`,
-    parties || '  {grey-fg}\u043D\u0435\u0442{/grey-fg}',
+    `{bold}Тип:{/bold}       ${typeLabel(c.courtType)}`,
+    `{bold}Суд:{/bold}       ${esc(court.name || c.court)}`,
+    `{bold}Поддомен:{/bold}  ${esc(c.court)}`,
+    `{bold}Судья:{/bold}     ${esc(c.card?.judge || '—')}`,
+    `{bold}Поступление:{/bold} ${isoDate(c.card?.filingDate)}`,
+    `{bold}Результат:{/bold}   ${esc(c.card?.result || '—')}`,
+    `{bold}Адрес:{/bold}     ${esc(court.address || '—')}`,
+    `{bold}Телефоны:{/bold}  ${(court.phones || []).join(', ') || '—'}`,
+    `{bold}Участники:{/bold}  (${c.parties?.length || 0})`,
+    parties || '  {grey-fg}нет{/grey-fg}',
     '',
-    `{bold}\u0421\u043E\u0431\u044B\u0442\u0438\u044F:{/bold}  (${c.events?.length || 0})`,
-    events || '  {grey-fg}\u043D\u0435\u0442{/grey-fg}',
+    `{bold}События:{/bold}  (${c.events?.length || 0})`,
+    events || '  {grey-fg}нет{/grey-fg}',
     '',
     `  {grey-fg}UID: ${esc(c.uid)}{/grey-fg}`,
   ].join('\n');
@@ -359,14 +383,14 @@ async function startRun(mode: 'full' | 'retry'): Promise<void> {
   try {
     const r = mode === 'full' ? await api.startRun() : await api.startRetry();
     if (r.started) {
-      statusbar.setContent(` {yellow-fg}\u23F3 ${mode === 'full' ? 'Основной' : 'Retry'} прогон запущен (PID ${r.pid}){/yellow-fg}`);
+      statusbar.setContent(` {yellow-fg}⏳ ${mode === 'full' ? 'Основной' : 'Retry'} прогон запущен (PID ${r.pid}){/yellow-fg}`);
     } else if (r.error) {
-      statusbar.setContent(` {red-fg}\u2715 ${esc(r.error)}{/red-fg}`);
+      statusbar.setContent(` {red-fg}✕ ${esc(r.error)}{/red-fg}`);
     }
     screen.render();
     setTimeout(pollRunStatus, 2000);
   } catch {
-    statusbar.setContent(' {red-fg}\u2715 Ошибка запуска{/red-fg}');
+    statusbar.setContent(' {red-fg}✕ Ошибка запуска{/red-fg}');
     screen.render();
   }
 }
@@ -375,10 +399,10 @@ async function enrichCourts(): Promise<void> {
   try {
     const res = await fetch(`${apiUrl}/api/run/enrich-courts`, { method: 'POST' });
     if (res.ok) {
-      statusbar.setContent(' {green-fg}\u2713 Справочник судов обновлён{/green-fg}');
+      statusbar.setContent(' {green-fg}✓ Справочник судов обновлён{/green-fg}');
     }
   } catch {
-    statusbar.setContent(' {red-fg}\u2715 Ошибка{/red-fg}');
+    statusbar.setContent(' {red-fg}✕ Ошибка{/red-fg}');
   }
   screen.render();
 }
@@ -386,7 +410,7 @@ async function enrichCourts(): Promise<void> {
 // ─── Клавиатура ──────────────────────────────────────────
 screen.key(['q', 'C-c'], () => {
   if (detailBox.visible) { hideDetail(); return; }
-  if (refreshTimer) clearInterval(refreshTimer);
+  if (refreshTimer) clearTimeout(refreshTimer);
   screen.destroy();
   process.exit(0);
 });
@@ -428,6 +452,7 @@ screen.key(['f'], () => {
 screen.key(['/'], () => {
   if (detailBox.visible) return;
   if (tab !== 'cases') return;
+  searchActive = true;
   const prompt = blessed.textbox({
     parent: screen,
     bottom: 1, left: 1, width: 30, height: 1,
@@ -437,6 +462,7 @@ screen.key(['/'], () => {
   prompt.setValue(searchQuery);
   prompt.readInput((_err, value) => {
     searchQuery = (value || '').trim();
+    searchActive = false;
     prompt.destroy();
     renderCases();
     casesList.focus();
@@ -463,6 +489,7 @@ screen.key(['e'], () => {
 
 casesList.on('select', (_item: any, idx: number) => {
   if (tab !== 'cases') return;
+  selectedCaseIdx = idx;
   showDetail(idx);
 });
 
@@ -475,20 +502,16 @@ async function loadCourtsConfig(): Promise<void> {
 }
 
 async function init(): Promise<void> {
-  header.setContent(` CourtFlow \u2014 \u041C\u043E\u043D\u0438\u0442\u043E\u0440\u0438\u043D\u0433 \u0434\u0435\u043B  |  API: ${apiUrl}`);
+  header.setContent(` CourtFlow — Мониторинг дел  |  API: ${apiUrl}`);
 
   await Promise.all([loadCases(), loadCourtsConfig()]);
 
   showTab('cases');
 
-  refreshTimer = setInterval(async () => {
-    if (detailBox.visible) return;
-    await Promise.all([loadCases(), pollRunStatus()]);
-  }, 5000);
+  refreshTimer = setTimeout(autoRefresh, 5000);
 }
 
 screen.on('resize', () => {
-  renderCurrent();
   screen.render();
 });
 
