@@ -244,15 +244,14 @@ const browser = await puppeteer.launch({
 ```typescript
 // solve-captcha-example.ts
 // Запуск: npx tsx solve-captcha-example.ts
-// Требует: RUCAPTCHA_API_KEY в .env или env
+// Требует: RUCAPTCHA_API_KEY в .env или переменной окружения
 
 import { RuCaptchaClient } from './rucaptcha-client.js';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-// Загрузка .env (простой вариант)
-import { config as dotenvConfig } from 'dotenv';
-dotenvConfig({ path: resolve(process.cwd(), '.env') });
+// Загрузка .env (нативный Node 21.7+, 0 зависимостей)
+process.loadEnvFile(resolve(process.cwd(), '.env'));
 
 const API_KEY = process.env.RUCAPTCHA_API_KEY;
 if (!API_KEY) {

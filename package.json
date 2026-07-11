@@ -9,21 +9,23 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:smoke": "npx tsx packages/scheduler/smoke.ts",
-    "enrich:courts": "npx tsx packages/scheduler/enrich-courts.ts"
+    "enrich:courts": "npx tsx packages/scheduler/enrich-courts.ts",
+    "tui": "npx tsx packages/cli/tui.ts"
   },
   "dependencies": {
+    "blessed": "^0.1.81",
     "cheerio": "^1.0.0",
-    "dotenv": "^16.4.5",
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
-    "iconv-lite": "^0.6.3",
-    "puppeteer": "^24.15.0"
+    "iconv-lite": "^0.7.3",
+    "puppeteer": "^25.3.0"
   },
   "devDependencies": {
+    "@types/blessed": "^0.1.27",
     "@types/express": "^5.0.0",
-    "@types/node": "^22.0.0",
-    "tsx": "^4.19.0",
-    "typescript": "^6.0.0",
-    "vitest": "^3.0.0"
+    "@types/node": "^24.13.3",
+    "tsx": "^4.23.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   }
 }

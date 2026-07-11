@@ -55,10 +55,43 @@ pm2 save
 
 # 8. Быстрая проверка
 pm2 status
-curl http://localhost:3000
+curl http://localhost:8791
 ```
 
 ---
+
+## TUI — терминальный доступ без браузера
+
+Если на сервере нет браузера — используйте TUI через SSH:
+
+```bash
+cd /opt/courtflow
+npm run tui                     # локально (подключается к http://localhost:3000)
+npm run tui -- --api http://localhost:3000  # с явным host:port
+```
+
+TUI открывает полноценный дашборд в терминале:
+- Таблица дел с поиском (`/`) и фильтром по типу суда (`F`)
+- Лента логов с переключением дней (`D`)
+- Запуск парсинга: основной (`F`), retry (`R`), справочник судов (`E`)
+
+Навигация: клавиатура — Tab (вкладки), ↑↓ (строки), Enter (детали), Q (выход).
+
+Доступ с удалённой машины:
+```bash
+# Соберите и установите CourtFlow на машине админа (Windows/Linux)
+git clone https://github.com/AlexanderKuzikov/CourtFlow.git
+cd CourtFlow
+npm install
+npm run tui -- --api http://<server-ip>:3000
+```
+
+Подключение защищённое — через офисную сеть. При необходимости — SSH-туннель:
+```bash
+ssh -L 3000:localhost:3000 user@server
+# В другом терминале
+npm run tui  # подключается к localhost:3000 через SSH-туннель
+```
 
 ## pm2 — управление
 

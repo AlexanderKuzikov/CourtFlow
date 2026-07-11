@@ -16,19 +16,22 @@ CourtFlow — система мониторинга судебных дел РФ
 
 
 
-## Текущее состояние (2026-07-10)
+## Текущее состояние (2026-07-11)
 - `npm run parse` — **26/26 дел, 100% success**
 - `npm run parse -- --retry` — retry только для stale URL
-- `npm start` — web-viewer работает
+- `npm start` — web-viewer работает (авто-поиск порта, по умолчанию 8791)
+- `npm run tui` — терминальный дашборд на blessed (SSH, терминал)
 - Linux-деплой и демонстрация — успешны
 - `watch/` — основной источник URL для мониторинга
 - `watch/` принимает текст, JSON, CSV, файлы без расширения, ссылки в кавычках и ссылки разделённые пробелами
 - Если `watch/` пуста — fallback на `urls.txt`
 - UI показывает только активные суды из `watch/`
-- В UI есть ручной запуск full-run и retry-run
+- В браузерном UI и TUI есть ручной запуск full-run и retry-run
 - `courtflow-parser-retry` есть в pm2-конфиге
 - RuCaptcha API v2 работает
 - Puppeteer + `--ignore-certificate-errors` закрывает msudrf
+- dotenv удалён — .env загружается через `process.loadEnvFile()` (Node 21.7+)
+- Все пакеты обновлены до последних стабильных (TS 7.0.2, Puppeteer 25, Vitest 4, @types/node@24)
 
 ### ⏳ Очередь задач
 
@@ -37,19 +40,16 @@ CourtFlow — система мониторинга судебных дел РФ
 3. При необходимости — архивирование/очистка старых `data/*.json`
 4. При необходимости — уведомления по stale/failed URL
 
-## Что было сделано в последней сессии (2026-07-10)
+## Что было сделано в последней сессии (2026-07-11)
 
-- **Code Review #2**: полный аудит кода, зафиксирован в CODE_REVIEW.md
-- **Документация синхронизирована**: README (переписан), CONTEXT (дата/очередь), AUDIT_REPORT (баннер устаревания), RUCAPTCHA_GUIDE (синхронизация кода), HTML_STRUCTURE (дата)
-- **B1 закрыт**: `courtType: any` → `CourtType` в enrich-courts.ts
-- **B2 закрыт**: Promise.race leak → AbortController в orchestrator.ts
-- **V1 закрыт**: fallback UID из `case_id` в magistrate.ts
-- **V3 закрыт**: fallback captcha provider (2captcha) в loadCaseHtml
-- **V4 закрыт**: magistrate тест через cached HTML в smoke.ts (если `logs/magistrate-last.html` существует)
-- **V5 закрыт**: unit-тесты `urls.test.ts` — 19 тестов (`extractUrls`, `detectCourtType`, `extractCourtId`)
-- **S2 закрыт**: хардкод «urls.txt» → «Всего URL» в smoke.ts
-- **S9 закрыт**: дата PROMPT_FOR_NEW_SESSION → 2026-07-10
-- **S10 закрыт**: хардкод «ОК: 26» → «все URL» в LINUX_DEPLOY.md
+- **TUI дашборд**: `packages/cli/tui.ts` — терминальный интерфейс на blessed. Подключается к REST API, те же эндпоинты что и браузерный UI. Вкладки: Дела (таблица + поиск `/` + фильтр `F`), Логи, Запуск (full/retry/enrich).
+- **HTTP-клиент**: `packages/cli/client.ts` — общий для TUI и будущих CLI-команд. Читает `logs/.port` для авто-определения фактического порта.
+- **Порт**: 3000 → **8791**. Авто-поиск свободного порта при старте (проверка занятости + идентификация PID/процесса). Фактический порт → `logs/.port`.
+- **dotenv удалён**: заменён на `process.loadEnvFile()` (Node 21.7+, 0 зависимостей). `.env` остаётся.
+- **Пакеты обновлены**: TS 7.0.2, Puppeteer 25.3.0, Vitest 4.1.10, @types/node@24, tsx 4.23.0, iconv-lite 0.7.3.
+- **README переписан**: бэджи технологий, профессиональный формат, структура.
+- **Лицензия**: Apache-2.0 (не MIT — патентный грант важен для коммерческого использования).
+- **Tauri отклонён**: CourtFlow — серверное приложение, браузерный UI + TUI покрывают все сценарии.
 
 ## Правила работы
 

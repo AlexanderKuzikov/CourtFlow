@@ -1,13 +1,12 @@
 // packages/core/config.ts
 // Загрузка config.json + secrets из .env
 // Список дел — в watch/ (packages/core/urls.ts), fallback urls.txt
-// BUG-001: dotenv загружается здесь, работает в том числе при cron-запуске
+// .env загружается через process.loadEnvFile() (Node 21.7+, 0 зависимостей)
 
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { config as dotenvConfig } from 'dotenv';
 
-dotenvConfig({ path: resolve(process.cwd(), '.env') });
+process.loadEnvFile(resolve(process.cwd(), '.env'));
 
 export interface SafeAppConfig {
   schedule: string;

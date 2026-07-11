@@ -10,10 +10,12 @@
 
 - Целевой сервер: **Linux (Ubuntu)**. Доступ через браузер из офисной сети.
 - Разработка: **Windows 11** (PowerShell + GitHub Desktop)
-- Node.js: **v24.15.0**, TypeScript: **6.x**, npm: **11.18.0**
-- UI: **Vanilla HTML/JS** (без фреймворков)
+- Node.js: **v24.15.0** (LTS), TypeScript: **7.x**, npm: **11.18.0**
+- UI: **Vanilla HTML/JS** (без фреймворков) + **TUI** (blessed)
 - Запуск: `npx tsx` без сборки
 - Менеджер процессов на Linux: **pm2**
+- .env: загружается через `process.loadEnvFile()` (Node 21.7+, 0 зависимостей)
+- Порт viewer: **8791** по умолчанию, авто-поиск свободного если занят
 
 ## Архитектура
 
@@ -63,9 +65,12 @@ courtflow/
         ├── server.ts            # ✅ reconciliation + /api/active-courts + full/retry/enrich endpoints
         └── public/
             └── index.html       # ✅ UI управления прогонами
+    └── cli/                     # ⬜ NEW (2026-07-11)
+        ├── client.ts            # HTTP-клиент к REST API (общий для TUI и будущих CLI-команд)
+        └── tui.ts               # TUI-дашборд на blessed (терминальный интерфейс)
 ```
 
-## Текущее состояние (2026-07-10)
+## Текущее состояние (2026-07-11)
 
 ### ✅ Всё работает
 - `npm run parse` — 26/26 дел, 100% success (Windows + Linux)
@@ -75,8 +80,12 @@ courtflow/
 - Code review #1: BUG-023..026 закрыты (TS-ошибки, stale lock, graceful shutdown)
 - Code review #2: 2 блокера + 5 важных закрыты (Promise.race, fallback captcha, magistrate UID, smoke, тесты)
 - UI: показывает только активные суды из `watch/`
-- Ручной запуск full-run / retry-run есть в UI
+- Ручной запуск full-run / retry-run есть в браузерном UI и TUI
 - `watch/` принимает `.txt`, `.json`, `.csv`, файлы без расширения, пробельное разделение ссылок, кавычки и смешанные разделители
+- **TUI** — терминальный дашборд (`npm run tui`) на blessed: таблица дел, логи, запуск парсинга
+- **Порт** — авто-поиск свободного (проверка занятости + идентификация процесса), результат в `logs/.port`
+- **dotenv удалён** — заменён на `process.loadEnvFile()` (0 зависимостей)
+- **Пакеты обновлены** — TS 7.0.2, Puppeteer 25.3.0, Vitest 4.1.10, @types/node@24 под Node 24 LTS
 
 ### ⏳ Следующие шаги (очередь)
 1. **XLSX** — `packages/exporter/xlsx.ts` (низкий приоритет, всё ещё заглушка)
@@ -109,6 +118,29 @@ courtflow/
 - `courtflow-parser-retry` — retry-прогон с `--retry`, только stale URL
 - Оркестратор строит `lastSuccess` по `run-log-*.json` и фильтрует stale URL
 
+## TUI — терминальный дашборд
+
+`npm run tui` запускает интерактивный дашборд в любом терминале (SSH, Windows Terminal, PowerShell, CMD, VS Code).
+
+Основан на библиотеке **blessed** (0 зависимостей, ~30 KB). Подключается к Express API (`/api/cases`, `/api/logs`, `/api/run` и т.д.).
+
+Три вкладки (Tab) с одинаковым набором операций что и в браузерном UI:
+- **Дела** — таблица с поиском (/) и фильтром по типу суда (F), детали по Enter
+- **Логи** — лента запусков, переключение дней (D: 1 / 7 / 30)
+- **Запуск** — полный прогон (F), retry (R), справочник судов (E), обновление данных (D)
+
+Обновление данных — авторефреш каждые 5 секунд (как в браузерном UI).
+
+Удалённое подключение: `npm run tui -- --api http://192.168.1.5:3000`
+
+### Архитектура TUI
+
+```
+packages/cli/
+├── client.ts   — ApiClient (fetch-обёртка над REST API, тот же что используют plan CLI-команды)
+└── tui.ts      — blessed screen + listtable + клавиатурные сокращения
+```
+
 ## UI / reconciliation
 
 - `/api/cases` теперь фильтрует данные по активным `courtId` из текущего источника мониторинга
@@ -125,6 +157,8 @@ npm run parse
 npm run parse -- --retry
 npm test
 npm start
+npm run tui              # Терминальный дашборд (SSH/терминал)
+npm run tui -- --api http://server:3000  # Удалённый TUI
 npm run enrich:courts
 
 # Linux / pm2

@@ -80,3 +80,5 @@ vite.config.ts.timestamp-*
 
 # Lock-файл оркестратора — не пушим
 logs/orchestrator.lock
+# Авто-выбранный порт viewer
+logs/.port
