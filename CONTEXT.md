@@ -1,126 +1,103 @@
 # CourtFlow — CONTEXT
 
-> Authoritative handoff для переключения между сессиями и моделями. После каждой рабочей сессии обновлять этот файл фактами: SHA, изменённые файлы, команды и результаты. Не писать «исправлено» без фактической верификации.
+> **Authoritative handoff.** Этот документ является источником фактов для передачи работы между сессиями и моделями. По завершении каждой сессии обновлять: SHA, изменённые файлы, выполненные команды, результаты и следующий шаг. Не объявлять задачу исправленной без реальной проверки.
 
-## Цель
+## Назначение
 
-CourtFlow мониторит карточки судебных дел РФ по URL, парсит четыре типа судов (`district`, `appeal`, `cassation`, `magistrate`), сохраняет нормализованный JSON и показывает результат через Express viewer и TUI.
+CourtFlow мониторит судебные дела РФ по URL, парсит карточки `district`, `appeal`, `cassation` и `magistrate`, сохраняет нормализованный JSON и предоставляет web viewer/TUI. Цель — надёжный локальный инструмент Windows/Linux без внешней инфраструктуры.
 
-## Архитектура
+## Карта кода
 
-| Пакет | Ответственность |
+| Путь | Роль |
 |---|---|
-| `core` | конфиг, типы, URL intake, retry, ошибки, courts directory |
-| `adapters` | HTML -> `Case` по типам судов |
-| `captcha` | RuCaptcha и Puppeteer path magistrate |
-| `scheduler` | orchestration, retry, smoke, court enrichment |
-| `exporter` | атомарная JSON-запись; XLSX пока stub |
-| `viewer` | Express API, static web UI, запуск background jobs |
-| `cli` | blessed TUI и typed HTTP ApiClient |
+| `packages/core` | типы, конфиг, URL intake, retry, errors, справочник судов |
+| `packages/adapters` | извлечение `Case` из HTML для каждого типа суда |
+| `packages/captcha` | RuCaptcha и Puppeteer-session magistrate |
+| `packages/scheduler` | orchestration, retry, smoke, enrichment |
+| `packages/exporter` | атомарная JSON-запись; XLSX — нерешённый stub |
+| `packages/viewer` | Express API, static viewer, управление background jobs |
+| `packages/cli` | TUI на blessed и typed API client |
 
 ## Инварианты
 
-- API никогда не возвращает API keys; только `SafeAppConfig`.
-- JSON и `courts.json` пишутся через tmp + rename.
-- Background jobs single-flight: full, retry, enrich — по одному процессу каждого типа.
-- Viewer shutdown завершает дочерние jobs SIGTERM до process exit.
-- Любой запрос TUI к viewer ограничен 5 секундами.
-- TUI после destroy не назначает следующий refresh и не рендерится.
-- Парсерные изменения не совмещать с широким UI/refactor изменением.
+- Секреты остаются в `.env`; `/api/config` возвращает только safe config.
+- Выходные JSON и `courts.json` пишутся атомарно: tmp + rename.
+- Job одного вида запускается только один раз: отдельные `fullPid`, `retryPid`, `enrichPid`; повтор — HTTP 409.
+- Viewer перед shutdown отправляет SIGTERM своим активным children.
+- TUI request к API имеет deadline 5 секунд; после destroy TUI не рендерит и не schedule'ит refresh.
+- Не совмещать parser fix с широким UI/refactor изменением.
 
-## Состояние
+## Актуальный статус
 
-### База
+### Известный HEAD
 
-- Последний известный SHA перед ручным fix pack: `bec8cf855af74e3d45806e6ddc01e81403cd6b2a`.
-- Code Review #3 описывает B1/B2/V1–V4, появившиеся после добавления `packages/cli`.
-- Файлы в данном пакете подготовлены для полной замены `packages/cli/client.ts`, `packages/viewer/server.ts` и `CONTEXT.md`.
-- `tui.ts` нужно заменить только при наличии полного файла из репозитория: обязательные изменения перечислены в разделе ниже. Не затирать TUI неполным файлом.
+- До ручной замены файлов: `2492e75` на `main`.
+- На этом HEAD **применены** B1/V3/V4: guard enrichment, timeout ApiClient, SIGTERM child jobs.
+- На этом HEAD **не применены** B2/V1/V2: изменения `packages/cli/tui.ts`.
+- Этот полный файл `packages/cli/tui.ts` закрывает B2/V1/V2 и переводит TUI enrichment на `ApiClient.enrichCourts()`.
+- После замены файла обязательно записать реальный новый SHA и результаты в журнал ниже.
 
-### Закрываемые дефекты
+### Code Review #3
 
-| ID | Изменение |
-|---|---|
-| B1 | `enrichPid` guard в viewer, HTTP 409 при повторном запуске enrichment |
-| V3 | `AbortSignal.timeout(5000)` и проверка HTTP-status в ApiClient |
-| V4 | SIGTERM child PID при shutdown viewer |
-| B2 | В TUI использовать `selectedCaseIdx`, не `(casesList as any).selected` |
-| V1 | В TUI создавать `ApiClient` внутри `init()`, не при import |
-| V2 | В TUI добавить `destroyed` flag в auto-refresh и exit handler |
+| ID | Содержание | Статус до замены `tui.ts` |
+|---|---|---|
+| B1 | single-flight `/api/run/enrich-courts` | applied |
+| B2 | убрать `(casesList as any).selected` | pending |
+| V1 | убрать TUI ApiClient side effect при import | pending |
+| V2 | не schedule auto-refresh после TUI destroy | pending |
+| V3 | 5 sec API timeout | applied |
+| V4 | shutdown child parsers | applied |
 
-## TUI: точные изменения
-
-В `packages/cli/tui.ts`:
-
-```ts
-let apiUrl = '';
-let api!: ApiClient;
-let destroyed = false;
-```
-
-Заменить `const prevSelected = (casesList as any).selected ?? selectedCaseIdx;` на `const prevSelected = selectedCaseIdx;`.
-
-В начале `autoRefresh()` добавить `if (destroyed) return;`; перед каждым `setTimeout(autoRefresh, 5000)` проверять `if (!destroyed)`.
-
-В exit handler до `clearTimeout` добавить `destroyed = true;`.
-
-В `init()` до использования API добавить:
-
-```ts
-apiUrl = parseApiUrl(process.argv);
-api = new ApiClient(apiUrl);
-```
-
-В `enrichCourts()` заменить голый fetch на `await api.enrichCourts()`.
-
-## Проверка
+## Верификация после замены
 
 ```bash
 npm test
 npx tsc --noEmit
 ```
 
-Ручная проверка:
+Минимальная ручная проверка:
 
-- Второй POST `/api/run/enrich-courts` до завершения первого должен вернуть 409.
-- При остановке viewer активные child parser/enrich PID не остаются в системе.
-- При недоступном viewer TUI сообщает ошибку не дольше 5 секунд.
-- Выход из TUI во время refresh не даёт unhandled rejection.
+1. Второй `POST /api/run/enrich-courts` до завершения первого возвращает HTTP 409.
+2. При SIGTERM/SIGINT viewer не оставляет full/retry/enrich children.
+3. При выключенном viewer TUI сообщает о connection error не позднее пяти секунд.
+4. При выходе (`q`) во время refresh нет `unhandledRejection` и повторного render.
+5. В TUI, вкладка Run, клавиша `E` вызывает API client и корректно отображает 409/error.
 
 ## Backlog
 
 ### P1
 
-- Integration tests для viewer endpoints и lifecycle child processes.
+- Integration tests Express endpoints: single-flight, 409, child lifecycle shutdown.
 - CI: `npm ci`, `npm test`, `npx tsc --noEmit`.
-- XLSX: реализовать либо убрать флаг/заглушку.
+- Реализовать XLSX exporter или удалить публичный `exportXlsx` stub.
 
 ### P2
 
-- Reuse Puppeteer browser/page на один scheduler run.
-- Parse timeout и request delay вынести в config.
-- Заполнить и закоммитить проверенный `courts.json`.
-- Разделить `CaseEvent.note` и judge после миграции контракта.
+- Reuse Puppeteer browser/page на один run magistrate.
+- Parse timeout и межзапросный delay — в config.
+- Заполнить `courts.json` через проверенный `enrich:courts`.
+- Разделить `CaseEvent.note` и judge с migration strategy.
 
 ### P3
 
-- Заменить либо формально принять риск unmaintained `blessed`.
-- Убрать sync `execSync` из диагностики занятого порта.
-- Нормальные commit messages вместо `.`.
+- Решить риск unmaintained `blessed` (замена либо документированный compatibility matrix).
+- Убрать блокирующий `execSync` из port diagnostic.
+- Не использовать commit messages `.`.
 
-## Журнал
+## Журнал работ
 
-| Дата | SHA/артефакт | Факт |
-|---|---|---|
-| 2026-07-10 | Code Review #2 | Закрыты ранние review-пункты, добавлены url tests |
-| 2026-07-11 | `36dd0bc` | Добавлены TUI и viewer run API |
-| 2026-07-13 | `bec8cf8` | Обновлён Code Review #3 |
-| 2026-07-13 | manual full-files pack | Подготовлены полные `client.ts`, `server.ts`, `CONTEXT.md`; требуется применить и проверить |
+| Дата | SHA/артефакт | Изменение | Проверка |
+|---|---|---|---|
+| 2026-07-10 | Code Review #2 | Исправлены ранние пункты, добавлены URL tests | historical |
+| 2026-07-11 | `36dd0bc` | Добавлены TUI и viewer run API | historical |
+| 2026-07-13 | `bec8cf8` | В репозиторий добавлен Code Review #3 | historical |
+| 2026-07-13 | `2492e75` | B1/V3/V4 вручную применены; `tui.ts` остался старым | inspected on GitHub |
+| 2026-07-13 | full `tui.ts` + this file | Подготовлена полная замена TUI и синхронизация статуса | pending application |
 
 ## Старт следующей сессии
 
-1. Прочитать этот файл, `CODE_REVIEW.md`, `DECISIONS.md`.
-2. Выполнить `git status`, `git log --oneline -20`, зафиксировать SHA.
-3. Проверить наличие `enrichPid`, `AbortSignal.timeout`, SIGTERM child shutdown.
-4. Выполнить verification выше и записать реальные результаты в журнал.
-5. Брать один backlog item за раз; сначала success criteria, затем минимальный patch, потом документация.
+1. Прочитать `CONTEXT.md`, `CODE_REVIEW.md`, `DECISIONS.md`.
+2. Выполнить `git status`, `git log --oneline -20`; записать SHA.
+3. Проверить фактическое наличие `enrichPid`, `AbortSignal.timeout`, `destroyed`, lazy `ApiClient` init.
+4. Выполнить весь раздел «Верификация» и записать exact results.
+5. Выбрать один backlog item, определить success criteria, сделать минимальную правку, обновить этот журнал.
