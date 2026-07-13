@@ -1,12 +1,28 @@
-# CourtFlow — Code Review #2
+# CourtFlow — Code Review #3
 
-> **Дата:** 2026-07-10
+> **Дата:** 2026-07-13
 > **Репозиторий:** https://github.com/AlexanderKuzikov/CourtFlow
-> **Ветка:** main (HEAD: c52bd4f)
-> **Автор ревью:** OpenCode Go (повторное ревю после code review #1 и обновления документации)
-> **Область:** полный код проекта (18 TS-файлов, ~1 500 строк)
+> **Ветка:** main (HEAD: 36dd0bc)
+> **Автор ревью:** Perplexity AI (Claude Sonnet 4.6)
+> **Область:** полный код проекта (20 TS-файлов + tui.test.ts, ~5 700 строк)
 
-> **История:** предыдущее ревю от Hermes Agent (2026-07-06) — сохранено в истории git (`75f3a5c`). Разбор: CODE_REVIEW.md#Ответ на ревю (2026-07-07).
+> **История:**
+> - Code Review #1 (2026-07-06, Hermes Agent) — sha `75f3a5c`
+> - Code Review #2 (2026-07-10, OpenCode Go) — sha `6f30f81`
+> - **Code Review #3 (2026-07-13)** — HEAD `36dd0bc`, delta от #2: 7 коммитов, +2 773 / -1 804 строк
+
+---
+
+## Что изменилось с Code Review #2
+
+**Новое с 2026-07-10:**
+- ✅ Добавлен `packages/cli/` — новый пакет: `tui.ts` (TUI-дашборд на `blessed`) + `client.ts` (HTTP-клиент)
+- ✅ Добавлен `packages/cli/tui.test.ts` — 170 строк unit-тестов (mock blessed + 9 describe-блоков)
+- ✅ `packages/viewer/server.ts` — существенно расширен: `/api/run/retry`, авто-поиск свободного порта, `logs/.port`, `identifyProcess()`
+- ✅ `package.json` — добавлены `blessed`, `@types/blessed`, скрипт `tui`
+- ✅ `CONTEXT.md`, `DECISIONS.md`, `PROMPT_FOR_NEW_SESSION.md` — обновлены под новую архитектуру
+- ✅ `LINUX_DEPLOY.md` — расширен (+34 строки)
+- ⚠️ Все коммиты с 2026-07-10 имеют сообщение «.» — нечитаемая история
 
 ---
 
@@ -14,302 +30,302 @@
 
 | Категория | Статус | Комментарий |
 |----------|--------|-------------|
-| **Архитектура** | ✅ Отличная | Модульность core/adapters/captcha/scheduler/exporter/viewer сохранена |
-| **TypeScript** | ⚠️ Одно место с `any` | `enrich-courts.ts:9` — `courtType: any` вместо `CourtType` |
-| **Тесты** | ❌ Отсутствуют | `vitest` настроен, но 0 файлов `*.test.ts`. Smoke не CI-совместим |
-| **Безопасность** | ✅ Хорошо | SafeAppConfig, `.env` в gitignore, lock-файл с PID-проверкой |
-| **Зависимости** | ⚠️ 2 moderate vulns | `uuid` <11.1.1 через exceljs (не эксплуатируется: `exportXlsx: false`) |
-| **Документация** | ✅ Обновлена | README, CONTEXT, AUDIT_REPORT, RUCAPTCHA_GUIDE, HTML_STRUCTURE синхронизированы 2026-07-10 |
+| **Архитектура** | ✅ Отличная | +cli пакет органично вписался. Модульность сохранена |
+| **TUI (tui.ts)** | ⚠️ Хорошо | Работающий blessed-дашборд, но ряд архитектурных проблем |
+| **Тесты** | ✅ Есть | `urls.test.ts` (19) + `tui.test.ts` (170 строк) — прогресс |
+| **TypeScript** | ✅ Хорошо | `any` в `tui.ts:267` — единственное место |
+| **Безопасность** | ✅ Хорошо | SafeAppConfig сохранён, `.env` в gitignore |
+| **Зависимости** | ⚠️ +1 prod dep | `blessed` — unmaintained с 2015 (последний релиз), 0 обновлений |
+| **server.ts** | ⚠️ Важно | `spawnOrchestrator` — нет limit на параллельные enrich-courts |
+| **Документация** | ✅ Обновлена | CONTEXT, DECISIONS, PROMPT обновлены под TUI |
 
 ---
 
 ## 🔴 Блокеры
 
-### B1. `enrich-courts.ts:9` — `courtType: any`
+### B1. `server.ts` — `/api/run/enrich-courts` запускает неограниченное число процессов
 
-**Файл:** `packages/scheduler/enrich-courts.ts:9`
-**Ошибка:** `const uniq = new Map<string, { courtId: string; courtType: any }>();`
-**Причина:** После исправления `CourtType` в orchestrator.ts и smoke.ts это место осталось с `any`.
-**Риск:** Пропускает невалидные значения типа суда. Нарушает типобезопасность, введённую в code review #1.
+**Файл:** `packages/viewer/server.ts:195-202`
+```typescript
+app.post('/api/run/enrich-courts', (_req, res) => {
+  const child = spawn(process.execPath, [...], { ... });
+  res.json({ started: true, pid: child.pid ?? null });
+});
+```
+В отличие от `/api/run` и `/api/run/retry`, здесь **нет guard на повторный запуск**. Каждый POST создаёт новый дочерний процесс. При быстром нажатии `E` в TUI или несколько раз из curl — запустятся несколько `enrich-courts.ts` параллельно. Это безопасно только если `enrich-courts` идемпотентен при параллельном файловом доступе, но `courts.ts` использует `.tmp`-файл — параллельное исполнение вызовет race condition на файле.
 
 **Фикс:**
 ```typescript
-import type { CourtType } from '../core/types.js';
-const uniq = new Map<string, { courtId: string; courtType: CourtType }>();
-```
+let enrichPid: number | null = null;
 
-### B2. `orchestrator.ts:160-163` — Promise.race течёт ресурсами
-
-**Файл:** `packages/scheduler/orchestrator.ts:160-163`
-**Проблема:**
-```typescript
-const caseData = await Promise.race([parsePromise, timeoutPromise]);
-```
-Проигравший промис не отменяется. Если `parsePromise` продолжается после таймаута:
-- его результат игнорируется — асинхронная работа выполняется вхолостую
-- если парсинг интенсивный (например, Puppeteer для magistrate), это тратит CPU/RAM
-- при большом количестве тайм-аутов накапливаются orphaned операции
-
-**Фикс:** Использовать `AbortController`:
-```typescript
-const ac = new AbortController();
-const parsePromise = adapter.parse(html, url).then(data => {
-  if (ac.signal.aborted) throw new Error('aborted');
-  return data;
-});
-const timeoutPromise = new Promise<never>((_, reject) => {
-  const id = setTimeout(() => { ac.abort(); reject(new Error('parse timeout')); }, 10000);
-  ac.signal.addEventListener('abort', () => clearTimeout(id));
+app.post('/api/run/enrich-courts', (_req, res) => {
+  if (enrichPid !== null) return res.status(409).json({ error: 'Уже запущен', pid: enrichPid });
+  const child = spawn(...);
+  enrichPid = child.pid ?? null;
+  child.on('close', () => { enrichPid = null; });
+  res.json({ started: true, pid: enrichPid });
 });
 ```
+
+### B2. `tui.ts:267` — `(casesList as any).selected`
+
+**Файл:** `packages/cli/tui.ts:267`
+```typescript
+const prevSelected = (casesList as any).selected ?? selectedCaseIdx;
+```
+`blessed.list` имеет `selected: number` в `@types/blessed`. Это `as any` обходит типизацию намеренно или по незнанию. Если `@types/blessed` не экспортирует `selected` — нужно объявить локальный тип:
+
+```typescript
+const prevSelected = (casesList as blessed.Widgets.ListElement & { selected: number }).selected ?? selectedCaseIdx;
+```
+Или использовать `selectedCaseIdx` напрямую — он уже синхронизирован через `'select item'`.
 
 ---
 
 ## ⚠️ Важно
 
-### V1. `magistrate.ts:38-42` — нет fallback UID из URL
+### V1. `tui.ts` — module-level side effects при импорте в тестах
 
-**Файл:** `packages/adapters/magistrate.ts:38-42`
+**Файл:** `packages/cli/tui.ts:9-10`, `tui.test.ts:44`
 ```typescript
-const caseNumber = cleanText(
-  $('h2').filter(...).text().replace(/ДЕЛО\s*№/i, '')
-) ?? '';
-if (!caseNumber) throw new Error('MagistrateAdapter: не удалось определить номер дела');
+const apiUrl = parseApiUrl(process.argv);
+const api = new ApiClient(apiUrl);
 ```
-District/appeal/cassation имеют fallback: `case_uid || case_id` из URL. Magistrate — нет.
-Если вёрстка msudrf.ru изменится (h2 уберут или переименуют) — парсер упадёт.
+Эти строки выполняются при `import './tui.js'` в тесте. Проблема сейчас скрыта за `VITEST`-guard на `init()`:
+```typescript
+if (!process.env.VITEST) { init()... }
+```
+Но `readDefaultApiUrl()` в `client.ts` читает `logs/.port` и `config.json` с диска при импорте — это I/O в test environment. Если файлы отсутствуют, падает с исключением (try/catch есть, но возвращает `localhost:8791`). При добавлении тестов, требующих `ApiClient`, поведение непредсказуемо.
+
+**Рекомендация:** Переместить `const api = new ApiClient(apiUrl)` внутрь `init()`. Утилитарные функции (`formatCaseItem`, `esc` и т.д.) экспортировать без зависимости от `api`.
+
+### V2. `tui.ts` — `autoRefresh` не останавливается корректно при закрытии detail
+
+**Файл:** `packages/cli/tui.ts:152-162`
+```typescript
+async function autoRefresh(): Promise<void> {
+  if (refreshing || detailBox.visible || searchActive) {
+    refreshTimer = setTimeout(autoRefresh, 5000);
+    return;
+  }
+  ...
+  refreshTimer = setTimeout(autoRefresh, 5000);
+}
+```
+При `q`/`Ctrl+C` вызывается `clearTimeout(refreshTimer)`. Но если `autoRefresh` уже в `await Promise.all(...)` — очистка не работает, промисы не отменяются. После `screen.destroy()` `loadCases()` вызовет `screen.render()` на уничтоженном экране → unhandled error.
+
+**Фикс:** Добавить `AbortController` или флаг `destroyed`:
+```typescript
+let destroyed = false;
+
+screen.key(['q', 'C-c'], () => {
+  destroyed = true;
+  ...
+});
+
+async function autoRefresh() {
+  if (destroyed) return;
+  ...
+  if (!destroyed) refreshTimer = setTimeout(autoRefresh, 5000);
+}
+```
+
+### V3. `client.ts` — нет timeout на fetch-запросы
+
+**Файл:** `packages/cli/client.ts:37-42`
+```typescript
+private async get<T>(path: string): Promise<T> {
+  const res = await fetch(`${this.baseUrl}${path}`);
+  ...
+}
+```
+Если сервер недоступен, Node fetch зависает на несколько минут (системный TCP timeout). TUI будет «заморожен» на время авто-рефреша. В классе нет `AbortSignal.timeout()`.
 
 **Фикс:**
 ```typescript
-const caseNumber = cleanText(...) ?? parsedUrl.searchParams.get('case_id') ?? '';
+const res = await fetch(`${this.baseUrl}${path}`, {
+  signal: AbortSignal.timeout(5000),
+});
 ```
 
-### V2. `session.ts` — новый браузер на каждое дело magistrate
+### V4. `server.ts` — `spawn` с `detached: false` + нет обработки `SIGTERM` для дочерних процессов
 
-**Файл:** `packages/captcha/session.ts:19`
-`puppeteer.launch({ headless })` вызывается при каждом вызове `fetchMagistrateHtml`.
-12 magistrate-дел = 12 запусков Chromium (~170 MB RAM каждый, 5-15 сек на запуск).
+**Файл:** `packages/viewer/server.ts:176-180`
+При `shutdown()` → `serverInstance.close()` → `process.exit(0)` дочерние процессы (`fullPid`, `retryPid`) **не завершаются**. Они продолжат работу как orphan-процессы. На Linux с PM2 это особенно критично — `pm2 restart` не убьёт orphan-parserы.
 
-**Рекомендация:** Кешировать browser/page между вызовами в пределах одного прогона. Либо передавать `browser` параметром, либо использовать module-level singleton с авто-закрытием в finally оркестратора.
-
-### V3. `config.json` — `captcha.fallbackProvider` никогда не используется
-
-**Файлы:** `config.json`, `packages/scheduler/orchestrator.ts:54-64`
-`loadCaseHtml` использует только `config.captcha.apiKey` (RuCaptcha). Ключ `TWOCAPTCHA_API_KEY` загружается в `loadConfig()`, проверяется `fallbackKeySet`, но **ни разу не задействован** в логике парсинга.
-
-Если RuCaptcha недоступен (баланс 0, API упал) — magistrate-дела падают с ошибкой, хотя fallback-ключ есть в `.env`.
-
-**Рекомендация:** Реализовать fallback в `loadCaseHtml`:
+**Фикс:**
 ```typescript
-if (courtType === 'magistrate') {
-  if (!apiKey) throw new Error('...');
-  try {
-    return await fetchMagistrateHtml({ url, apiKey, ... });
-  } catch {
-    if (config.captcha.fallbackKeySet) {
-      return await fetchMagistrateHtml({ url, apiKey: config.captcha.fallbackApiKey, ... });
-    }
-    throw;
-  }
+function shutdown(signal: string) {
+  if (fullPid)  { try { process.kill(fullPid,  'SIGTERM'); } catch {} }
+  if (retryPid) { try { process.kill(retryPid, 'SIGTERM'); } catch {} }
+  serverInstance.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 5000);
 }
 ```
 
-### V4. `smoke.ts:80-83` — magistrate пропускается
+### V5. `tui.test.ts` — тест `formatCaseItem` не проверяет `courts`-маппинг
 
-**Файл:** `packages/scheduler/smoke.ts:80-83`
+**Файл:** `packages/cli/tui.test.ts:100-115`
+`formatCaseItem` зависит от module-level переменной `courts: Record<string, ...>`. В тесте `courts = {}`, поэтому тест всегда проверяет fallback (`c.court` вместо `shortName`). Тест не гарантирует, что колонка «Суд» показывает название, когда `courts` заполнен.
+
+**Рекомендация:** Добавить кейс с предварительно заполненным `courts`:
 ```typescript
-if (courtType === 'magistrate') {
-  log.write('    [пропущено: magistrate требует Puppeteer]');
-  continue;
-}
+// В tui.test.ts нет доступа к модульному courts — нужен отдельный экспорт или фабричная функция
+// Либо рефакторинг formatCaseItem в чистую функцию: formatCaseItem(c, courts)
 ```
-Magistrate end-to-end закрыт (BUG-016: 12/12 success). Пропускать его в smoke-тесте некорректно — это единственный тип суда с капчей, и его всегда нужно проверять.
-
-**Рекомендация:** Убрать `continue` и тестировать magistrate, либо добавить отдельный `test:smoke:magistrate`.
-
-### V5. `package.json` — `vitest` настроен, тестов нет
-
-**Файл:** `package.json`
-```json
-"test": "vitest run",
-"test:watch": "vitest"
-```
-`vitest` в devDependencies, конфигурация неявная (infer). Но ни одного файла `*.test.ts`. Команда `npm test` выполняется успешно с 0 тестов — бесполезна.
-
-**Рекомендация минимальная:** Добавить `packages/core/urls.test.ts` с тестом `extractUrls()` на 5-6 кейсах (JSON, CSV, пробелы, кавычки, битые URL). Это даст реальную ценность без необходимости писать моки для HTML-парсеров.
 
 ---
 
 ## 💡 Советы
 
-### S1. `magistrate.ts:74` — 5-я колонка названа `note`, но это судья
+### S1. `tui.ts` — `blessed` не поддерживается с 2015
+
+`blessed` — пакет с последним релизом в 2015 году, 0 merge за последние годы. На Node 22+ есть известные проблемы с raw mode. Альтернативы: `neo-blessed` (форк с поддержкой), `ink` (React для терминала), `@clack/prompts`. Для production-deployment это технический долг.
+
+### S2. `tui.ts:getSep()` — вызывается до `screen` создан при импорте в тестах
 
 ```typescript
-note: tds.length >= 5 ? cleanText(tds.eq(4).text()) : null, // судья (5-я колонка)
+export const COL = { ... };
+const sep = getSep();  // здесь — screen уже инициализирован выше по файлу
 ```
-Поле `CaseEvent.note` описано как «примечание», но здесь попадает имя судьи. Либо должно быть отдельное поле `judge` в `CaseEvent`, либо правильно названо.
+`getSep()` читает `screen.fullUnicode`. В тестах `screen` — мок, и `fullUnicode: true` захардкожен в моке. Это работает, но хрупко. Лучше передавать `fullUnicode` параметром или вычислять `sep` внутри `formatCaseItem`.
 
-### S2. `smoke.ts:64` — хардкод «urls.txt»
+### S3. `server.ts:identifyProcess()` — `execSync` в async context
 
-```typescript
-log.write(`[smoke] Всего URL в urls.txt: ${allUrls.length}`);
-```
-URL могут грузиться из `watch/`, но лог всегда пишет «urls.txt». Заменить на нейтральное: «Всего URL:».
+`identifyProcess()` вызывается из async `findPort()`, но является синхронным. `execSync` блокирует event loop на время выполнения `netstat`/`lsof` (может быть 100-500ms). Для production-сервера — замерзание event loop.
 
-### S3. `orchestrator.ts:162` — parse timeout 10000ms захардкожен
+**Рекомендация:** Либо `execFileAsync`, либо просто убрать — это debugging-only информация.
 
-```typescript
-const timeoutPromise = new Promise<never>((_, reject) =>
-  setTimeout(() => reject(new Error('parse timeout')), 10000)
-);
-```
-Таймаут парсинга не вынесен в `config.json`. Сложные magistrate-страницы с капчей могут занимать >10 сек. Рекомендуется вынести в `config.retry.parseTimeoutMs`.
-
-### S4. `config.ts:52-53` — мутация JSON-объекта
+### S4. `tui.ts` — нет обработки ошибок в `enrichCourts()`
 
 ```typescript
-cfg.captcha.apiKey = apiKey;
-cfg.captcha.fallbackApiKey = fallbackApiKey;
-```
-`JSON.parse` возвращает plain object, но мутировать его в `loadConfig` нарушает принцип immutability. Технически не баг, но может удивить вызывающий код.
-
-### S5. `courts.json` пуст
-
-**Файл:** `courts.json` — `{}`
-`enrich:courts` ни разу не был успешно запущен. UI показывает поддомены (`sverdlov--perm`) вместо названий судов (`Свердловский районный суд г. Перми`).
-
-### S6. `orchestrator.ts:196-198` — XLSX stub
-
-```typescript
-if (config.exportXlsx) {
-  console.log(`[xlsx] TODO: ${courtId}`);
+async function enrichCourts(): Promise<void> {
+  try {
+    const res = await fetch(`${apiUrl}/api/run/enrich-courts`, { method: 'POST' });
+    if (res.ok) { ... }
+  } catch { ... }
 }
 ```
-Если пользователь выставит `exportXlsx: true`, он получит только строчку в логах, а не XLSX-файлы. Следует либо убрать `exportXlsx` из конфига, либо сделать `throw new Error('exportXlsx: не реализован. Установите exportXlsx: false.')`.
+Использует `fetch` напрямую вместо `api.post()`. Нет timeout. Дублирует логику `ApiClient`. Следует переиспользовать `api`.
 
-### S7. Нет rate-limiting между запросами к одному суду
+### S5. `package.json` — `blessed` в `dependencies`, не `devDependencies`
 
-Оркестратор идёт по URL последовательно без пауз. Если в `watch/` 50 дел одного суда — пойдут подряд. Риск блокировки по IP на стороне ГАС «Правосудие».
+`blessed` нужен только для `npm run tui` — интерактивного использования. На headless-сервере TUI не запускается. Оставлять его в `dependencies` означает, что `npm ci --omit=dev` всё равно установит Puppeteer + blessed. Если `tui` — опциональный инструмент, стоит рассмотреть `optionalDependencies` или вынести в отдельный workspace.
 
-**Рекомендация:** Добавить `delayBetweenRequestsMs` в `config.json` с дефолтом 500-1000ms.
+### S6. Backlog из Code Review #2 — не изменилось
 
-### S8. `index.html` — 400 строк inline
+| Пункт | Статус |
+|-------|--------|
+| **S3** — parse timeout в `config.json` | ⏳ Не сделано |
+| **S6** — XLSX stub | ⏳ Не сделано |
+| **V2** — singleton browser для magistrate | ⏳ Не сделано |
+| **S7** — rate-limiting между запросами | ⏳ Не сделано |
+| **S1** — поле `note` → `judge` в `CaseEvent` | ⏳ Не сделано |
+| **S5** — запустить `enrich:courts` | ⏳ `courts.json` всё ещё `{}` |
+| **S8** — разбить `index.html` | ⏳ Не сделано |
 
-Ванільний HTML/JS — это осознанное решение, но 400 строк внутри `<script>` и `<style>` без разделения на файлы затрудняет поддержку. Даже без фреймворка можно разбить на `app.js`, `style.css`.
+### S7. Commit messages — нечитаемая история
 
-### S9. `PROMPT_FOR_NEW_SESSION.md` — дата 2026-07-07
-
-Дата в заголовке устарела на 3 дня. Рекомендуется обновлять при каждом изменении проекта.
-
-### S10. `LINUX_DEPLOY.md:48` — хардкод «OK: 26»
-
-```bash
-# Ожидаем: [orchestrator] Готово. OK: 26, FAIL: 0, CAPTCHA: 0
-```
-Число 26 соответствует текущему `urls.txt`, но не будущему. Заменить на «все URL».
+Все 7 коммитов с 2026-07-10 по 2026-07-11 имеют сообщение «.». После рефреш-сессии, когда работа активная, это не критично — но в git log и в PR-описаниях это делает историю непригодной для анализа регрессий.
 
 ---
 
-## ✅ Что хорошо
+## ✅ Что хорошо в Code Review #3
 
 | Аспект | Детали |
 |--------|--------|
-| **BUG-023..026 закрыты** | `decodeEntities`, `CourtType`, stale lock, graceful shutdown — все 4 блокера code review #1 исправлены |
-| **Lock-файл зрелый** | PID-проверка через `process.kill(pid, 0)` + перезапись stale lock. Устойчив к SIGKILL/OOM |
-| **Graceful shutdown** | viewer/server.ts обрабатывает SIGTERM/SIGINT с `serverInstance.close()` + fallback force-exit 5s |
-| **SafeAppConfig** | `/api/config` возвращает конфиг без API-ключей. Защита от утечки секретов через API |
-| **Архитектура** | Неизменна с code review #1: core/adapters/captcha/scheduler/exporter/viewer — чистая модульность |
-| **Атомарная запись** | `json.ts` и `courts.ts` пишут через `.tmp` + `renameSync` — нет риска повреждения файла при краше |
-| **Charset detection** | Из Content-Type заголовка (не guess). Fallback на win1251. Корректно для судовых сайтов |
-| **Run-log история** | `buildLastSuccessMap()` читает все run-log-*.json и строит карту lastSuccess по URL. Основа для retry |
-| **Smoke-лог** | Автоматически пишет `logs/smoke-last.log` в UTF-8. Флаг `smokeSaveLog` в конфиге |
-| **Документация обновлена** | README, CONTEXT, AUDIT_REPORT, RUCAPTCHA_GUIDE, HTML_STRUCTURE синхронизированы с кодом |
+| **TUI архитектура** | Чёткое разделение: `tui.ts` (UI-логика) / `client.ts` (HTTP) / `server.ts` (API) |
+| **blessed mock в тестах** | Корректный подход: полный мок blessed, тестирование только чистых функций |
+| **ApiClient** | Типизированный HTTP-клиент, все endpoints, `parseApiUrl` из argv |
+| **Авто-порт** | `findPort()` + `logs/.port` — элегантное решение для локального TUI |
+| **VITEST guard** | `if (!process.env.VITEST) { init() }` — правильная изоляция I/O от тестов |
+| **Auto-refresh** | 5-секундный поллинг с паузой при detail/search — UX-продуманно |
+| **`/api/run/status`** | Раздельный статус `full`/`retry` с PID — позволяет TUI корректно отображать состояние |
+| **Retry mode** | `spawnOrchestrator(['--retry'])` + `/api/run/retry` — чистое расширение без дублирования |
 
 ---
 
-## 📋 Checklist по файлам
+## 📋 Checklist по файлам (полный, обновлён)
 
 | Файл | Статус | Заметки |
 |------|--------|---------|
-| `packages/core/types.ts` | ✅ | `Case`, `CaseEvent`, `CaseParty`, `CourtAdapter`, `RunResult` — полные и консистентные |
-| `packages/core/config.ts` | ⚠️ | Мутация JSON-объекта (S4). Нет валидации обязательных полей |
-| `packages/core/urls.ts` | ✅ | watch/ + fuzzy extractor + fallback. `extractCourtId` для magistrate — осознанное решение |
-| `packages/core/errors.ts` | ✅ | `CaptchaRequiredError`, `isCaptchaPage` |
-| `packages/core/retry.ts` | ✅ | Exponential backoff |
-| `packages/core/courts.ts` | ✅ | `fetchCourtDirectoryItem` работает, `vnkod` пока null (низкий приоритет) |
-| `packages/adapters/district.ts` | ✅ | |
-| `packages/adapters/appeal.ts` | ✅ | `publishInfo` из предпоследней вкладки — корректно |
-| `packages/adapters/cassation.ts` | ✅ | |
-| `packages/adapters/magistrate.ts` | ✅ | Fallback UID из URL (V1). Колонка судьи в `note` (S1 — совет) |
-| `packages/captcha/rucaptcha.ts` | ✅ | API v2, правильные параметры |
-| `packages/captcha/session.ts` | ⚠️ | Новый браузер на каждое дело (V2 — backlog) |
-| `packages/scheduler/orchestrator.ts` | ✅ | Promise.race с AbortController (B2), fallback captcha (V3). XLSX stub (S6 — backlog) |
-| `packages/scheduler/smoke.ts` | ✅ | Magistrate из cached HTML (V4), «urls.txt» исправлен (S2) |
-| `packages/scheduler/enrich-courts.ts` | ✅ | `courtType: CourtType` (B1) |
-| `packages/exporter/json.ts` | ✅ | Merge по UID, атомарная запись |
-| `packages/exporter/xlsx.ts` | ❌ | Заглушка (S6 — backlog) |
-| `packages/viewer/server.ts` | ✅ | Graceful shutdown, SafeAppConfig, `/api/run/enrich-courts`, `/api/run/status` |
-| `packages/core/urls.test.ts` | ✅ | 19 unit-тестов: `extractUrls`, `detectCourtType`, `extractCourtId` |
+| `packages/core/types.ts` | ✅ | Без изменений |
+| `packages/core/config.ts` | ⚠️ | Мутация JSON-объекта (S4 из #2). Нет Zod-валидации |
+| `packages/core/urls.ts` | ✅ | Без изменений |
+| `packages/core/urls.test.ts` | ✅ | 19 тестов |
+| `packages/core/errors.ts` | ✅ | Без изменений |
+| `packages/core/retry.ts` | ✅ | Без изменений |
+| `packages/core/courts.ts` | ✅ | Без изменений |
+| `packages/adapters/district.ts` | ✅ | Без изменений |
+| `packages/adapters/appeal.ts` | ✅ | Без изменений |
+| `packages/adapters/cassation.ts` | ✅ | Без изменений |
+| `packages/adapters/magistrate.ts` | ✅ | Без изменений |
+| `packages/captcha/rucaptcha.ts` | ✅ | Без изменений |
+| `packages/captcha/session.ts` | ⚠️ | Новый браузер на каждое дело (из #2, backlog) |
+| `packages/scheduler/orchestrator.ts` | ✅ | Без изменений с #2 |
+| `packages/scheduler/smoke.ts` | ✅ | Без изменений с #2 |
+| `packages/scheduler/enrich-courts.ts` | ✅ | Без изменений с #2 |
+| `packages/exporter/json.ts` | ✅ | Без изменений |
+| `packages/exporter/xlsx.ts` | ❌ | Заглушка (backlog) |
+| `packages/viewer/server.ts` | ⚠️ | B1 (enrich guard), V4 (orphan children) |
+| `packages/cli/tui.ts` | ⚠️ | B2 (as any), V1 (side effects), V2 (destroy race) |
+| `packages/cli/client.ts` | ⚠️ | V3 (нет fetch timeout) |
+| `packages/cli/tui.test.ts` | ✅ | 170 строк, 9 describe-блоков, хороший mock |
 
 ---
 
 ## 🔧 План действий
 
-### ✅ Приоритет 1 — Блокеры (исправлено 2026-07-10)
-1. ~~**B1** — `courtType: any` → `CourtType` в `enrich-courts.ts`~~ ✅
-2. ~~**B2** — `Promise.race` leak в `orchestrator.ts:160-163`~~ ✅
+### Приоритет 1 — Блокеры (новые)
+1. **B1** — guard на повторный запуск `/api/run/enrich-courts` в `server.ts`
+2. **B2** — убрать `as any` в `tui.ts:267` → правильный тип или `selectedCaseIdx`
 
-### ✅ Приоритет 2 — Важно (исправлено 2026-07-10)
-3. ~~**V1** — fallback UID в `magistrate.ts`~~ ✅
-4. ~~**V4** — magistrate в smoke-тесте~~ ✅
-5. ~~**V3** — fallback captcha в `loadCaseHtml`~~ ✅
-6. ~~**V5** — unit-тест `extractUrls()`~~ ✅ (19 тестов, `packages/core/urls.test.ts`) + S2 фикс хардкода «urls.txt»
+### Приоритет 2 — Важно (новые)
+3. **V1** — вынести `const api = new ApiClient(...)` в `init()`, изолировать от import side effects
+4. **V2** — добавить `destroyed`-флаг для корректного завершения `autoRefresh`
+5. **V3** — добавить `AbortSignal.timeout(5000)` в `ApiClient.get/post`
+6. **V4** — в `shutdown()` посылать `SIGTERM` дочерним процессам перед `process.exit`
 
-### Приоритет 3 — Советы (backlog, не блокирует)
-7. **S3** — вынести parse timeout в `config.json`
-8. **S6** — XLSX: либо реализовать, либо убрать из конфига
-9. **V2** — singleton browser для magistrate
-10. **S7** — rate-limiting между запросами
-11. **S1** — поле `note` → `judge` в `CaseEvent`
-12. **S5** — запустить `enrich:courts`, заполнить справочник
-13. **S8** — разбить `index.html`
-14. **S9** — обновить `PROMPT_FOR_NEW_SESSION.md`
-15. **S10** — убрать хардкод «26» в `LINUX_DEPLOY.md`
+### Приоритет 3 — Советы (backlog)
+7. **S3** — вынести `execSync` из `identifyProcess` или сделать async
+8. **S4** — заменить прямой `fetch` в `enrichCourts()` на `api.post()`
+9. **S5** — рассмотреть `optionalDependencies` для `blessed`
+10. **S6** — см. backlog из Code Review #2 (XLSX, singleton browser, rate-limit, note→judge)
 
 ---
 
-## 📊 Метрики репозитория (2026-07-10)
+## 📊 Метрики репозитория (2026-07-13)
 
-| Метрика | Значение |
-|---------|----------|
-| TypeScript файлов | 18 |
-| Строк кода (packages/) | ~4 250 |
-| Зависимостей (prod) | 6 |
-| Зависимостей (dev) | 5 |
-| Уязвимостей (moderate) | 2 (uuid через exceljs) |
-| Тестов | 0 |
-| Документационных файлов | 8 |
-| Коммитов (main) | 41 |
-| Покрытых судов | 26 |
-| Типов судов | 4 (district, appeal, cassation, magistrate) |
+| Метрика | #2 (2026-07-10) | #3 (2026-07-13) | Δ |
+|---------|-----------------|-----------------|---|
+| TypeScript файлов | 18 | 20 | +2 |
+| Строк кода (packages/) | ~4 250 | ~5 700 | +1 450 |
+| Зависимостей (prod) | 6 | 7 | +1 (blessed) |
+| Зависимостей (dev) | 5 | 6 | +1 (@types/blessed) |
+| Тестовых файлов | 1 | 2 | +1 |
+| Тестов (строк) | 19 | 19 + 170 | +170 |
+| Коммитов (main) | 41 | 48 | +7 |
+| Документационных файлов | 8 | 9 | +1 (DECISIONS.md) |
+| Блокеров | 0 | 2 | +2 (новые) |
+| Важных | 0 | 4 | +4 (новые) |
 
 ---
 
-## 🔄 Сравнение с Code Review #1 (2026-07-06)
+## 🔄 Сравнение code review #1 / #2 / #3
 
-| Пункт #1 | Статус в #2 | Комментарий |
-|---|---|---|
-| #1 decodeEntities | ✅ Исправлен | Во всех 5 файлах |
-| #2 CourtType assignability | ✅ Исправлен | Везде, включая enrich-courts.ts (B1 закрыт) |
-| #6 Stale lock | ✅ Исправлен | PID-проверка работает |
-| #15 Graceful shutdown | ✅ Исправлен | SIGTERM/SIGINT обрабатываются |
-| #3 uuid vuln | ⏳ Не изменилось | exceljs опциональный |
-| #4 XLSX exporter | ❌ Не изменилось | Заглушка (S6 backlog) |
-| #5 Тесты | ✅ Первые тесты | `urls.test.ts`: 19 тестов (V5) |
-| #7 Fallback captcha | ✅ Реализован | fallbackApiKey в loadCaseHtml (V3) |
-| #8 Таймауты smoke | ⏳ Не изменилось | |
-| #9 detectCourtType | ⏳ Не изменилось | Эвристика осознанная |
-| #10 extractCourtId magistrate | ❌ Отклонён | Осознанное решение |
-| #11-17 ESLint/pino/Zod/vnkod | ⏳ Не изменилось | Техдолг |
-
-**Итого:** 8 пунктов исправлены из 17. Блокеры B1/B2 и важные V1/V3/V4/V5 закрыты 2026-07-10. Остался техдолг (ESLint/pino/Zod/XLSX/vnkod).
+| Пункт | #1 | #2 | #3 |
+|---|---|---|---|
+| decodeEntities | ✅ | ✅ | ✅ |
+| CourtType / any | ✅ | ✅ | ⚠️ new (tui.ts B2) |
+| Stale lock | ✅ | ✅ | ✅ |
+| Graceful shutdown | ✅ | ✅ | ⚠️ orphan children (V4) |
+| uuid vuln | ⏳ | ⏳ | ⏳ |
+| XLSX exporter | ❌ | ❌ | ❌ |
+| Тесты | ❌ | ✅ 19 | ✅ 189+ |
+| Fallback captcha | ✅ | ✅ | ✅ |
+| Singleton browser | ⏳ | ⏳ | ⏳ |
+| Rate-limiting | — | ⏳ | ⏳ |
+| enrich-courts guard | — | — | ❌ new (B1) |
+| fetch timeout в TUI | — | — | ❌ new (V3) |
+| autoRefresh destroy race | — | — | ❌ new (V2) |
+| Commit messages | — | — | ⚠️ «.» x7 |
