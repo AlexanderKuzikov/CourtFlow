@@ -1,6 +1,5 @@
 // packages/cli/client.ts
 // HTTP-клиент к CourtFlow API — общий для TUI и будущих CLI-команд.
-// Порт и хост по умолчанию — из config.json (viewer.port / viewer.host), fallback :3000.
 
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
@@ -11,76 +10,43 @@ function readDefaultApiUrl(): string {
     const portFile = resolve(process.cwd(), 'logs', '.port');
     if (existsSync(portFile)) {
       const actualPort = readFileSync(portFile, 'utf-8').trim();
-      const raw = readFileSync(resolve(process.cwd(), 'config.json'), 'utf-8');
-      const cfg = JSON.parse(raw);
-      const host = cfg.viewer?.host || 'localhost';
-      return `http://${host}:${actualPort}`;
+      const cfg = JSON.parse(readFileSync(resolve(process.cwd(), 'config.json'), 'utf-8'));
+      return `http://${cfg.viewer?.host || 'localhost'}:${actualPort}`;
     }
   } catch { /* fall through */ }
-
   try {
-    const raw = readFileSync(resolve(process.cwd(), 'config.json'), 'utf-8');
-    const cfg = JSON.parse(raw);
-    const host = cfg.viewer?.host || 'localhost';
-    const port = cfg.viewer?.port || 8791;
-    return `http://${host}:${port}`;
-  } catch {
-    return 'http://localhost:8791';
-  }
+    const cfg = JSON.parse(readFileSync(resolve(process.cwd(), 'config.json'), 'utf-8'));
+    return `http://${cfg.viewer?.host || 'localhost'}:${cfg.viewer?.port || 8791}`;
+  } catch { return 'http://localhost:8791'; }
 }
 
-const DEFAULT_API = readDefaultApiUrl();
-
 export class ApiClient {
-  constructor(private baseUrl: string = DEFAULT_API) {}
+  constructor(private baseUrl: string = readDefaultApiUrl()) {}
 
   private async get<T>(path: string): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`);
+    const res = await fetch(`${this.baseUrl}${path}`, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     return res.json() as Promise<T>;
   }
 
   private async post<T>(path: string): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, { method: 'POST' });
+    const res = await fetch(`${this.baseUrl}${path}`, { method: 'POST', signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     return res.json() as Promise<T>;
   }
 
-  cases(court?: string): Promise<Case[]> {
-    const qs = court ? `?court=${encodeURIComponent(court)}` : '';
-    return this.get(`/api/cases${qs}`);
-  }
-
-  courts(): Promise<Record<string, { name: string; shortName?: string; address?: string; email?: string; phones?: string[]; vnkod?: string }>> {
-    return this.get('/api/courts');
-  }
-
-  activeCourts(): Promise<{ courtId: string; courtType: string; url: string }[]> {
-    return this.get('/api/active-courts');
-  }
-
-  config(): Promise<{ schedule?: string; scheduleRetry?: string; staleThresholdH?: number; viewer: { port: number; host: string } }> {
-    return this.get('/api/config');
-  }
-
-  logs(days?: number): Promise<RunResult[]> {
-    const qs = days ? `?days=${days}` : '';
-    return this.get(`/api/logs${qs}`);
-  }
-
-  runStatus(): Promise<{ full: { running: boolean; pid: number | null }; retry: { running: boolean; pid: number | null } }> {
-    return this.get('/api/run/status');
-  }
-
-  startRun(): Promise<{ started: boolean; pid: number | null; mode: string; error?: string }> {
-    return this.post('/api/run');
-  }
-
-  startRetry(): Promise<{ started: boolean; pid: number | null; mode: string; error?: string }> {
-    return this.post('/api/run/retry');
-  }
+  cases(court?: string): Promise<Case[]> { return this.get(`/api/cases${court ? `?court=${encodeURIComponent(court)}` : ''}`); }
+  courts(): Promise<Record<string, { name: string; shortName?: string; address?: string; email?: string; phones?: string[]; vnkod?: string }>> { return this.get('/api/courts'); }
+  activeCourts(): Promise<{ courtId: string; courtType: string; url: string }[]> { return this.get('/api/active-courts'); }
+  config(): Promise<{ schedule?: string; scheduleRetry?: string; staleThresholdH?: number; viewer: { port: number; host: string } }> { return this.get('/api/config'); }
+  logs(days?: number): Promise<RunResult[]> { return this.get(`/api/logs${days ? `?days=${days}` : ''}`); }
+  runStatus(): Promise<{ full: { running: boolean; pid: number | null }; retry: { running: boolean; pid: number | null } }> { return this.get('/api/run/status'); }
+  startRun(): Promise<{ started: boolean; pid: number | null; mode: string; error?: string }> { return this.post('/api/run'); }
+  startRetry(): Promise<{ started: boolean; pid: number | null; mode: string; error?: string }> { return this.post('/api/run/retry'); }
+  enrichCourts(): Promise<{ started: boolean; pid: number | null; error?: string }> { return this.post('/api/run/enrich-courts'); }
 }
 
 export function parseApiUrl(args: string[]): string {
   const idx = args.indexOf('--api');
-  return idx >= 0 && args[idx + 1] ? args[idx + 1] : DEFAULT_API;
+  return idx >= 0 && args[idx + 1] ? args[idx + 1] : readDefaultApiUrl();
 }
