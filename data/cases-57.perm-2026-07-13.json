@@ -1,0 +1,97 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-321/2026",
+    "type": "Гражданское дело",
+    "number": "2-321/2026",
+    "court": "57.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Споры, связанные с имущественными правами Иски о взыскании сумм по договору займа, кредитному договору"
+      ],
+      "judge": "Коровин Александр Александрович",
+      "hearingDate": null,
+      "result": "Решение принял: Коровин Александр Александрович",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": "Принято решение: Судебный приказ",
+        "location": null,
+        "result": "Решение принял: Коровин Александр Александрович",
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Регистрация судебного приказа",
+        "eventDate": "2026-01-27",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Обращение к исполнению",
+        "eventDate": "2026-02-27",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Окончание производства",
+        "eventDate": "2026-02-27",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Сдача в архив",
+        "eventDate": "2026-02-27",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Должник",
+        "name": "Климова Анастасия Александровна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Взыскатель",
+        "name": "ООО ПКО \"Консалт Плюс\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

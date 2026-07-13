@@ -1,0 +1,135 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-1072/2025",
+    "type": "Гражданское дело",
+    "number": "2-1072/2025",
+    "court": "107.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Иски, связанные с возмещением ущерба Иски о возмещении ущерба от ДТП Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Малиновский Александр Иванович",
+      "hearingDate": null,
+      "result": "Принято решение: Решение по существу",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (31.07.2025): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Клюева Анастасия Игоревна",
+        "publishDate": "2025-07-31"
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2025-07-31",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о назначении предварительного судебного заседания",
+        "reason": null,
+        "note": "Решение принял: Клюева Анастасия Игоревна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Предварительное судебное заседание",
+        "eventDate": "2025-08-20",
+        "eventTime": "10:00",
+        "location": null,
+        "result": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+        "reason": null,
+        "note": "Решение принял: Малиновский Александр Иванович",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2025-08-20",
+        "eventTime": "10:15",
+        "location": null,
+        "result": "Принято решение: Решение по существу",
+        "reason": null,
+        "note": "Решение принял: Малиновский Александр Иванович",
+        "publishDate": null
+      },
+      {
+        "eventName": "Решение по существу",
+        "eventDate": "2025-08-20",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Обращение к исполнению",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Окончание производства",
+        "eventDate": "2025-08-31",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      },
+      {
+        "eventName": "Сдача в архив",
+        "eventDate": "2025-12-12",
+        "eventTime": null,
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Сторона по делу",
+        "name": "Кожин Вячеслав Игоревич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Ответчик",
+        "name": "Козюков Иван Александрович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

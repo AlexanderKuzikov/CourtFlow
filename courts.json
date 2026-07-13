@@ -1,1 +1,74 @@
-{}
+{
+  "sverdlov--perm": {
+    "courtId": "sverdlov--perm",
+    "courtType": "district",
+    "name": "Свердловский районный суд г. Перми",
+    "shortName": "Свердловский районный суд г. Перми",
+    "address": "614990, Пермский край, г. Пермь, ул. Куйбышева, д. 111в",
+    "phones": [
+      "Тел.: (342) 291-95-70 (Гр.)",
+      "291-95-71 (Уг.)",
+      "291-95-73 (Коап.)"
+    ],
+    "email": "sverdlovsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-13T03:56:57.906Z",
+    "sourceUrl": "https://sverdlov--perm.sudrf.ru/"
+  },
+  "industry--perm": {
+    "courtId": "industry--perm",
+    "courtType": "district",
+    "name": "Индустриальный районный суд г. Перми",
+    "shortName": "Индустриальный районный суд г. Перми",
+    "address": "614095, Пермский край, г. Пермь, ул. Мира, д. 17",
+    "phones": [
+      "Тел.: (342) 221-75-80, 221-57-52 (ф.)"
+    ],
+    "email": "industrialny.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-13T03:56:58.075Z",
+    "sourceUrl": "https://industry--perm.sudrf.ru/"
+  },
+  "krasnokam--perm": {
+    "courtId": "krasnokam--perm",
+    "courtType": "district",
+    "name": "Краснокамский городской суд Пермского края",
+    "shortName": "Краснокамский городской суд Пермского края",
+    "address": "617060, Пермский край, г. Краснокамск, ул. Калинина, д. 5",
+    "phones": [
+      "Тел.: (34273) 4-35-68"
+    ],
+    "email": "krasnokamsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-13T03:56:58.222Z",
+    "sourceUrl": "https://krasnokam--perm.sudrf.ru/"
+  },
+  "oblsud--perm": {
+    "courtId": "oblsud--perm",
+    "courtType": "appeal",
+    "name": "Пермский краевой суд",
+    "shortName": "Пермский краевой суд",
+    "address": "614990, Пермский край, г. Пермь, ул. Екатерининская, д. 33",
+    "phones": [
+      "Тел.: (342) 210-12-44"
+    ],
+    "email": "kraevoy.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-13T03:56:58.341Z",
+    "sourceUrl": "https://oblsud--perm.sudrf.ru/"
+  },
+  "7kas": {
+    "courtId": "7kas",
+    "courtType": "cassation",
+    "name": "Седьмой кассационный суд общей юрисдикции",
+    "shortName": "Седьмой кассационный суд общей юрисдикции",
+    "address": "454091, Челябинская обл., г. Челябинск, ул.Кирова, д. 161",
+    "phones": [
+      "Тел.: (351) 728-76-01, 728-76-51 (ф.)"
+    ],
+    "email": null,
+    "vnkod": null,
+    "fetchedAt": "2026-07-13T03:56:58.518Z",
+    "sourceUrl": "https://7kas.sudrf.ru/"
+  }
+}

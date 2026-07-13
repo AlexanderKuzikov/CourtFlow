@@ -1,0 +1,492 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0002-01-2026-003230-46",
+    "type": "Гражданские дела - первая инстанция",
+    "number": "2-2586/2026 ~ М-1861/2026",
+    "court": "industry--perm",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "9fad6649-ffe0-4eb4-b7e1-b1d898dc5bdc",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-06-22",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Старикова Наталия Владиславовна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": "Рассматривается единолично судьей"
+    },
+    "events": [
+      {
+        "eventName": "Регистрация иска (заявления, жалобы) в суде",
+        "eventDate": "2026-06-22",
+        "eventTime": "14:14",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Передача материалов судье",
+        "eventDate": "2026-06-22",
+        "eventTime": "17:19",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Решение вопроса о принятии иска (заявления, жалобы) к рассмотрению",
+        "eventDate": "2026-06-23",
+        "eventTime": "09:51",
+        "location": null,
+        "result": "Иск (заявление, жалоба) принят к производству",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-24"
+      },
+      {
+        "eventName": "Переход к рассмотрению дела в порядке упрощенного производства",
+        "eventDate": "2026-06-23",
+        "eventTime": "09:51",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Срок для предоставления доказательств и возражений до 17.07.2026\nСрок для предоставления дополнительных возражений до 10.08.2026",
+        "publishDate": "2026-06-24"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Доршаков Денис Романович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": "5904407494",
+        "kpp": "590401001",
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "ООО \"Таксопарк 59\"",
+        "inn": "5903153656",
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "САО \"Ресо-Гарантия\"",
+        "inn": "7710045520",
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Усманов Сарвар Туакбай Угли",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Усманов Сохиб Туакбоевич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0002-01-2026-003231-43",
+    "type": "Гражданские дела - первая инстанция",
+    "number": "2-2605/2026 ~ М-1862/2026",
+    "court": "industry--perm",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "c5dda7ac-7557-4f15-91db-186a88782b4c",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-06-22",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Старикова Наталия Владиславовна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": "Рассматривается единолично судьей"
+    },
+    "events": [
+      {
+        "eventName": "Регистрация иска (заявления, жалобы) в суде",
+        "eventDate": "2026-06-22",
+        "eventTime": "14:24",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Передача материалов судье",
+        "eventDate": "2026-06-22",
+        "eventTime": "17:19",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Решение вопроса о принятии иска (заявления, жалобы) к рассмотрению",
+        "eventDate": "2026-06-23",
+        "eventTime": "17:18",
+        "location": null,
+        "result": "Иск (заявление, жалоба) принят к производству",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-24"
+      },
+      {
+        "eventName": "Переход к рассмотрению дела в порядке упрощенного производства",
+        "eventDate": "2026-06-23",
+        "eventTime": "17:18",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Срок для предоставления доказательств и возражений до 17.07.2026\nСрок для предоставления дополнительных возражений до 10.08.2026",
+        "publishDate": "2026-06-24"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "ИП Аспидова Александра Владимировна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": "5904407494",
+        "kpp": "590401001",
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "СПАО \"Ингосстрах\"",
+        "inn": "7705042179",
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Чалов Сергей Александрович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Шодиев Джонибек Зарифович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0002-01-2026-003232-40",
+    "type": "Гражданские дела - первая инстанция",
+    "number": "2-2584/2026 ~ М-1863/2026",
+    "court": "industry--perm",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "7904325e-de56-45e2-9469-e6dab03c7697",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-06-22",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Старикова Наталия Владиславовна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": "Рассматривается единолично судьей"
+    },
+    "events": [
+      {
+        "eventName": "Регистрация иска (заявления, жалобы) в суде",
+        "eventDate": "2026-06-22",
+        "eventTime": "14:32",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Передача материалов судье",
+        "eventDate": "2026-06-22",
+        "eventTime": "17:19",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Решение вопроса о принятии иска (заявления, жалобы) к рассмотрению",
+        "eventDate": "2026-06-23",
+        "eventTime": "18:57",
+        "location": null,
+        "result": "Иск (заявление, жалоба) принят к производству",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-23"
+      },
+      {
+        "eventName": "Переход к рассмотрению дела в порядке упрощенного производства",
+        "eventDate": "2026-06-23",
+        "eventTime": "18:59",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Срок для предоставления доказательств и возражений до 17.07.2026\nСрок для предоставления дополнительных возражений до 10.08.2026",
+        "publishDate": "2026-06-23"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Голубенков Олег Николаевич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Кокшаров Алексей Витальевич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Мальцев Владислав Александрович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": "5904407494",
+        "kpp": "590401001",
+        "ogrn": "1235900016538",
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "ООО \"Таксопарк 59\"",
+        "inn": "5903153656",
+        "kpp": "590301001",
+        "ogrn": "1225900012601",
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "САО \"Ресо-Гарантия\"",
+        "inn": "7710045520",
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  },
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0002-01-2026-003344-92",
+    "type": "Гражданские дела - первая инстанция",
+    "number": "М-1939/2026",
+    "court": "industry--perm",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "4459f586-ce39-47d7-843a-12f6592412c4",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-06-26",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Старикова Наталия Владиславовна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": "Рассматривается единолично судьей"
+    },
+    "events": [
+      {
+        "eventName": "Регистрация иска (заявления, жалобы) в суде",
+        "eventDate": "2026-06-26",
+        "eventTime": "12:25",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-26"
+      },
+      {
+        "eventName": "Передача материалов судье",
+        "eventDate": "2026-06-26",
+        "eventTime": "16:14",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-26"
+      },
+      {
+        "eventName": "Решение вопроса о принятии иска (заявления, жалобы) к рассмотрению",
+        "eventDate": "2026-06-29",
+        "eventTime": "18:36",
+        "location": null,
+        "result": "Оставление иска (заявления, жалобы) без движения",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-29"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Исаев Руслан Исаевич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Мишланов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "ООО \"Доминант\"",
+        "inn": "5902071048",
+        "kpp": "590201001",
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "ООО \"Зетта Страхование\"",
+        "inn": "7710280644",
+        "kpp": "102773920",
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": "5904407494",
+        "kpp": "590401001",
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Спидов Шатлык Реджепназарович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]
