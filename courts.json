@@ -70,5 +70,138 @@
     "vnkod": null,
     "fetchedAt": "2026-07-13T03:56:58.518Z",
     "sourceUrl": "https://7kas.sudrf.ru/"
+  },
+  "oktyabrsky--stv": {
+    "courtId": "oktyabrsky--stv",
+    "courtType": "district",
+    "name": "Октябрьский районный суд г. Ставрополя",
+    "shortName": "Октябрьский районный суд г. Ставрополя",
+    "address": "355035, Ставропольский край, г. Ставрополь, ул. Дзержинского, д. 235",
+    "phones": [
+      "Тел.: (8652) 71-58-98"
+    ],
+    "email": "oktyabrsky.stv@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:14.290Z",
+    "sourceUrl": "https://oktyabrsky--stv.sudrf.ru/"
+  },
+  "dobryan--perm": {
+    "courtId": "dobryan--perm",
+    "courtType": "district",
+    "name": "Добрянский районный суд Пермского края",
+    "shortName": "Добрянский районный суд Пермского края",
+    "address": "618740, Пермский край, г. Добрянка, ул. Советская, д. 96/1",
+    "phones": [
+      "Тел.: (34265) 2-15-84"
+    ],
+    "email": "dobrjansky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:17.838Z",
+    "sourceUrl": "https://dobryan--perm.sudrf.ru/"
+  },
+  "ordgonik--perm": {
+    "courtId": "ordgonik--perm",
+    "courtType": "district",
+    "name": "Орджоникидзевский районный суд г. Перми",
+    "shortName": "Орджоникидзевский районный суд г. Перми",
+    "address": "614026, Пермский край, г. Пермь, ул. Кавказская, д. 11",
+    "phones": [
+      "614026, г. Пермь, ул. Валёжная, д. 13",
+      "Тел.: (342) 284-32-67(угол.)",
+      "(342) 263-48-51(гражд.)"
+    ],
+    "email": "ordzhonikidzevsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:18.543Z",
+    "sourceUrl": "https://ordgonik--perm.sudrf.ru/"
+  },
+  "dzerjin--perm": {
+    "courtId": "dzerjin--perm",
+    "courtType": "district",
+    "name": "Дзержинский районный суд г. Перми",
+    "shortName": "Дзержинский районный суд г. Перми",
+    "address": "614068, Пермский край, г. Пермь, ул. Плеханова, д. 40",
+    "phones": [
+      "Тел.: (342) 236-76-32 (Гр.), 236-81-52 (Уг.), (342) 236-78-78 (ф.)"
+    ],
+    "email": "dzerzhinsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:18.819Z",
+    "sourceUrl": "https://dzerjin--perm.sudrf.ru/"
+  },
+  "kirov--perm": {
+    "courtId": "kirov--perm",
+    "courtType": "district",
+    "name": "Кировский районный суд г. Перми",
+    "shortName": "Кировский районный суд г. Перми",
+    "address": "614101, Пермский край, г. Пермь, ул. Кировоградская, д. 37",
+    "phones": [
+      "Тел.: (342) 283-33-78 (гр.канц.), 283-33-51 (уг.канц.)",
+      "283-33-85 (ф.)"
+    ],
+    "email": "kirovsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:18.958Z",
+    "sourceUrl": "https://kirov--perm.sudrf.ru/"
+  },
+  "berezn--perm": {
+    "courtId": "berezn--perm",
+    "courtType": "district",
+    "name": "Березниковский городской суд Пермского края",
+    "shortName": "Березниковский городской суд Пермского края",
+    "address": "618400, Пермский край, г. Березники, ул. Свободы, д. 43а",
+    "phones": [
+      "Тел.: (3424)20-45-85 (угол.), (3424)20-45-90 (гражд.)",
+      "показать на карте"
+    ],
+    "email": "bereznikovsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:21.600Z",
+    "sourceUrl": "https://berezn--perm.sudrf.ru/"
+  },
+  "permsk--perm": {
+    "courtId": "permsk--perm",
+    "courtType": "district",
+    "name": "Пермский районный суд Пермского края",
+    "shortName": "Пермский районный суд Пермского края",
+    "address": "614500, Пермский край, г. Пермь, ул. 2-я Красавинская, д. 86 А",
+    "phones": [
+      "Тел.: (342) 296-25-61 (гр. канц.)",
+      "296-23-61(уг. канц.)",
+      "296-28-34 (ф.)"
+    ],
+    "email": "permsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:21.745Z",
+    "sourceUrl": "https://permsk--perm.sudrf.ru/"
+  },
+  "motovil--perm": {
+    "courtId": "motovil--perm",
+    "courtType": "district",
+    "name": "Мотовилихинский районный суд г. Перми",
+    "shortName": "Мотовилихинский районный суд г. Перми",
+    "address": "614014, Пермский край, г. Пермь, ул. 1905 года, д. 5",
+    "phones": [
+      "Тел.: (342) 267-55-84 (приёмн.)",
+      "267-58-02 (гр.), 267-53-77 (уг.)"
+    ],
+    "email": "motovilihinsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:21.976Z",
+    "sourceUrl": "https://motovil--perm.sudrf.ru/"
+  },
+  "karagai--perm": {
+    "courtId": "karagai--perm",
+    "courtType": "district",
+    "name": "Карагайский районный суд Пермского края",
+    "shortName": "Карагайский районный суд Пермского края",
+    "address": "617210, Пермский край, с. Карагай, ул. Юбилейная, д. 1",
+    "phones": [
+      "Тел.: (34297)3-12-06 (канц.с.), (34297)3-24-13 (приемная)"
+    ],
+    "email": "karagajsky.perm@sudrf.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-14T12:48:22.125Z",
+    "sourceUrl": "https://karagai--perm.sudrf.ru/"
   }
 }

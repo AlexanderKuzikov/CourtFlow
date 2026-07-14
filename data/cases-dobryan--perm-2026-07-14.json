@@ -1,0 +1,137 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0018-01-2026-001119-02",
+    "type": "Гражданские дела - первая инстанция",
+    "number": "2-767/2026 ~ М-670/2026",
+    "court": "dobryan--perm",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "c0bdc3ca-363b-4071-ab08-3e6a2d5aecf9",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-06-17",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "О взыскании страхового возмещения (выплат) (страхование имущества) →",
+        "по договору ОСАГО"
+      ],
+      "judge": "Щелконогова Любовь Николаевна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": "Рассматривается единолично судьей"
+    },
+    "events": [
+      {
+        "eventName": "Регистрация иска (заявления, жалобы) в суде",
+        "eventDate": "2026-06-17",
+        "eventTime": "15:24",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-17"
+      },
+      {
+        "eventName": "Передача материалов судье",
+        "eventDate": "2026-06-17",
+        "eventTime": "16:52",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-17"
+      },
+      {
+        "eventName": "Решение вопроса о принятии иска (заявления, жалобы) к рассмотрению",
+        "eventDate": "2026-06-19",
+        "eventTime": "14:53",
+        "location": null,
+        "result": "Иск (заявление, жалоба) принят к производству",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-19"
+      },
+      {
+        "eventName": "Переход к рассмотрению дела в порядке упрощенного производства",
+        "eventDate": "2026-06-19",
+        "eventTime": "14:54",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Срок для предоставления доказательств и возражений до 13.07.2026\nСрок для предоставления дополнительных возражений до 04.08.2026",
+        "publishDate": "2026-06-19"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Аспидов Виктор Александрович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Гондаренко Валерий Васильевич",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": "5904407494",
+        "kpp": "590401001",
+        "ogrn": "1235900016538",
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Петров Николай Емельянович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "САО \"РЕСО-гарантия\"",
+        "inn": "7710045520",
+        "kpp": "102770004",
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Сытина Ирина Ринатовна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Сытин Денис Викторович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

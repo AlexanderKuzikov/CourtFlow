@@ -1,0 +1,141 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0001-01-2026-003587-95",
+    "type": "Гражданские дела - первая инстанция",
+    "number": "2-2386/2026 ~ М-1789/2026",
+    "court": "dzerjin--perm",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "cd86760e-b144-485f-b7cd-ec9b5ae0f167",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-06-23",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Хусаинова О.В.",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": "Рассматривается единолично судьей"
+    },
+    "events": [
+      {
+        "eventName": "Регистрация иска (заявления, жалобы) в суде",
+        "eventDate": "2026-06-23",
+        "eventTime": "17:27",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-23"
+      },
+      {
+        "eventName": "Передача материалов судье",
+        "eventDate": "2026-06-24",
+        "eventTime": "09:21",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-24"
+      },
+      {
+        "eventName": "Решение вопроса о принятии иска (заявления, жалобы) к рассмотрению",
+        "eventDate": "2026-06-30",
+        "eventTime": "13:24",
+        "location": null,
+        "result": "Иск (заявление, жалоба) принят к производству",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-30"
+      },
+      {
+        "eventName": "Вынесено определение о подготовке дела к судебному разбирательству",
+        "eventDate": "2026-06-30",
+        "eventTime": "13:24",
+        "location": null,
+        "result": "Рассмотрение дела начато с начала",
+        "reason": "Вступлении в процесс третьего лица, не заявляющего самостоятельных требований относительно предмета спора",
+        "note": null,
+        "publishDate": "2026-06-30"
+      },
+      {
+        "eventName": "Вынесено определение о назначении дела к судебному разбирательству",
+        "eventDate": "2026-06-30",
+        "eventTime": "13:24",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-30"
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2026-08-28",
+        "eventTime": "12:00",
+        "location": "42",
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-30"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "АО \"СОГАЗ\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Аспидов Виктор Александрович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": "5904407494",
+        "kpp": null,
+        "ogrn": "1235900016538",
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Сальников Дмитрий Иванович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Ташкинова Елена Александровна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

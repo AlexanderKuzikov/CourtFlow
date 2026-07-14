@@ -1,0 +1,27 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "03f8bbcc-cc70-4bad-a0e0-b09d55839602",
+    "type": "",
+    "number": "",
+    "court": "oktyabrsky--stv",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "03f8bbcc-cc70-4bad-a0e0-b09d55839602",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [],
+      "judge": null,
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": null
+    },
+    "events": [],
+    "parties": []
+  }
+]

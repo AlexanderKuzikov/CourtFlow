@@ -1,0 +1,254 @@
+[
+  {
+    "courtId": "oktyabrsky--stv",
+    "courtType": "district",
+    "url": "https://oktyabrsky--stv.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=516060576&case_uid=03f8bbcc-cc70-4bad-a0e0-b09d55839602&delo_id=1540005",
+    "success": true,
+    "uid": "03f8bbcc-cc70-4bad-a0e0-b09d55839602",
+    "duration": 2507,
+    "timestamp": "2026-07-14T12:40:07.028Z"
+  },
+  {
+    "courtId": "sverdlov--perm",
+    "courtType": "district",
+    "url": "https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469407793&case_uid=8a77c116-1bf5-4f0b-a65c-f11dbc50e696&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0007-01-2026-005762-42",
+    "duration": 2783,
+    "timestamp": "2026-07-14T12:40:09.813Z"
+  },
+  {
+    "courtId": "119.perm",
+    "courtType": "magistrate",
+    "url": "https://119.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1530268&delo_id=1540005",
+    "success": true,
+    "uid": "2-586/2026",
+    "duration": 147749,
+    "timestamp": "2026-07-14T12:42:37.563Z"
+  },
+  {
+    "courtId": "dobryan--perm",
+    "courtType": "district",
+    "url": "https://dobryan--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468294478&case_uid=c0bdc3ca-363b-4071-ab08-3e6a2d5aecf9&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0018-01-2026-001119-02",
+    "duration": 8815,
+    "timestamp": "2026-07-14T12:42:46.379Z"
+  },
+  {
+    "courtId": "86.perm",
+    "courtType": "magistrate",
+    "url": "https://86.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1144004&delo_id=1540005",
+    "success": true,
+    "uid": "2-961/2026",
+    "duration": 66736,
+    "timestamp": "2026-07-14T12:43:53.116Z"
+  },
+  {
+    "courtId": "128.perm",
+    "courtType": "magistrate",
+    "url": "https://128.perm.msudrf.ru/modules.php?name=sud_delo&op=hl",
+    "success": false,
+    "error": "MagistrateAdapter: не удалось определить номер дела",
+    "duration": 13363,
+    "timestamp": "2026-07-14T12:44:06.480Z"
+  },
+  {
+    "courtId": "8.perm",
+    "courtType": "magistrate",
+    "url": "https://8.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1511873&delo_id=1540005",
+    "success": true,
+    "uid": "2-1105/2026",
+    "duration": 8466,
+    "timestamp": "2026-07-14T12:44:14.946Z"
+  },
+  {
+    "courtId": "17.perm",
+    "courtType": "magistrate",
+    "url": "https://17.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1529439&delo_id=1540005",
+    "success": true,
+    "uid": "2-1330/2026",
+    "duration": 13521,
+    "timestamp": "2026-07-14T12:44:28.468Z"
+  },
+  {
+    "courtId": "104.perm",
+    "courtType": "magistrate",
+    "url": "https://104.perm.msudrf.ru/modules.php?name=sud_delo&g1_case__CASE_NUMBERSS=2-1466%2F2026&delo_id=1540005&op=sf",
+    "success": false,
+    "error": "MagistrateAdapter: не удалось определить номер дела",
+    "duration": 13696,
+    "timestamp": "2026-07-14T12:44:42.165Z"
+  },
+  {
+    "courtId": "151.perm",
+    "courtType": "magistrate",
+    "url": "https://151.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=875240&delo_id=1540005",
+    "success": true,
+    "uid": "2-1711/2026",
+    "duration": 8235,
+    "timestamp": "2026-07-14T12:44:50.400Z"
+  },
+  {
+    "courtId": "ordgonik--perm",
+    "courtType": "district",
+    "url": "https://ordgonik--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=2&name_op=sf&delo_id=1540005",
+    "success": false,
+    "error": "DistrictAdapter: не удалось определить UID",
+    "duration": 3369,
+    "timestamp": "2026-07-14T12:44:53.770Z"
+  },
+  {
+    "courtId": "ordgonik--perm",
+    "courtType": "district",
+    "url": "https://ordgonik--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=2&name_op=case&case_id=468447420&case_uid=ffeaf801-b094-4f8f-b277-415b75dd448f&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0006-02-2026-002009-52",
+    "duration": 6939,
+    "timestamp": "2026-07-14T12:45:00.709Z"
+  },
+  {
+    "courtId": "6.perm",
+    "courtType": "magistrate",
+    "url": "https://6.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1923083&delo_id=1540005",
+    "success": true,
+    "uid": "2-2114/2026",
+    "duration": 13549,
+    "timestamp": "2026-07-14T12:45:14.259Z"
+  },
+  {
+    "courtId": "dzerjin--perm",
+    "courtType": "district",
+    "url": "https://dzerjin--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468929492&case_uid=cd86760e-b144-485f-b7cd-ec9b5ae0f167&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0001-01-2026-003587-95",
+    "duration": 324,
+    "timestamp": "2026-07-14T12:45:14.585Z"
+  },
+  {
+    "courtId": "kirov--perm",
+    "courtType": "district",
+    "url": "https://kirov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469066529&case_uid=a6e73561-ee31-40a9-b21a-c508c02691a4&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0003-01-2026-002800-22",
+    "duration": 698,
+    "timestamp": "2026-07-14T12:45:15.284Z"
+  },
+  {
+    "courtId": "kirov--perm",
+    "courtType": "district",
+    "url": "https://kirov--perm.sudrf.ru/modules.php?name=sud_delo&name_op=sf&delo_id=1540005",
+    "success": false,
+    "error": "DistrictAdapter: не удалось определить UID",
+    "duration": 50,
+    "timestamp": "2026-07-14T12:45:15.334Z"
+  },
+  {
+    "courtId": "kirov--perm",
+    "courtType": "district",
+    "url": "https://kirov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=r&delo_id=1540005&case_type=0&new=0&G1_PARTS__NAMESS=&g1_case__CASE_NUMBERSS=2-2408%2F2026&g1_case__JUDICIAL_UIDSS=&delo_table=g1_case&g1_case__ENTRY_DATE1D=&g1_case__ENTRY_DATE2D=&G1_CASE__JUDGE=&g1_case__RESULT_DATE1D=&g1_case__RESULT_DATE2D=&G1_CASE__RESULT=&G1_CASE__BUILDING_ID=&G1_CASE__COURT_STRUCT=&G1_EVENT__EVENT_NAME=&G1_EVENT__EVENT_DATEDD=&G1_PARTS__PARTS_TYPE=&G1_PARTS__INN_STRSS=&G1_PARTS__KPP_STRSS=&G1_PARTS__OGRN_STRSS=&G1_PARTS__OGRNIP_STRSS=&G1_RKN_ACCESS_RESTRICTION__RKN_REASON=&g1_rkn_access_restriction__RKN_RESTRICT_URLSS=&g1_requirement__ACCESSION_DATE1D=&g1_requirement__ACCESSION_DATE2D=&G1_REQUIREMENT__CATEGORY=&g1_requirement__ESSENCESS=&g1_requirement__JOIN_END_DATE1D=&g1_requirement__JOIN_END_DATE2D=&G1_REQUIREMENT__PUBLICATION_ID=&G1_DOCUMENT__PUBL_DATE1D=&G1_DOCUMENT__PUBL_DATE2D=&G1_CASE__VALIDITY_DATE1D=&G1_CASE__VALIDITY_DATE2D=&G1_ORDER_INFO__ORDER_DATE1D=&G1_ORDER_INFO__ORDER_DATE2D=&G1_ORDER_INFO__ORDER_NUMSS=&G1_ORDER_INFO__EXTERNALKEYSS=&G1_ORDER_INFO__STATE_ID=&G1_ORDER_INFO__RECIP_ID=&Submit=%CD%E0%E9%F2%E8",
+    "success": false,
+    "error": "DistrictAdapter: не удалось определить UID",
+    "duration": 6066,
+    "timestamp": "2026-07-14T12:45:21.400Z"
+  },
+  {
+    "courtId": "berezn--perm",
+    "courtType": "district",
+    "url": "https://berezn--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468491308&case_uid=aec737aa-21c8-4f53-b63a-cc8291e8e166&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0011-01-2026-002924-02",
+    "duration": 444,
+    "timestamp": "2026-07-14T12:45:21.845Z"
+  },
+  {
+    "courtId": "industry--perm",
+    "courtType": "district",
+    "url": "https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468737567&case_uid=7904325e-de56-45e2-9469-e6dab03c7697&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0002-01-2026-003232-40",
+    "duration": 1514,
+    "timestamp": "2026-07-14T12:45:23.360Z"
+  },
+  {
+    "courtId": "industry--perm",
+    "courtType": "district",
+    "url": "https://industry--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468737655&case_uid=9fad6649-ffe0-4eb4-b7e1-b1d898dc5bdc&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0002-01-2026-003230-46",
+    "duration": 3677,
+    "timestamp": "2026-07-14T12:45:27.037Z"
+  },
+  {
+    "courtId": "permsk--perm",
+    "courtType": "district",
+    "url": "https://permsk--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468493901&case_uid=8ad6826f-cab8-4887-96a2-42707ba0be6c&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0008-01-2026-002923-67",
+    "duration": 5320,
+    "timestamp": "2026-07-14T12:45:32.359Z"
+  },
+  {
+    "courtId": "permsk--perm",
+    "courtType": "district",
+    "url": "https://permsk--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=469287460&case_uid=336cf344-4735-4035-8358-c5bfbe4b6774&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0008-01-2026-003063-35",
+    "duration": 8811,
+    "timestamp": "2026-07-14T12:45:41.170Z"
+  },
+  {
+    "courtId": "53.perm",
+    "courtType": "magistrate",
+    "url": "https://53.perm.msudrf.ru/modules.php?name=sud_delo&op=hl",
+    "success": false,
+    "error": "MagistrateAdapter: не удалось определить номер дела",
+    "duration": 92409,
+    "timestamp": "2026-07-14T12:47:13.581Z"
+  },
+  {
+    "courtId": "motovil--perm",
+    "courtType": "district",
+    "url": "https://motovil--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468630403&case_uid=d70b5f31-848f-42ee-8db5-e0d90fe274ac&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0005-01-2026-003506-29",
+    "duration": 2839,
+    "timestamp": "2026-07-14T12:47:16.420Z"
+  },
+  {
+    "courtId": "motovil--perm",
+    "courtType": "district",
+    "url": "https://motovil--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468638377&case_uid=9b8ad2d9-dbb4-4f08-ac27-c49c162d2a01&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0005-01-2026-003517-93",
+    "duration": 179,
+    "timestamp": "2026-07-14T12:47:16.599Z"
+  },
+  {
+    "courtId": "motovil--perm",
+    "courtType": "district",
+    "url": "https://motovil--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468630386&case_uid=150030f8-fe99-49b5-9393-eb34a6e70867&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0005-01-2026-003504-35",
+    "duration": 6229,
+    "timestamp": "2026-07-14T12:47:22.829Z"
+  },
+  {
+    "courtId": "motovil--perm",
+    "courtType": "district",
+    "url": "https://motovil--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468630395&case_uid=0d8e5632-cd8a-4fe2-aad6-01c0fb230890&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0005-01-2026-003505-32",
+    "duration": 5857,
+    "timestamp": "2026-07-14T12:47:28.686Z"
+  },
+  {
+    "courtId": "karagai--perm",
+    "courtType": "district",
+    "url": "https://karagai--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=468845463&case_uid=dd51a24b-13dc-4787-95f5-784709183e53&delo_id=1540005",
+    "success": true,
+    "uid": "59RS0021-01-2026-000670-26",
+    "duration": 297,
+    "timestamp": "2026-07-14T12:47:28.984Z"
+  }
+]

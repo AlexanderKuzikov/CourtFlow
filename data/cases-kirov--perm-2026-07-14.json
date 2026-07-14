@@ -1,0 +1,121 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "59RS0003-01-2026-002800-22",
+    "type": "Гражданские дела - первая инстанция",
+    "number": "2-2387/2026 ~ М-1447/2026",
+    "court": "kirov--perm",
+    "courtType": "district",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": "a6e73561-ee31-40a9-b21a-c508c02691a4",
+      "case_type": null
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": "2026-06-24",
+      "category": [
+        "Иски, связанные с возмещением ущерба →",
+        "Иски о возмещении ущерба от ДТП →",
+        "Иски о возмещении ущерба от ДТП (кроме увечий и смерти кормильца)"
+      ],
+      "judge": "Швец Наталья Михайловна",
+      "hearingDate": null,
+      "result": null,
+      "proceedingType": "Рассматривается единолично судьей"
+    },
+    "events": [
+      {
+        "eventName": "Регистрация иска (заявления, жалобы) в суде",
+        "eventDate": "2026-06-24",
+        "eventTime": "14:01",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-24"
+      },
+      {
+        "eventName": "Передача материалов судье",
+        "eventDate": "2026-06-25",
+        "eventTime": "08:36",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-25"
+      },
+      {
+        "eventName": "Решение вопроса о принятии иска (заявления, жалобы) к рассмотрению",
+        "eventDate": "2026-06-29",
+        "eventTime": "12:08",
+        "location": null,
+        "result": "Иск (заявление, жалоба) принят к производству",
+        "reason": null,
+        "note": null,
+        "publishDate": "2026-06-29"
+      },
+      {
+        "eventName": "Переход к рассмотрению дела в порядке упрощенного производства",
+        "eventDate": "2026-06-29",
+        "eventTime": "12:08",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": "Срок для предоставления доказательств и возражений до 14.08.2026\nСрок для предоставления дополнительных возражений до 24.08.2026",
+        "publishDate": "2026-06-29"
+      }
+    ],
+    "parties": [
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "АО \"СОГАЗ\"",
+        "inn": "7736035485",
+        "kpp": "102773982",
+        "ogrn": "1027739820921",
+        "ogrnip": null
+      },
+      {
+        "role": "ПРЕДСТАВИТЕЛЬ",
+        "name": "Баранов Андрей Владимирович (истца)",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ОТВЕТЧИК",
+        "name": "Имомалиев Хисрав Абдувахобович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "ИСТЕЦ",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": "5904407494",
+        "kpp": "590401001",
+        "ogrn": "1235900016538",
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "ООО \"СК \"БАЗОВЫЙ ЭЛЕМЕНТ\"",
+        "inn": "5905301155",
+        "kpp": "590501001",
+        "ogrn": "1135905006522",
+        "ogrnip": null
+      },
+      {
+        "role": "ТРЕТЬЕ ЛИЦО",
+        "name": "Пантелеева Альбина Рафисовна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

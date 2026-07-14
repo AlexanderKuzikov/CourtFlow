@@ -1,0 +1,109 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-961/2026",
+    "type": "Гражданское дело",
+    "number": "2-961/2026",
+    "court": "86.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Прочие исковые дела Иные исковые дела"
+      ],
+      "judge": "Гладкий Алексей Анатольевич",
+      "hearingDate": "2026-07-15",
+      "result": "Принято решение: Определение о назначении предварительного судебного заседания",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (22.06.2026): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Гладкий Алексей Анатольевич",
+        "publishDate": "2026-06-22"
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-06-22",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о назначении предварительного судебного заседания",
+        "reason": null,
+        "note": "Решение принял: Гладкий Алексей Анатольевич",
+        "publishDate": null
+      },
+      {
+        "eventName": "Предварительное судебное заседание",
+        "eventDate": "2026-07-15",
+        "eventTime": "11:30",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Третье лицо, не заявляющее самостоятельные требования",
+        "name": "Асляшев Айдар Ильсафович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Ответчик",
+        "name": "Асляшев Вильнур Ильсафович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Третье лицо, не заявляющее самостоятельные требования",
+        "name": "Демьянов Алексей Владимирович",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Третье лицо, не заявляющее самостоятельные требования",
+        "name": "ООО \"Таксопарк 59\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Третье лицо, не заявляющее самостоятельные требования",
+        "name": "ПАО СК \"Росгосстрах\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]

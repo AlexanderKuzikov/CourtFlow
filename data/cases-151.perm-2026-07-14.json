@@ -1,0 +1,77 @@
+[
+  {
+    "$schema": "courtflow/case/v1",
+    "uid": "2-1711/2026",
+    "type": "Гражданское дело",
+    "number": "2-1711/2026",
+    "court": "151.perm",
+    "courtType": "magistrate",
+    "identifiers": {
+      "delo_id": "1540005",
+      "case_uid": null,
+      "case_type": "cs"
+    },
+    "publishedAt": null,
+    "modifiedAt": null,
+    "card": {
+      "filingDate": null,
+      "category": [
+        "Прочие исковые дела прочие (прочие исковые дела)"
+      ],
+      "judge": "Грищукова Вероника Александровна",
+      "hearingDate": "2026-07-21",
+      "result": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+      "proceedingType": null
+    },
+    "events": [
+      {
+        "eventName": "Ознакомление с материалами",
+        "eventDate": null,
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение (24.06.2026): Определение о принятии к производству",
+        "reason": null,
+        "note": "Решение принял: Грищукова Вероника Александровна",
+        "publishDate": "2026-06-24"
+      },
+      {
+        "eventName": "Подготовка к судебному разбирательству",
+        "eventDate": "2026-06-24",
+        "eventTime": null,
+        "location": null,
+        "result": "Принято решение: Определение о назначении дела к разбирательству в судебном заседании",
+        "reason": null,
+        "note": "Решение принял: Грищукова Вероника Александровна",
+        "publishDate": null
+      },
+      {
+        "eventName": "Судебное заседание",
+        "eventDate": "2026-07-21",
+        "eventTime": "12:00",
+        "location": null,
+        "result": null,
+        "reason": null,
+        "note": null,
+        "publishDate": null
+      }
+    ],
+    "parties": [
+      {
+        "role": "Материальный истец",
+        "name": "ООО \"Консалт Плюс\"",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      },
+      {
+        "role": "Ответчик",
+        "name": "Хомутова Дарья Владимировна",
+        "inn": null,
+        "kpp": null,
+        "ogrn": null,
+        "ogrnip": null
+      }
+    ]
+  }
+]
