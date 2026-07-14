@@ -82,3 +82,4 @@ vite.config.ts.timestamp-*
 logs/orchestrator.lock
 # Авто-выбранный порт viewer
 logs/.port
+/data
