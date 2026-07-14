@@ -141,7 +141,7 @@ describe('formatCaseItem', () => {
       proceedingType: null,
     },
     events: [
-      { eventDate: '2025-06-10T00:00:00', eventName: 'Заседание', result: 'Отложено', eventTime: null, location: null, reason: null, note: null, publishDate: null },
+      { eventDate: '2025-06-10T00:00:00', eventName: 'Заседание', result: 'Отложено', eventTime: null, location: null, reason: null, judge: null, note: null, publishDate: null },
     ],
     parties: [
       { role: 'Истец', name: 'Петров П.П.', inn: null, kpp: null, ogrn: null, ogrnip: null },

@@ -1,15 +1,51 @@
-# CourtFlow — Code Review #3
-
-> **Дата:** 2026-07-13
-> **Репозиторий:** https://github.com/AlexanderKuzikov/CourtFlow
-> **Ветка:** main (HEAD: 36dd0bc)
-> **Автор ревью:** Perplexity AI (Claude Sonnet 4.6)
-> **Область:** полный код проекта (20 TS-файлов + tui.test.ts, ~5 700 строк)
+# CourtFlow — Code Review
 
 > **История:**
 > - Code Review #1 (2026-07-06, Hermes Agent) — sha `75f3a5c`
 > - Code Review #2 (2026-07-10, OpenCode Go) — sha `6f30f81`
-> - **Code Review #3 (2026-07-13)** — HEAD `36dd0bc`, delta от #2: 7 коммитов, +2 773 / -1 804 строк
+> - Code Review #3 (2026-07-13, Perplexity / Claude Sonnet 4.6) — HEAD `36dd0bc`
+> - **Code Review #4 (2026-07-14, OpenCode Go / DeepSeek v4)** — HEAD `05fa449`, полный пятиосевой ревью + 16 правок
+
+---
+
+## Code Review #4 (2026-07-14)
+
+**Дата:** 2026-07-14
+**Автор:** OpenCode Go (DeepSeek v4 Pro)
+**Область:** 22 TS-файлов, 11 md-документов, config, CI, ~5700 строк
+**Метод:** построчное чтение всего кода + документации, 5 осей (корректность, читаемость, архитектура, безопасность, производительность)
+
+### Исправлено
+
+| # | Severity | Файл | Описание |
+|---|---|---|---|
+| BLK-1 | Блокер | `tui.ts:121` | ANSI escape `\\x1b` → `\x1b` (курсор не скрывался) |
+| V-1 | Важно | `adapters/shared.ts` (new) | Вынос `parseDate`, `extractCourtSubdomain`, `parsePublishInfo`, `cleanText` из 4 адаптеров |
+| V-2 | Важно | `adapters/registry.ts` (new) | Реестр `ADAPTERS`; `detectCharset` экспортирован из `courts.ts` |
+| V-3 | Важно | `config.json`, `config.ts`, `rucaptcha.ts`, `session.ts`, `orchestrator.ts` | `softId` перенесён из хардкода в конфиг |
+| V-5 | Важно | `types.ts`, `magistrate.ts`, `district.ts`, `appeal.ts`, `cassation.ts` | Поле `CaseEvent.judge`; magistrate пишет судью в `judge`, не в `note` |
+| V-6 | Важно | `orchestrator.ts` | Magistrate URL пропускают `withRetry` (двойное списание RuCaptcha) |
+| V-7 | Важно | `config.json`, `orchestrator.ts` | `requestDelayMs: 500` + `sleep()` между запросами к одному суду |
+| S-1 | Совет | `5dc62476d7db80fc.txt`, `c832310624b586cb.txt` | Удалены пустые артефакты |
+| S-3 | Совет | `magistrate.ts` | `hearingDate` fallback на последнюю дату события |
+| S-6 | Совет | `xlsx.ts`, `package.json` | XLSX stub + `exceljs` удалены |
+| S-8 | Совет | `index.html` | `setInterval` с очисткой при `beforeunload` |
+| — | — | `session.ts` | `--disable-gpu` в Puppeteer args (white window на Windows) |
+| — | — | `.github/workflows/ci.yml` (new) | CI: checkout + Node 24 + npm ci + tsc + vitest |
+| — | — | `smoke.ts`, `orchestrator.ts` | Убраны дупликаты `ADAPTERS` и `detectCharset` |
+
+### Верификация
+
+- `npx tsc --noEmit` — чисто
+- `npm test` — 35/35 passed (2 test files, 388ms)
+
+### Осталось в backlog (P1—P3)
+
+См. `CONTEXT.md` Backlog.
+
+---
+
+## Code Review #3 (2026-07-13)
 
 ---
 

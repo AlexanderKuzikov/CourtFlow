@@ -10,14 +10,16 @@ process.loadEnvFile(resolve(process.cwd(), '.env'));
 
 export interface SafeAppConfig {
   schedule: string;
-  scheduleRetry: string;   // cron для retry-прогонов (только stale URL)
-  staleThresholdH: number; // часов без успешного обновления → считается устаревшим
+  scheduleRetry: string;
+  staleThresholdH: number;
   outputDir: string;
   exportXlsx: boolean;
+  requestDelayMs: number;
   captcha: {
     sessionFile: string;
     provider: 'rucaptcha' | '2captcha';
     fallbackProvider: 'rucaptcha' | '2captcha';
+    softId: string;
     primaryKeySet: boolean;
     fallbackKeySet: boolean;
   };
@@ -56,6 +58,8 @@ export function loadConfig(): AppConfig {
   // Дефолты для новых полей (обратная совместимость)
   cfg.scheduleRetry ??= '';
   cfg.staleThresholdH ??= 24;
+  cfg.requestDelayMs ??= 500;
+  cfg.captcha.softId ??= '3898';
 
   return cfg;
 }
@@ -67,6 +71,7 @@ export function toSafeConfig(cfg: AppConfig): SafeAppConfig {
       sessionFile: cfg.captcha.sessionFile,
       provider: cfg.captcha.provider,
       fallbackProvider: cfg.captcha.fallbackProvider,
+      softId: cfg.captcha.softId,
       primaryKeySet: cfg.captcha.primaryKeySet,
       fallbackKeySet: cfg.captcha.fallbackKeySet,
     },

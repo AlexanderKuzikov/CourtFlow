@@ -5,26 +5,7 @@
 import * as cheerio from 'cheerio';
 import type { Case, CaseEvent, CaseParty, CourtAdapter } from '../core/types.js';
 import { CaptchaRequiredError, isCaptchaPage } from '../core/errors.js';
-
-function extractCourtSubdomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/\.msudrf\.ru$/, '');
-  } catch {
-    return 'unknown';
-  }
-}
-
-function parseDate(raw: string | undefined | null): string | null {
-  if (!raw) return null;
-  const m = raw.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-  return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
-}
-
-function cleanText(text: string | undefined | null): string | null {
-  if (!text) return null;
-  const value = text.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
-  return value || null;
-}
+import { extractCourtSubdomain, parseDate, cleanText } from './shared.js';
 
 export class MagistrateAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
@@ -70,7 +51,8 @@ export class MagistrateAdapter implements CourtAdapter {
         location: null,
         result: rawResult,
         reason: null,
-        note: tds.length >= 5 ? cleanText(tds.eq(4).text()) : null, // судья (5-я колонка)
+        judge: tds.length >= 5 ? cleanText(tds.eq(4).text()) : null,
+        note: null,
         publishDate: publishMatch ? parseDate(publishMatch[1]) : null,
       });
     });
@@ -81,7 +63,9 @@ export class MagistrateAdapter implements CourtAdapter {
       .map(e => e.eventDate)
       .filter((d): d is string => !!d)
       .sort()
-      .find(d => d >= new Date().toISOString().slice(0, 10)) ?? null;
+      .find(d => d >= new Date().toISOString().slice(0, 10))
+      ?? events.map(e => e.eventDate).filter((d): d is string => !!d).sort().at(-1)
+      ?? null;
 
     // Последний результат из событий
     const lastResult = [...events].reverse().find(e => e.result)?.result ?? null;
@@ -113,7 +97,7 @@ export class MagistrateAdapter implements CourtAdapter {
       uid: caseNumber, // судебный номер дела, напр. "2-2808/2026"
       type: 'Гражданское дело',
       number: caseNumber,
-      court: extractCourtSubdomain(url),
+      court: extractCourtSubdomain(url, 'magistrate'),
       courtType: 'magistrate',
       identifiers: {
         delo_id: parsedUrl.searchParams.get('delo_id'),

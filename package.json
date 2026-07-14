@@ -15,7 +15,6 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "cheerio": "^1.0.0",
-    "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "iconv-lite": "^0.7.3",
     "puppeteer": "^25.3.0"

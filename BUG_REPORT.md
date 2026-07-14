@@ -35,6 +35,13 @@
 | BUG-024 | `CourtType` assignability в orchestrator.ts | 🟢 | Средний |
 | BUG-025 | Stale lock после SIGKILL/OOM | 🟢 | Высокий |
 | BUG-026 | Viewer не поддерживал graceful shutdown | 🟢 | Средний |
+| BUG-027 | ANSI escape `\\x1b` в TUI — курсор не скрывался | 🟢 | Средний |
+| BUG-028 | XLSX stub `exportXlsx` бросал исключение; `exceljs` не использовался | 🟢 | Низкий |
+| BUG-029 | `CaseEvent.note` использовался как judge в magistrate | 🟢 | Средний |
+| BUG-030 | `withRetry` для magistrate → двойное списание RuCaptcha | 🟢 | Средний |
+| BUG-031 | `softId: '3898'` хардкод в `rucaptcha.ts` | 🟢 | Низкий |
+| BUG-032 | Пустые файлы `5dc62476d7db80fc.txt`, `c832310624b586cb.txt` в корне | 🟢 | Низкий |
+| BUG-033 | `setInterval` без очистки в `index.html` | 🟢 | Низкий |
 
 ---
 
@@ -83,3 +90,38 @@
 **Файл:** `packages/viewer/server.ts`
 **Причина:** pm2 отправляет SIGTERM при `restart`/`stop`. Express-процесс завершался без `server.close()`, обрубая активные соединения.
 **Исправлено:** добавлены обработчики `SIGTERM`/`SIGINT` с `serverInstance.close()` и fallback force-exit через 5 секунд. **Источник:** CODE_REVIEW.md пункт 15.
+
+### BUG-027 🟢 ANSI escape `\\x1b` в TUI — курсор не скрывался
+**Файл:** `packages/cli/tui.ts:121`
+**Причина:** двойной бэкслэш в JS-строке экранирует `\x` → литерал `\x1b`, а не ESC-символ. Курсор оставался видимым в TUI.
+**Исправлено:** `\\x1b` → `\x1b`. **Источник:** Code Review #4, BLK-1.
+
+### BUG-028 🟢 XLSX stub и неиспользуемый exceljs
+**Файлы:** `packages/exporter/xlsx.ts`, `package.json`
+**Причина:** `exportXlsx` бросал исключение, `exceljs` (~4.4 MB) тянулся без использования. В `config.json` `"exportXlsx": false` — фича никогда не работала.
+**Исправлено:** `xlsx.ts` удалён, `exceljs` убран из `dependencies`. **Источник:** Code Review #4, S-6.
+
+### BUG-029 🟢 `CaseEvent.note` использовался как judge в magistrate
+**Файлы:** `packages/core/types.ts`, `packages/adapters/magistrate.ts`, `district.ts`, `appeal.ts`, `cassation.ts`
+**Причина:** в magistrate колонка 5 — «Судья», но данные писались в поле `note`. В district/appeal/cassation `note` — это «примечание» (колонка 7). Семантика поля разная.
+**Исправлено:** добавлено поле `CaseEvent.judge`. Magistrate пишет в `judge`, `note` = null. District/appeal/cassation: `judge` = null, `note` — примечание. **Источник:** Code Review #4, V-5.
+
+### BUG-030 🟢 `withRetry` для magistrate → двойное списание RuCaptcha
+**Файл:** `packages/scheduler/orchestrator.ts`
+**Причина:** `withRetry` оборачивал весь `loadCaseHtml`, включая captcha-решение. При неудаче капчи retry запускал новый браузер → новый fetch капчи → новый вызов RuCaptcha API → двойное списание.
+**Исправлено:** для `courtType === 'magistrate'` `loadCaseHtml` вызывается напрямую, без `withRetry`. Fallback-провайдер внутри `loadCaseHtml` остаётся. **Источник:** Code Review #4, V-6.
+
+### BUG-031 🟢 Хардкод `softId: '3898'` в RuCaptcha client
+**Файл:** `packages/captcha/rucaptcha.ts:45`
+**Причина:** ID разработчика был зашит в коде. При смене ключа или разработчика требовалось менять код.
+**Исправлено:** `softId` вынесен в `config.json` → `captcha.softId`, передаётся через `MagistrateSessionOptions`. **Источник:** Code Review #4, V-3.
+
+### BUG-032 🟢 Пустые файлы-артефакты в корне
+**Файлы:** `5dc62476d7db80fc.txt`, `c832310624b586cb.txt`
+**Причина:** неизвестное происхождение, оба пустые. Загрязняют рабочую директорию.
+**Исправлено:** удалены. **Источник:** Code Review #4, S-1.
+
+### BUG-033 🟢 Утечка таймера `setInterval` в viewer HTML
+**Файл:** `packages/viewer/public/index.html:398`
+**Причина:** `setInterval(pollRunStatus, 5000)` создавался при загрузке страницы без очистки. При многократной навигации (SPA-переходы) таймеры накапливались.
+**Исправлено:** таймер сохраняется в `passivePollTimer`, очищается в `beforeunload`. **Источник:** Code Review #4, S-8.

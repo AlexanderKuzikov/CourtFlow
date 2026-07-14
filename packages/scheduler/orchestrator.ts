@@ -16,32 +16,15 @@ import { resolve, join } from 'path';
 import iconv from 'iconv-lite';
 import { loadConfig } from '../core/config.js';
 import { loadUrls } from '../core/urls.js';
-import { withRetry } from '../core/retry.js';
+import { withRetry, sleep } from '../core/retry.js';
 import { CaptchaRequiredError } from '../core/errors.js';
-import type { RunResult, CourtAdapter, CourtType } from '../core/types.js';
-import { DistrictAdapter } from '../adapters/district.js';
-import { AppealAdapter } from '../adapters/appeal.js';
-import { CassationAdapter } from '../adapters/cassation.js';
-import { MagistrateAdapter } from '../adapters/magistrate.js';
+import { detectCharset } from '../core/courts.js';
+import type { RunResult, CourtType } from '../core/types.js';
+import { ADAPTERS } from '../adapters/registry.js';
 import { fetchMagistrateHtml } from '../captcha/session.js';
 import { exportJson } from '../exporter/json.js';
 
-const ADAPTERS: Record<CourtType, CourtAdapter> = {
-  district:   new DistrictAdapter(),
-  appeal:     new AppealAdapter(),
-  cassation:  new CassationAdapter(),
-  magistrate: new MagistrateAdapter(),
-};
-
 const IS_RETRY = process.argv.includes('--retry');
-
-function detectCharset(contentType: string | null): string {
-  if (!contentType) return 'win1251';
-  const m = contentType.match(/charset=([\w-]+)/i);
-  const cs = m?.[1]?.toLowerCase();
-  if (cs === 'utf-8' || cs === 'utf8') return 'utf8';
-  return 'win1251';
-}
 
 async function fetchHtml(url: string, timeoutMs: number): Promise<string> {
   const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
@@ -57,16 +40,17 @@ async function loadCaseHtml(
   timeoutMs: number,
   apiKey: string,
   fallbackApiKey: string,
+  softId: string,
 ): Promise<string> {
   if (courtType === 'magistrate') {
     if (!apiKey && !fallbackApiKey) throw new Error('RUCAPTCHA_API_KEY is not set');
     const primaryKey = apiKey || fallbackApiKey;
     try {
-      return await fetchMagistrateHtml({ url, apiKey: primaryKey, debugDir: resolve(process.cwd(), 'logs') });
+      return await fetchMagistrateHtml({ url, apiKey: primaryKey, softId, debugDir: resolve(process.cwd(), 'logs') });
     } catch (err) {
       if (fallbackApiKey && apiKey) {
         console.warn(`[orchestrator] Primary captcha failed, trying fallback: ${err instanceof Error ? err.message : String(err)}`);
-        return await fetchMagistrateHtml({ url, apiKey: fallbackApiKey, debugDir: resolve(process.cwd(), 'logs') });
+        return await fetchMagistrateHtml({ url, apiKey: fallbackApiKey, softId, debugDir: resolve(process.cwd(), 'logs') });
       }
       throw err;
     }
@@ -103,6 +87,7 @@ function buildLastSuccessMap(logsDir: string): Map<string, number> {
 async function run() {
   const config = loadConfig();
   const allUrls = loadUrls();
+  const requestDelayMs = (config as any).requestDelayMs ?? 500;
   const logsDir = resolve(process.cwd(), 'logs');
   if (!existsSync(logsDir)) mkdirSync(logsDir, { recursive: true });
 
@@ -157,16 +142,19 @@ async function run() {
 
       const cases = [];
 
-      for (const url of urls) {
+      for (let urlIdx = 0; urlIdx < urls.length; urlIdx++) {
+        const url = urls[urlIdx];
         const start = Date.now();
         const caseId = new URL(url).searchParams.get('case_id') ?? url;
         const label = `${courtId} → ${caseId}`;
         try {
-          const html = await withRetry(
-            () => loadCaseHtml(url, type, config.retry.timeoutMs, config.captcha.apiKey, config.captcha.fallbackApiKey),
-            config.retry,
-            label
-          );
+          const html = type === 'magistrate'
+            ? await loadCaseHtml(url, type, config.retry.timeoutMs, config.captcha.apiKey, config.captcha.fallbackApiKey, (config as any).captcha?.softId ?? '')
+            : await withRetry(
+              () => loadCaseHtml(url, type, config.retry.timeoutMs, config.captcha.apiKey, config.captcha.fallbackApiKey, (config as any).captcha?.softId ?? ''),
+              config.retry,
+              label
+            );
           const ac = new AbortController();
           const parsePromise = adapter.parse(html, url).then(data => {
             if (ac.signal.aborted) throw new Error('parse timeout');
@@ -205,13 +193,13 @@ async function run() {
           });
           console.error(`[FAIL] ${label} — ${error}`);
         }
+        if (urlIdx < urls.length - 1 && requestDelayMs > 0) {
+          await sleep(requestDelayMs);
+        }
       }
 
       if (cases.length > 0) {
         exportJson(cases, config.outputDir, courtId);
-        if (config.exportXlsx) {
-          console.log(`[xlsx] TODO: ${courtId}`);
-        }
       }
     }
   } finally {

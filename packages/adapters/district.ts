@@ -4,21 +4,7 @@
 import * as cheerio from 'cheerio';
 import type { Case, CaseEvent, CaseParty, CourtAdapter } from '../core/types.js';
 import { CaptchaRequiredError, isCaptchaPage } from '../core/errors.js';
-
-function extractCourtSubdomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/\.sudrf\.ru$/, '');
-  } catch {
-    return 'unknown';
-  }
-}
-
-function parseDate(raw: string | undefined | null): string | null {
-  if (!raw) return null;
-  const m = raw.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-  if (!m) return null;
-  return `${m[3]}-${m[2]}-${m[1]}`;
-}
+import { extractCourtSubdomain, parseDate } from './shared.js';
 
 export class DistrictAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
@@ -68,6 +54,7 @@ export class DistrictAdapter implements CourtAdapter {
         location:    col(3),
         result:      col(4),
         reason:      col(5),
+        judge:       null,
         note:        tds.length > 6 ? col(6) : null,
         publishDate: tds.length > 7 ? parseDate(col(7)) : null,
       });
@@ -97,7 +84,7 @@ export class DistrictAdapter implements CourtAdapter {
       uid,
       type,
       number,
-      court:     extractCourtSubdomain(url),
+      court:     extractCourtSubdomain(url, 'district'),
       courtType: 'district',
       identifiers: {
         delo_id:   parsedUrl.searchParams.get('delo_id'),

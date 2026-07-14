@@ -162,6 +162,7 @@
   let allCases = [];
   let courts = {};
   let pollTimer = null;
+  let passivePollTimer = null;
 
   function showPage(name, btn) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -395,7 +396,11 @@
   }
 
   loadAll();
-  setInterval(pollRunStatus, 5000); // пассивный поллинг статуса каждые 5 сек
+  passivePollTimer = setInterval(pollRunStatus, 5000);
+  window.addEventListener('beforeunload', () => {
+    clearTimeout(pollTimer);
+    clearInterval(passivePollTimer);
+  });
 </script>
 </body>
 </html>

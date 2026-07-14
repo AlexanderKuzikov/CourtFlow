@@ -118,5 +118,5 @@ casesList.on('select item', (_item: unknown, idx: number) => { if (tab === 'case
 casesList.on('select', (_item: unknown, idx: number) => { if (tab === 'cases') showDetail(idx); });
 screen.on('resize', () => { if (!destroyed) screen.render(); });
 
-async function init(): Promise<void> { apiUrl = parseApiUrl(process.argv); api = new ApiClient(apiUrl); header.setContent(` CourtFlow — Мониторинг дел  |  API: ${apiUrl}`); process.stdout.write('\\x1b[?25l'); process.on('exit', () => process.stdout.write('\\x1b[?25h')); await Promise.all([loadCases(), loadCourtsConfig()]); if (destroyed) return; showTab('cases'); refreshTimer = setTimeout(autoRefresh, 5000); }
+async function init(): Promise<void> { apiUrl = parseApiUrl(process.argv); api = new ApiClient(apiUrl); header.setContent(` CourtFlow — Мониторинг дел  |  API: ${apiUrl}`);   process.stdout.write('\x1b[?25l'); process.on('exit', () => process.stdout.write('\x1b[?25h')); await Promise.all([loadCases(), loadCourtsConfig()]); if (destroyed) return; showTab('cases'); refreshTimer = setTimeout(autoRefresh, 5000); }
 if (!process.env.VITEST) init().catch(err => { screen.program.showCursor(); screen.destroy(); console.error('TUI: ошибка инициализации:', err.message); process.exit(1); });

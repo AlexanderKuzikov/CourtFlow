@@ -7,17 +7,20 @@ const API_BASE = 'https://api.rucaptcha.com';
 
 export interface RuCaptchaClientOptions {
   apiKey: string;
+  softId?: string;
   pollingIntervalMs?: number;
   timeoutMs?: number;
 }
 
 export class RuCaptchaClient {
   private readonly apiKey: string;
+  private readonly softId: string;
   private readonly pollingIntervalMs: number;
   private readonly timeoutMs: number;
 
   constructor(options: RuCaptchaClientOptions) {
     this.apiKey = options.apiKey;
+    this.softId = options.softId ?? '';
     this.pollingIntervalMs = options.pollingIntervalMs ?? 5000;
     this.timeoutMs = options.timeoutMs ?? 120000;
   }
@@ -37,12 +40,12 @@ export class RuCaptchaClient {
           type: 'ImageToTextTask',
           body: imageBase64,
           // msudrf captcha: буквы + цифры, регистронезависимая, ~4-6 символов
-          numeric: 4,       // 4 = любые символы (цифры + буквы)
+          numeric: 4,
           minLength: 4,
           maxLength: 6,
           case: false,
-          languagePool: 'rn',  // ru + en
-          softId: '3898',
+          languagePool: 'rn',
+          ...(this.softId ? { softId: this.softId } : {}),
         },
       }),
     });

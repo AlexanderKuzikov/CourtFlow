@@ -36,6 +36,7 @@ export interface CaseEvent {
   location: string | null;
   result: string | null;
   reason: string | null;
+  judge: string | null;       // судья на момент события (magistrate: колонка 5)
   note: string | null;
   publishDate: string | null;
 }

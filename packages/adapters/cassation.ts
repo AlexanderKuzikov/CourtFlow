@@ -11,30 +11,7 @@
 import * as cheerio from 'cheerio';
 import type { Case, CaseEvent, CaseParty, CourtAdapter } from '../core/types.js';
 import { CaptchaRequiredError, isCaptchaPage } from '../core/errors.js';
-
-function extractCourtSubdomain(url: string): string {
-  try { return new URL(url).hostname.replace(/\.sudrf\.ru$/, ''); } catch { return 'unknown'; }
-}
-
-function parseDate(raw: string | undefined | null): string | null {
-  if (!raw) return null;
-  const m = raw.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-  return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
-}
-
-function parsePublishInfo(text: string): { publishedAt: string | null; modifiedAt: string | null } {
-  const pubM = text.match(/опубликован\w*\s+([\d.]+\s+[\d:]+)/);
-  const modM = text.match(/изменено\s+([\d.]+\s+[\d:]+)/);
-  const toIso = (s: string) => {
-    const [date, time] = s.trim().split(/\s+/);
-    const d = parseDate(date);
-    return d ? `${d}T${time ?? '00:00'}:00` : null;
-  };
-  return {
-    publishedAt: pubM ? toIso(pubM[1]) : null,
-    modifiedAt:  modM ? toIso(modM[1]) : null,
-  };
-}
+import { extractCourtSubdomain, parseDate, parsePublishInfo } from './shared.js';
 
 export class CassationAdapter implements CourtAdapter {
   async parse(html: string, url: string): Promise<Case> {
@@ -89,6 +66,7 @@ export class CassationAdapter implements CourtAdapter {
         location:    col(3),
         result:      col(4),
         reason:      col(5),
+        judge:       null,
         note:        tds.length > 6 ? col(6) : null,
         publishDate: tds.length > 7 ? parseDate(col(7)) : null,
       });
@@ -107,7 +85,7 @@ export class CassationAdapter implements CourtAdapter {
     return {
       $schema: 'courtflow/case/v1',
       uid, type, number,
-      court: extractCourtSubdomain(url),
+      court: extractCourtSubdomain(url, 'cassation'),
       courtType: 'cassation',
       identifiers: {
         delo_id:   parsedUrl.searchParams.get('delo_id'),

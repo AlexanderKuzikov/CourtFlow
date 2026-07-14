@@ -9,6 +9,7 @@ import { RuCaptchaClient } from './rucaptcha.js';
 export interface MagistrateSessionOptions {
   url: string;
   apiKey: string;
+  softId?: string;
   debugDir?: string;
 }
 
@@ -22,6 +23,7 @@ export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Pr
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-features=NetworkServiceInProcess',
+      '--disable-gpu',
       // msudrf.ru использует wildcard *.msudrf.ru, который не покрывает subdomain.perm.msudrf.ru
       '--ignore-certificate-errors',
     ],
@@ -36,7 +38,7 @@ export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Pr
 
     if (options.debugDir) ensureDir(options.debugDir);
 
-    const client = new RuCaptchaClient({ apiKey: options.apiKey });
+    const client = new RuCaptchaClient({ apiKey: options.apiKey, softId: options.softId });
     const imageBase64 = await readCaptchaImageAsBase64(page);
     const captchaText = await client.solveImage(imageBase64);
 

@@ -33,7 +33,7 @@ export function saveCourts(courts: Record<string, CourtDirectoryItem>) {
   renameSync(tmp, COURTS_PATH);
 }
 
-function detectCharset(contentType: string | null): string {
+export function detectCharset(contentType: string | null): string {
   if (!contentType) return 'win1251';
   const m = contentType.match(/charset=([\w-]+)/i);
   const cs = m?.[1]?.toLowerCase();

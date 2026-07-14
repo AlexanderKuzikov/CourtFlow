@@ -5,10 +5,12 @@
   "outputDir": "./data",
   "exportXlsx": false,
   "smokeSaveLog": true,
+  "requestDelayMs": 500,
   "captcha": {
     "sessionFile": "./data/session.json",
     "provider": "rucaptcha",
-    "fallbackProvider": "2captcha"
+    "fallbackProvider": "2captcha",
+    "softId": "3898"
   },
   "retry": {
     "attempts": 3,
