@@ -73,6 +73,7 @@ CourtFlow мониторит судебные дела РФ по URL, парси
 | MAG-1 | `MagistrateAdapter.card.result` брался из последнего события (`lastResult`), а не из поля «Результат рассмотрения» карточки дела (Tab 0). Для «закрытых» дел в событиях написано «Принято решение: Решение по существу», а суть решения («Иск удовлетворен», «Взыскано…») — в карточке. Исправлено: `rawCard['Результат рассмотрения'] ?? lastResult`. | applied |
 | MAG-2 | `hearingDate` добавлен третий fallback на `rawCard['Дело рассмотрено (выдан приказ)']` — дата решения, если нет будущих слушаний и прошлых событий. | applied |
 | S-2 | `session.ts` — headless: `'shell'` (старый режим, без белого окна). `--disable-gpu` откачен (вызывал timeout magistrate). | applied |
+| CR-5 | `courts.ts` — `fetchCourtDirectoryItem` не работал для magistrate: другая HTML-структура главной (нет `#show`/нет `h5.heading.heading_title`). Исправлено: `span#court_name` для названия, `h2:contains("Адрес") + p` для адреса, сбор телефонов из `.content`. | tsc clean, 35 tests pass |
 
 ## Верификация
 
