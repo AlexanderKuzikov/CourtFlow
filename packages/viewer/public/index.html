@@ -52,6 +52,8 @@
     .muted { color: #777; }
     .sort-icon { font-size: 11px; margin-left: 3px; color: rgba(255,255,255,0.5); }
     .sort-icon.active { color: #fff; }
+    .sort-icon { font-size: 11px; margin-left: 3px; color: rgba(255,255,255,0.5); }
+    .sort-icon.active { color: #fff; }
     .log-item { background: #fff; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; gap: 12px; align-items: baseline; font-size: 13px; flex-wrap: wrap; }
     .log-ok { border-left: 4px solid #16a34a; }
     .log-fail { border-left: 4px solid #dc2626; }
@@ -102,12 +104,12 @@
     </div>
     <table>
       <thead><tr>
-        <th>Номер дела</th>
-        <th>Тип</th>
-        <th>Суд</th>
-        <th>Судья</th>
-        <th>Событий</th>
-        <th>Последнее</th>
+        <th onclick="sortBy('number')" style="cursor:pointer">Номер дела <span class="sort-icon" data-col="number"></span></th>
+        <th onclick="sortBy('type')" style="cursor:pointer">Тип <span class="sort-icon" data-col="type"></span></th>
+        <th onclick="sortBy('court')" style="cursor:pointer">Суд <span class="sort-icon" data-col="court"></span></th>
+        <th onclick="sortBy('judge')" style="cursor:pointer">Судья <span class="sort-icon" data-col="judge"></span></th>
+        <th onclick="sortBy('events')" style="cursor:pointer">Событий <span class="sort-icon" data-col="events"></span></th>
+        <th onclick="sortBy('lastDate')" style="cursor:pointer">Последнее <span class="sort-icon" data-col="lastDate"></span></th>
       </tr></thead>
       <tbody id="casesBody"></tbody>
     </table>
@@ -337,67 +339,7 @@
       setTimeout(() => {
         setStatusEl(el, 'done', '✓ Справочник обновлён');
       
-  // ─── Сортировка ──────────────────────────────────────
-  let sortCol = 'number';
-  let sortAsc = true;
-
-  function sortBy(col) {
-    if (sortCol === col) {
-      sortAsc = !sortAsc;
-    } else {
-      sortCol = col;
-      sortAsc = true;
-    }
-    updateSortIcons();
-    renderCases();
-  }
-
-  function updateSortIcons() {
-    document.querySelectorAll('.sort-icon').forEach(el => {
-      el.classList.toggle('active', el.dataset.col === sortCol);
-      if (el.dataset.col === sortCol) {
-        el.textContent = sortAsc ? '▲' : '▼';
-      } else {
-        el.textContent = '';
-      }
-    });
-  }
-
-  function getSortValue(c, col) {
-    const courtName = courts[c.court]?.shortName || courts[c.court]?.name || c.court;
-    switch (col) {
-      case 'number':   return (c.number || '').toLowerCase();
-      case 'type':     return c.courtType || '';
-      case 'court':    return (courtName || '').toLowerCase();
-      case 'judge':    return (c.card?.judge || '').toLowerCase();
-      case 'events':   return c.events?.length ?? 0;
-      case 'lastDate': {
-        const lastEvent = c.events?.at(-1);
-        return lastEvent?.eventDate || c.card?.hearingDate || '';
-      }
-      default:         return '';
-    }
-  }
-
-  // Wrap renderCases to apply sorting
-  const _origSort = renderCases;
-  renderCases = function() {
-    // Apply sort
-    allCases.sort((a, b) => {
-      const va = getSortValue(a, sortCol);
-      const vb = getSortValue(b, sortCol);
-      let cmp;
-      if (typeof va === 'number' && typeof vb === 'number') {
-        cmp = va - vb;
-      } else {
-        cmp = String(va).localeCompare(String(vb), 'ru');
-      }
-      return sortAsc ? cmp : -cmp;
-    });
-    _origSort();
-  };
-
-  loadAll();
+    loadAll();
       }, 3000);
     } catch(e) {
       setStatusEl(el, 'idle', 'Ошибка');
@@ -457,6 +399,65 @@
   function esc(s) {
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
+
+  // ─── Сортировка ──────────────────────────────────────
+  let sortCol = 'number';
+  let sortAsc = true;
+
+  function sortBy(col) {
+    if (sortCol === col) {
+      sortAsc = !sortAsc;
+    } else {
+      sortCol = col;
+      sortAsc = true;
+    }
+    updateSortIcons();
+    renderCases();
+  }
+
+  function updateSortIcons() {
+    document.querySelectorAll('.sort-icon').forEach(el => {
+      el.classList.toggle('active', el.dataset.col === sortCol);
+      if (el.dataset.col === sortCol) {
+        el.textContent = sortAsc ? '▲' : '▼';
+      } else {
+        el.textContent = '';
+      }
+    });
+  }
+
+  function getSortValue(c, col) {
+    const courtName = courts[c.court]?.shortName || courts[c.court]?.name || c.court;
+    switch (col) {
+      case 'number':   return (c.number || '').toLowerCase();
+      case 'type':     return c.courtType || '';
+      case 'court':    return (courtName || '').toLowerCase();
+      case 'judge':    return (c.card?.judge || '').toLowerCase();
+      case 'events':   return c.events?.length ?? 0;
+      case 'lastDate': {
+        const lastEvent = c.events?.at(-1);
+        return lastEvent?.eventDate || c.card?.hearingDate || '';
+      }
+      default:         return '';
+    }
+  }
+
+  // Override renderCases with sorting
+  const _renderCasesOrig = renderCases;
+  renderCases = function() {
+    allCases.sort((a, b) => {
+      const va = getSortValue(a, sortCol);
+      const vb = getSortValue(b, sortCol);
+      let cmp;
+      if (typeof va === 'number' && typeof vb === 'number') {
+        cmp = va - vb;
+      } else {
+        cmp = String(va).localeCompare(String(vb), 'ru');
+      }
+      return sortAsc ? cmp : -cmp;
+    });
+    _renderCasesOrig();
+  };
 
   loadAll();
   passivePollTimer = setInterval(pollRunStatus, 5000);
