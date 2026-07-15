@@ -63,13 +63,30 @@ CourtFlow мониторит судебные дела РФ по URL, парси
 | S-6 | XLSX stub (`xlsx.ts`) + `exceljs` из deps удалены | applied |
 | S-8 | `setInterval` с очисткой в `index.html` | applied |
 | — | Puppeteer: `--disable-gpu` в launch args (white window fix) | applied |
+| — | Puppeteer: `headless: 'shell'` вместо `true` (старый режим, без белого окна на Windows). `--disable-gpu` и `--disable-software-rasterizer` откачены — вызывали timeout magistrate. | applied |
 | — | GitHub Actions CI (`ci.yml`: checkout, install, tsc, test) | applied |
+
+### Bugfix #5 (2026-07-15)
+
+| ID | Содержание | Статус |
+|---|---|---|
+| MAG-1 | `MagistrateAdapter.card.result` брался из последнего события (`lastResult`), а не из поля «Результат рассмотрения» карточки дела (Tab 0). Для «закрытых» дел в событиях написано «Принято решение: Решение по существу», а суть решения («Иск удовлетворен», «Взыскано…») — в карточке. Исправлено: `rawCard['Результат рассмотрения'] ?? lastResult`. | applied |
+| MAG-2 | `hearingDate` добавлен третий fallback на `rawCard['Дело рассмотрено (выдан приказ)']` — дата решения, если нет будущих слушаний и прошлых событий. | applied |
+| S-2 | `session.ts` — headless: `'shell'` (старый режим, без белого окна). `--disable-gpu` откачен (вызывал timeout magistrate). | applied |
 
 ## Верификация
 
 ```bash
 npm test          # 2 files, 35 tests — all passed
 npx tsc --noEmit  # clean
+```
+
+### SHA: `7cb1ac3` (HEAD)
+
+```
+7cb1ac3 docs: update HTML_STRUCTURE.md for magistrate card fields
+b150ae3 fix(magistrate): result card from Tab 0 not from events
+8c3bc1c .
 ```
 
 ## Backlog
@@ -102,7 +119,7 @@ npx tsc --noEmit  # clean
 
 ## Старт следующей сессии
 
-1. Прочитать `CONTEXT.md`, `CODE_REVIEW.md`, `DECISIONS.md`.
+1. Прочитать `CONTEXT.md`, `CODE_REVIEW.md`, `HTML_STRUCTURE.md`, `DECISIONS.md`.
 2. Выполнить `git status`, `git log --oneline -20`; записать SHA.
 3. Проверить: `npm test`, `npx tsc --noEmit`.
 4. Выбрать один backlog item, определить success criteria, сделать минимальную правку, обновить этот журнал.
