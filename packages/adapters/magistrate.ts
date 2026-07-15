@@ -25,7 +25,8 @@ export class MagistrateAdapter implements CourtAdapter {
     const tabs = $('.tab-content');
     if (tabs.length < 3) throw new Error('MagistrateAdapter: не найдены tab-content');
 
-    // Таб 0 — основные сведения
+    // Таб 0 — основные сведения (Категория, Председательствующий судья,
+    // Дело рассмотрено, Результат рассмотрения)
     const rawCard: Record<string, string> = {};
     tabs.eq(0).find('table.tablcont tr').each((_i, el) => {
       const tds = $(el).find('td');
@@ -65,6 +66,7 @@ export class MagistrateAdapter implements CourtAdapter {
       .sort()
       .find(d => d >= new Date().toISOString().slice(0, 10))
       ?? events.map(e => e.eventDate).filter((d): d is string => !!d).sort().at(-1)
+      ?? parseDate(cleanText(rawCard['Дело рассмотрено (выдан приказ)']))
       ?? null;
 
     // Последний результат из событий
@@ -110,12 +112,13 @@ export class MagistrateAdapter implements CourtAdapter {
         filingDate,
         category,
         judge: rawCard['Председательствующий судья'] ?? null,
+        // result из 'Результат рассмотрения' (Tab 0); fallback на последнее событие
         hearingDate,
-        result: lastResult,
+        result: rawCard['Результат рассмотрения'] ?? lastResult,
         proceedingType: null,
       },
       events,
       parties,
     };
   }
-}
+}

@@ -15,7 +15,8 @@ export interface MagistrateSessionOptions {
 
 export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Promise<string> {
   // PUPPETEER_HEADLESS=false  — для локальной диагностики (не пушить .env с этим флагом)
-  const headless = process.env['PUPPETEER_HEADLESS'] !== 'false';
+  // 'shell' — старый headless-режим, не создаёт окон (new headless мигает белым на Windows)
+  const headless: boolean | 'shell' = process.env['PUPPETEER_HEADLESS'] === 'false' ? false : 'shell';
 
   const browser = await puppeteer.launch({
     headless,
@@ -23,7 +24,6 @@ export async function fetchMagistrateHtml(options: MagistrateSessionOptions): Pr
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-features=NetworkServiceInProcess',
-      '--disable-gpu',
       // msudrf.ru использует wildcard *.msudrf.ru, который не покрывает subdomain.perm.msudrf.ru
       '--ignore-certificate-errors',
     ],
