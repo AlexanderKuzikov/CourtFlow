@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync, existsSync, renameSync } from 'fs';
 import { resolve } from 'path';
 import * as cheerio from 'cheerio';
 import iconv from 'iconv-lite';
+import https from 'https';
 import type { CourtType } from './types.js';
 
 export interface CourtDirectoryItem {
@@ -42,11 +43,37 @@ export function detectCharset(contentType: string | null): string {
 }
 
 async function fetchHtml(url: string, timeoutMs = 15000): Promise<string> {
+  // *.msudrf.ru — самоподписанные wildcard-сертификаты, нужен rejectUnauthorized: false
+  const isInsecure = url.includes('.msudrf.ru');
+  if (isInsecure) {
+    return new Promise<string>((resolve, reject) => {
+      const parsed = new URL(url);
+      const chunks: any[] = [];
+      let ctype = 'charset=win1251';
+      https.get({
+        hostname: parsed.hostname,
+        path: parsed.pathname + parsed.search,
+        rejectUnauthorized: false,
+        timeout: timeoutMs,
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0)' },
+      }, (res) => {
+        const hdr = res.headers['content-type'];
+        if (typeof hdr === 'string') ctype = hdr;
+        else if (Array.isArray(hdr)) ctype = hdr[0] ?? ctype;
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => {
+          const charset = detectCharset(ctype);
+          const raw = Buffer.concat(chunks);
+          resolve(iconv.decode(raw, charset));
+        });
+      }).on('error', reject).on('timeout', () => reject(new Error('timeout')));
+    });
+  }
   const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const charset = detectCharset(res.headers.get('content-type'));
-  const buffer = await res.arrayBuffer();
-  return iconv.decode(Buffer.from(buffer), charset);
+  const buf = await res.arrayBuffer();
+  return iconv.decode(Buffer.from(buf), charset);
 }
 
 function normalizeText(s: string): string {
