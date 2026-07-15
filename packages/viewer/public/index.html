@@ -50,6 +50,8 @@
     .kv-table td:first-child { color: #666; width: 42%; }
     .section-title { font-size: 13px; font-weight: 600; color: #1a3a5c; margin: 14px 0 6px; }
     .muted { color: #777; }
+    .sort-icon { font-size: 11px; margin-left: 3px; color: rgba(255,255,255,0.5); }
+    .sort-icon.active { color: #fff; }
     .log-item { background: #fff; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; gap: 12px; align-items: baseline; font-size: 13px; flex-wrap: wrap; }
     .log-ok { border-left: 4px solid #16a34a; }
     .log-fail { border-left: 4px solid #dc2626; }
@@ -334,7 +336,68 @@
       const data = await res.json();
       setTimeout(() => {
         setStatusEl(el, 'done', '✓ Справочник обновлён');
-        loadAll();
+      
+  // ─── Сортировка ──────────────────────────────────────
+  let sortCol = 'number';
+  let sortAsc = true;
+
+  function sortBy(col) {
+    if (sortCol === col) {
+      sortAsc = !sortAsc;
+    } else {
+      sortCol = col;
+      sortAsc = true;
+    }
+    updateSortIcons();
+    renderCases();
+  }
+
+  function updateSortIcons() {
+    document.querySelectorAll('.sort-icon').forEach(el => {
+      el.classList.toggle('active', el.dataset.col === sortCol);
+      if (el.dataset.col === sortCol) {
+        el.textContent = sortAsc ? '▲' : '▼';
+      } else {
+        el.textContent = '';
+      }
+    });
+  }
+
+  function getSortValue(c, col) {
+    const courtName = courts[c.court]?.shortName || courts[c.court]?.name || c.court;
+    switch (col) {
+      case 'number':   return (c.number || '').toLowerCase();
+      case 'type':     return c.courtType || '';
+      case 'court':    return (courtName || '').toLowerCase();
+      case 'judge':    return (c.card?.judge || '').toLowerCase();
+      case 'events':   return c.events?.length ?? 0;
+      case 'lastDate': {
+        const lastEvent = c.events?.at(-1);
+        return lastEvent?.eventDate || c.card?.hearingDate || '';
+      }
+      default:         return '';
+    }
+  }
+
+  // Wrap renderCases to apply sorting
+  const _origSort = renderCases;
+  renderCases = function() {
+    // Apply sort
+    allCases.sort((a, b) => {
+      const va = getSortValue(a, sortCol);
+      const vb = getSortValue(b, sortCol);
+      let cmp;
+      if (typeof va === 'number' && typeof vb === 'number') {
+        cmp = va - vb;
+      } else {
+        cmp = String(va).localeCompare(String(vb), 'ru');
+      }
+      return sortAsc ? cmp : -cmp;
+    });
+    _origSort();
+  };
+
+  loadAll();
       }, 3000);
     } catch(e) {
       setStatusEl(el, 'idle', 'Ошибка');
@@ -403,4 +466,4 @@
   });
 </script>
 </body>
-</html>
+</html>
