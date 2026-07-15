@@ -62,13 +62,40 @@ export async function fetchCourtDirectoryItem(courtId: string, courtType: CourtT
       // FIX (CODE_REVIEW #1): decodeEntities удалён — в cheerio 1.x эта опция убрана из CheerioOptions.
       const $ = cheerio.load(html);
 
-  const name = normalizeText($('h5.heading.heading_title').first().text()) || courtId;
-  const addrHtml = $('#show').html() ?? '';
-  const parts = addrHtml.split(/<br\s*\/?>/i).map(s => normalizeText(cheerio.load(s).text())).filter(Boolean);
+  const name = courtType === 'magistrate'
+    ? normalizeText($('span#court_name').first().text()) || normalizeText($('footer p').first().text()) || courtId
+    : normalizeText($('h5.heading.heading_title').first().text()) || courtId;
+  let address: string | null = null;
+  let email: string | null = null;
+  let phones: string[] = [];
 
-  const address = parts[0] ?? null;
-  const email = $('#show a[href^="mailto:"]').attr('href')?.replace(/^mailto:/i, '').trim() ?? null;
-  const phones = parts.slice(1).filter(line => !/@/.test(line) && !/^mailto:/i.test(line));
+  if (courtType === 'magistrate') {
+    // Magistrate: другая структура — адрес под h2 "Адрес", телефоны у сотрудников
+    $('h2').each((_i, el) => {
+      if ($(el).text().trim() === 'Адрес') {
+        const addrP = $(el).next('p');
+        if (addrP.length) address = normalizeText(addrP.text());
+      }
+    });
+    // Все unique email из mailto-ссылок
+    const emailSet = new Set<string>();
+    $('a[href^="mailto:"]').each((_i, el) => {
+      const m = $(el).attr('href')?.replace(/^mailto:/i, '').trim();
+      if (m) emailSet.add(m);
+    });
+    email = [...emailSet][0] ?? null;
+    // Телефоны — собираем все упоминания
+    const bodyText = $('.content').text();
+    const phoneMatches = [...bodyText.matchAll(/Телефон:\s*([\d\s()\-–,]+)/g)];
+    phones = phoneMatches.map(m => normalizeText(m[0]));
+  } else {
+    // District/appeal/cassation: стандартная структура с #show
+    const addrHtml = $('#show').html() ?? '';
+    const parts = addrHtml.split(/<br\s*\/?>/i).map(s => normalizeText(cheerio.load(s).text())).filter(Boolean);
+    address = parts[0] ?? null;
+    email = $('#show a[href^="mailto:"]').attr('href')?.replace(/^mailto:/i, '').trim() ?? null;
+    phones = parts.slice(1).filter(line => !/@/.test(line) && !/^mailto:/i.test(line));
+  }
 
   return {
     courtId,
@@ -101,4 +128,4 @@ export async function enrichCourts(items: Array<{ courtId: string; courtType: Co
 
   saveCourts(courts);
   return { total: Object.keys(courts).length, added };
-}
+}
