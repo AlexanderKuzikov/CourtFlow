@@ -42,6 +42,8 @@
 | BUG-031 | `softId: '3898'` хардкод в `rucaptcha.ts` | 🟢 | Низкий |
 | BUG-032 | Пустые файлы `5dc62476d7db80fc.txt`, `c832310624b586cb.txt` в корне | 🟢 | Низкий |
 | BUG-033 | `setInterval` без очистки в `index.html` | 🟢 | Низкий |
+| BUG-034 | `--disable-gpu` + `--disable-software-rasterizer` → magistrate timeout 30s | 🟢 | Высокий |
+| BUG-035 | Белое окно Puppeteer на Windows (new headless GPU-артефакт) | 🟢 | Средний |
 
 ---
 
@@ -125,3 +127,13 @@
 **Файл:** `packages/viewer/public/index.html:398`
 **Причина:** `setInterval(pollRunStatus, 5000)` создавался при загрузке страницы без очистки. При многократной навигации (SPA-переходы) таймеры накапливались.
 **Исправлено:** таймер сохраняется в `passivePollTimer`, очищается в `beforeunload`. **Источник:** Code Review #4, S-8.
+
+### BUG-034 🟢 `--disable-gpu` + `--disable-software-rasterizer` → magistrate timeout 30s
+**Файл:** `packages/captcha/session.ts`
+**Причина:** в headless-режиме Chromium рендерит через software rasterizer. `--disable-gpu` + `--disable-software-rasterizer` отключали оба механизма рендеринга. `page.goto()` зависал на `waitUntil: 'domcontentloaded'` → Puppeteer TimeoutError через 30s.
+**Исправлено:** флаги удалены. Вместо них `headless: 'shell'` — старый headless-режим (не создаёт GPU-окно, совместим с Windows/Linux). **Источник:** Code Review #4.
+
+### BUG-035 🟢 Белое окно Puppeteer на Windows
+**Файл:** `packages/captcha/session.ts`
+**Причина:** в new headless-режиме (Puppeteer 22+) GPU-композитор на Windows кратковременно создаёт пустое окно в левом верхнем углу.
+**Исправлено:** `headless: 'shell'` вместо `true`. Старый режим не инициализирует GPU-композитор → окно не появляется. Безопасен для Linux. **Источник:** Code Review #4.

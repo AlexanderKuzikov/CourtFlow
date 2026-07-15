@@ -1,40 +1,19 @@
-[config] ⚠️  Есть magistrate-дела, но RUCAPTCHA_API_KEY и TWOCAPTCHA_API_KEY не заданы. Капча не будет работать.
-[smoke] Всего URL в urls.txt: 27
+[smoke] Всего URL: 28
 [smoke] Лог сохраняется в logs/smoke-last.log
 
-─── [smoke] DISTRICT — sverdlov--perm
-    URL: https://sverdlov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=458075868&case_uid=177348e2-e763-4d56-be99-6e799d98de5d&delo_id=1540005
-    charset: win1251, html длина: 124231
-    [✓] UID:      59RS0007-01-2025-005668-17
-         Суд:      sverdlov--perm
-         Номер:    2-4771/2025 ~ М-2828/2025
-         Судья:    Гурьева Елена Павловна
-         Сторон:   7
-         Событий:  15
-
-─── [smoke] APPEAL — oblsud--perm
-    URL: https://oblsud--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11448818&case_uid=45dcad31-4ad4-448c-ab97-33ec62895e23&delo_id=5&new=5
-    charset: win1251, html длина: 101461
-    [✓] UID:      59RS0007-01-2025-005668-17
-         Суд:      oblsud--perm
-         Номер:    33-2030/2026
-         Судья:    Соколова Анна Рашидовна
+─── [smoke] DISTRICT — oktyabrsky--stv
+    URL: https://oktyabrsky--stv.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=516060576&case_uid=03f8bbcc-cc70-4bad-a0e0-b09d55839602&delo_id=1540005
+    charset: win1251, html длина: 94538
+    [✓] UID:      26RS0003-01-2026-002738-63
+         Суд:      oktyabrsky--stv
+         Номер:    2-2364/2026 ~ М-1685/2026
+         Судья:    Пилипенко Александр Викторович
          Сторон:   7
          Событий:  6
 
-─── [smoke] CASSATION — 7kas
-    URL: https://7kas.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=case&case_id=11662670&case_uid=07ae7a19-4220-47e9-9f09-094b2e72e9fb&new=2800001&delo_id=2800001
-    charset: win1251, html длина: 114938
-    [✓] UID:      59RS0007-01-2025-005668-17
-         Суд:      7kas
-         Номер:    8Г-7317/2026 [88-8693/2026]
-         Судья:    Конкин Михаил Валерьевич
-         Сторон:   3
-         Событий:  1
-         Изменено: 2026-07-01T20:00:00
-
-─── [smoke] MAGISTRATE — 35.perm
-    URL: https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414120&delo_id=1540005
-    [пропущено: magistrate требует Puppeteer]
+─── [smoke] MAGISTRATE — 119.perm
+    URL: https://119.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1530268&delo_id=1540005
+    [тест на cached HTML из logs/magistrate-last.html]
+    [×] MagistrateAdapter: не найдены tab-content
 
 [smoke] Готово.

@@ -31,6 +31,7 @@
 | S-6 | Совет | `xlsx.ts`, `package.json` | XLSX stub + `exceljs` удалены |
 | S-8 | Совет | `index.html` | `setInterval` с очисткой при `beforeunload` |
 | — | — | `session.ts` | `--disable-gpu` в Puppeteer args (white window на Windows) |
+| — | — | `session.ts` | `--disable-gpu` в Puppeteer args (white window). Позже откачен — вызывал timeout на Windows. Заменён на `headless: 'shell'`. |
 | — | — | `.github/workflows/ci.yml` (new) | CI: checkout + Node 24 + npm ci + tsc + vitest |
 | — | — | `smoke.ts`, `orchestrator.ts` | Убраны дупликаты `ADAPTERS` и `detectCharset` |
 
