@@ -184,4 +184,4 @@ URL:
 - **Функция:** `isCaptchaPage(html: string): boolean`
 - **Признак:** `html.includes('id="kcaptchaForm"')`
 - **Ошибка:** `CaptchaRequiredError`
-- **Статус:** реализовано
+- **Статус:** реализовано
