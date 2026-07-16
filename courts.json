@@ -434,5 +434,21 @@
     "vnkod": null,
     "fetchedAt": "2026-07-15T05:30:10.740Z",
     "sourceUrl": "https://16.perm.msudrf.ru/"
+  },
+  "2.perm": {
+    "courtId": "2.perm",
+    "courtType": "magistrate",
+    "name": "Судебный участок № 2 Дзержинского судебного района г. Перми Пермского края",
+    "shortName": "Судебный участок № 2 Дзержинского судебного района г. Перми Пермского края",
+    "address": "614022, г. Пермь, ул. Танкистов д. 50",
+    "phones": [
+      "Телефон:",
+      "Телефон:",
+      "Телефон: 8 (342) 280-13-93"
+    ],
+    "email": "2dzerzhinsky@ms.permkrai.ru",
+    "vnkod": null,
+    "fetchedAt": "2026-07-15T15:03:49.289Z",
+    "sourceUrl": "https://2.perm.msudrf.ru/"
   }
 }

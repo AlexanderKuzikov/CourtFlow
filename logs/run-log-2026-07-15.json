@@ -457,5 +457,104 @@
     "uid": "2-2210/2025",
     "duration": 12627,
     "timestamp": "2026-07-15T05:07:02.201Z"
+  },
+  {
+    "courtId": "2.perm",
+    "courtType": "magistrate",
+    "url": "https://2.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1165294&delo_id=1540005",
+    "success": true,
+    "uid": "2-484/2025",
+    "duration": 819,
+    "timestamp": "2026-07-15T15:00:28.738Z"
+  },
+  {
+    "courtId": "128.perm",
+    "courtType": "magistrate",
+    "url": "https://128.perm.msudrf.ru/modules.php?name=sud_delo&op=hl",
+    "success": false,
+    "error": "Captcha loop: после отправки капча показана повторно",
+    "duration": 53768,
+    "timestamp": "2026-07-15T15:01:22.507Z"
+  },
+  {
+    "courtId": "8.perm",
+    "courtType": "magistrate",
+    "url": "https://8.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1511873&delo_id=1540005",
+    "success": false,
+    "error": "Captcha loop: после отправки капча показана повторно",
+    "duration": 31199,
+    "timestamp": "2026-07-15T15:01:53.706Z"
+  },
+  {
+    "courtId": "104.perm",
+    "courtType": "magistrate",
+    "url": "https://104.perm.msudrf.ru/modules.php?name=sud_delo&g1_case__CASE_NUMBERSS=2-1466%2F2026&delo_id=1540005&op=sf",
+    "success": false,
+    "error": "MagistrateAdapter: не удалось определить номер дела",
+    "duration": 11383,
+    "timestamp": "2026-07-15T15:02:05.089Z"
+  },
+  {
+    "courtId": "ordgonik--perm",
+    "courtType": "district",
+    "url": "https://ordgonik--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=2&name_op=sf&delo_id=1540005",
+    "success": false,
+    "error": "DistrictAdapter: не удалось определить UID",
+    "duration": 1255,
+    "timestamp": "2026-07-15T15:02:06.345Z"
+  },
+  {
+    "courtId": "kirov--perm",
+    "courtType": "district",
+    "url": "https://kirov--perm.sudrf.ru/modules.php?name=sud_delo&name_op=sf&delo_id=1540005",
+    "success": false,
+    "error": "DistrictAdapter: не удалось определить UID",
+    "duration": 3943,
+    "timestamp": "2026-07-15T15:02:10.288Z"
+  },
+  {
+    "courtId": "kirov--perm",
+    "courtType": "district",
+    "url": "https://kirov--perm.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=r&delo_id=1540005&case_type=0&new=0&G1_PARTS__NAMESS=&g1_case__CASE_NUMBERSS=2-2408%2F2026&g1_case__JUDICIAL_UIDSS=&delo_table=g1_case&g1_case__ENTRY_DATE1D=&g1_case__ENTRY_DATE2D=&G1_CASE__JUDGE=&g1_case__RESULT_DATE1D=&g1_case__RESULT_DATE2D=&G1_CASE__RESULT=&G1_CASE__BUILDING_ID=&G1_CASE__COURT_STRUCT=&G1_EVENT__EVENT_NAME=&G1_EVENT__EVENT_DATEDD=&G1_PARTS__PARTS_TYPE=&G1_PARTS__INN_STRSS=&G1_PARTS__KPP_STRSS=&G1_PARTS__OGRN_STRSS=&G1_PARTS__OGRNIP_STRSS=&G1_RKN_ACCESS_RESTRICTION__RKN_REASON=&g1_rkn_access_restriction__RKN_RESTRICT_URLSS=&g1_requirement__ACCESSION_DATE1D=&g1_requirement__ACCESSION_DATE2D=&G1_REQUIREMENT__CATEGORY=&g1_requirement__ESSENCESS=&g1_requirement__JOIN_END_DATE1D=&g1_requirement__JOIN_END_DATE2D=&G1_REQUIREMENT__PUBLICATION_ID=&G1_DOCUMENT__PUBL_DATE1D=&G1_DOCUMENT__PUBL_DATE2D=&G1_CASE__VALIDITY_DATE1D=&G1_CASE__VALIDITY_DATE2D=&G1_ORDER_INFO__ORDER_DATE1D=&G1_ORDER_INFO__ORDER_DATE2D=&G1_ORDER_INFO__ORDER_NUMSS=&G1_ORDER_INFO__EXTERNALKEYSS=&G1_ORDER_INFO__STATE_ID=&G1_ORDER_INFO__RECIP_ID=&Submit=%CD%E0%E9%F2%E8",
+    "success": false,
+    "error": "DistrictAdapter: не удалось определить UID",
+    "duration": 2621,
+    "timestamp": "2026-07-15T15:02:13.415Z"
+  },
+  {
+    "courtId": "53.perm",
+    "courtType": "magistrate",
+    "url": "https://53.perm.msudrf.ru/modules.php?name=sud_delo&op=hl",
+    "success": false,
+    "error": "MagistrateAdapter: не удалось определить номер дела",
+    "duration": 10921,
+    "timestamp": "2026-07-15T15:02:24.336Z"
+  },
+  {
+    "courtId": "53.perm",
+    "courtType": "magistrate",
+    "url": "https://53.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1400909&delo_id=1540005",
+    "success": true,
+    "uid": "2-2808/2026",
+    "duration": 20767,
+    "timestamp": "2026-07-15T15:02:45.619Z"
+  },
+  {
+    "courtId": "35.perm",
+    "courtType": "magistrate",
+    "url": "https://35.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=2414114&delo_id=1540005",
+    "success": true,
+    "uid": "2-935/2026",
+    "duration": 20243,
+    "timestamp": "2026-07-15T15:03:05.864Z"
+  },
+  {
+    "courtId": "108.perm",
+    "courtType": "magistrate",
+    "url": "https://108.perm.msudrf.ru/modules.php?name=sud_delo&op=cs&case_id=1421034&delo_id=1540005",
+    "success": false,
+    "error": "Captcha loop: после отправки капча показана повторно",
+    "duration": 17138,
+    "timestamp": "2026-07-15T15:03:23.004Z"
   }
 ]
